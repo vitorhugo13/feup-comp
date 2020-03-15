@@ -32,10 +32,8 @@ TOKEN: {
   | < INT: "int" >
   | < BOOLEAN: "boolean" >
   | < STRING: "string" >
-  | < VOID: "void" >
   | < SEMICOLON: ";" >
   | < COLON: "," >
-  | < EXCLAMATION: "!" >
   | < DOT: "." >
   | < TRUE: "true" >
   | < FALSE: "false" >
@@ -77,7 +75,26 @@ void Program() : {}
   ImportDeclaration() ClassDeclaration() <EOF>
 }
 
+void ImportDeclaration() : {}
+{
+  
+}
+
 void ClassDeclaration() : {}
 {
- 
+
 }
+
+void VarDeclaration() : {}
+{
+
+}
+
+
+void MethodDeclaration() : {}
+{
+
+}
+
+
+
