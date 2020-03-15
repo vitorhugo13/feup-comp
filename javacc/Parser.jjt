@@ -11,7 +11,7 @@ public class Parser{
    public static void main(String args[]) throws ParseException {
 
    }
-   
+
 }
 
 PARSER_END(Parser)
@@ -22,5 +22,32 @@ SKIP: {
 }
 
 TOKEN: {
+
+  < INTEGER : (["0" - "9"])+ >
+  | < INT: "int" >
+  | < BOOLEAN: "boolean" >
+  | < VOID: "void" >
+  | < SEMICOLON: ";" >
+  | < COLON: "," >
+  | < EXCLAMATION: "!" >
+  | < DOT: "." >
+  | < TRUE: "true" >
+  | < FALSE: "false" >
+  | < NEW: "new" >
+  | < THIS: "this" >
+  | < LBRACKET: "{" >
+  | < RBRACKET: "}" >
+  | < LSQUAREBRACKET: "[" >
+  | < RSQUAREBRACKET: "]" >
+  | < LPAR: "(" >
+  | < RPAR: ")" >
+  | < PUBLIC: "public" >
+  | < STATIC: "static" >
+  | < VOID: "void" >
+  | < MAIN: "main" >
+  | < EXTENDS: "extends" >
+  | < CLASS: "class" >
+  | < WHILE: "while" >
+  | < IF: "if" >
 
 }
