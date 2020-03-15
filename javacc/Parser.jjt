@@ -18,14 +18,20 @@ PARSER_END(Parser)
 
 //characters to ignore/skip
 SKIP: {
-    " " | "\r" | "\t" | "\n" | <"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")> 
+    " " 
+  | "\r" 
+  | "\t" 
+  | "\n" 
+  | <"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")> 
 }
 
 TOKEN: {
 
-  < INTEGER : (["0" - "9"])+ >
+    < INTEGER : (["0" - "9"])+ >
+  | < IDENTIFIER: ["a"-"z", "A"-"Z"](["_", "a"-"z", "A"-"Z", "0"-"9"])* >
   | < INT: "int" >
   | < BOOLEAN: "boolean" >
+  | < STRING: "string" >
   | < VOID: "void" >
   | < SEMICOLON: ";" >
   | < COLON: "," >
@@ -45,9 +51,21 @@ TOKEN: {
   | < STATIC: "static" >
   | < VOID: "void" >
   | < MAIN: "main" >
+  | < RETURN: "return" >
   | < EXTENDS: "extends" >
+  | < IMPORT: "import" >
   | < CLASS: "class" >
   | < WHILE: "while" >
   | < IF: "if" >
-
+  | < ELSE: "else" >
+  | < EQUAL: "=" >
+  | < ADD: "+" >
+  | < SUB: "-" >
+  | < MUL: "*" >
+  | < DIV: "/" >
+  | < NOT: "!" >
+  | < MINOR: "<" >
+  | < AND: "&&" >
+  | < LENGTH: "length" >
+  
 }
