@@ -69,3 +69,15 @@ TOKEN: {
   | < LENGTH: "length" >
   
 }
+
+//Declarations
+
+void Program() : {}
+{
+  ImportDeclaration() ClassDeclaration() <EOF>
+}
+
+void ClassDeclaration() : {}
+{
+ 
+}
