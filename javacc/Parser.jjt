@@ -1,0 +1,26 @@
+options {
+
+  LOOKAHEAD = 1;
+
+}
+
+PARSER_BEGIN(Parser)
+
+public class Parser{
+
+   public static void main(String args[]) throws ParseException {
+
+   }
+   
+}
+
+PARSER_END(Parser)
+
+//characters to ignore/skip
+SKIP: {
+    " " | "\r" | "\t" | "\n" | <"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")> 
+}
+
+TOKEN: {
+
+}
