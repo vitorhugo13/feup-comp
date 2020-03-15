@@ -92,12 +92,25 @@ void ClassDeclaration() : {}
 
 void VarDeclaration() : {}
 {
-
+  Type() <IDENTIFIER> <SEMICOLON>
 }
 
 
 void MethodDeclaration() : {}
 {
+
+
+}
+
+void Type(): {}
+{
+
+
+}
+
+void Statement(): {}
+{
+
 
 }
 
