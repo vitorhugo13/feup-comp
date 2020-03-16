@@ -138,8 +138,45 @@ void Statement(): {}
 
 void Expression():{}
 {
+    Expression() SubExpression() Expression()
+  | Expression() <LSQUAREBRACKET> Expression() <RSQUAREBRACKET>
+  | Expression() <DOT> <LENGTH>
+  | Expression() <DOT> <IDENTIFIER> AuxExpression()
+  | <INTEGER>
+  | <TRUE>
+  | <FALSE>
+  | <IDENTIFIER>
+  | <THIS>
+  | <NEW> <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET>
+  | <NEW> Expression()
+  | <NOT> Expression()
+  | <LPAR> Expression() <RPAR
 
 }
+
+void SubExpression() : {}
+{
+    <AND>
+  | <MINOR>
+  | <ADD>
+  | <SUB>
+  | <MUL>
+  | <DIV>
+
+}
+
+void AuxExpression() : {}
+{
+  
+  <LPAR>
+    (
+      Expression()
+      (<COLON> Expression())*
+    )?
+  <RPAR>
+
+}
+
 
 
 
