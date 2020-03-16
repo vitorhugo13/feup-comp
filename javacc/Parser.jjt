@@ -4,6 +4,7 @@ options {
 
 }
 
+
 PARSER_BEGIN(Parser)
 
 public class Parser{
@@ -15,6 +16,7 @@ public class Parser{
 }
 
 PARSER_END(Parser)
+
 
 //characters to ignore/skip
 SKIP: {
@@ -69,7 +71,8 @@ TOKEN: {
   
 }
 
-//Declarations
+
+//DECLARATIONS
 
 void Program() : {}
 {
@@ -115,12 +118,21 @@ void MethodDeclaration() : {}
 void Type(): {}
 {
 
+    <INTEGER> (<LSQUAREBRACKET> <RSQUAREBRACKET>)? //int or int[]
+  | <BOOLEAN>
+  | <IDENTIFIER>
 
 }
 
 void Statement(): {}
 {
-
+  
+    <LBRACKET> (Statement())* <RBRACKET>
+  | <IF> <LPAR> Expression() <RPAR> Statement() <ELSE> Statement()
+  | <WHILE> <LPAR> Expression() <RPAR> Statement()
+  | Expression() <SEMICOLON>
+  | <IDENTIFIER> <EQUAL> Expression() <SEMICOLON>
+  | <IDENTIFIER> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> <EQUAL> Expression <SEMICOLON>
 
 }
 
