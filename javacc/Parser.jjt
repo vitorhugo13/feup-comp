@@ -65,6 +65,7 @@ TOKEN: {
   | < MINOR: "<" >
   | < AND: "&&" >
   | < LENGTH: "length" >
+  | < STRINGARRAY: "String[]" >
   
 }
 
@@ -99,6 +100,15 @@ void VarDeclaration() : {}
 void MethodDeclaration() : {}
 {
 
+  <PUBLIC> Type() <IDENTIFIER> <LPAR> (  Type() <IDENTIFIER> ( <COLON> Type() <IDENTIFIER> )*  )? <RPAR> <LBRACKET>
+    (VarDeclaration())*
+    (Statement())*
+    <RETURN> Expression() <SEMICOLON>
+  <RBRACKET>
+  | <PUBLIC> <STATIC> <VOID> <MAIN> <RPAR> ( <STRINGARRAY> <IDENTIFIER> )?<LPAR><LBRACKET>
+    (VarDeclaration())*
+    (Statement())*
+  <RBRACKET>
 
 }
 
@@ -116,7 +126,7 @@ void Statement(): {}
 
 void Expression():{}
 {
-  
+
 }
 
 
