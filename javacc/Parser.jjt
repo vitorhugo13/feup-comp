@@ -79,9 +79,24 @@ void Program() : {}
   ImportDeclaration() ClassDeclaration() <EOF>
 }
 
+
+//Implemented following teachers examples (Lazysort.jmm)
+
 void ImportDeclaration() : {}
 {
-  <IMPORT> //complete
+  (
+    
+    <IMPORT> (<STATIC>)? <IDENTIFIER>
+    (AuxImport())?
+    (Type())?
+    <SEMICOLON>
+  
+  )*
+}
+
+void AuxImport():{}
+{
+  <DOT> <IDENTIFIER> <LPAR> Type() (<COLON> Type())* <RPAR>
 }
 
 void ClassDeclaration() : {}
