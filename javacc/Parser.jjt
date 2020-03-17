@@ -153,22 +153,47 @@ void Statement(): {}
 
 void Expression():{}
 {
-    Expression() SubExpression() Expression()
-  | Expression() <LSQUAREBRACKET> Expression() <RSQUAREBRACKET>
-  | Expression() <DOT> <LENGTH>
-  | Expression() <DOT> <IDENTIFIER> AuxExpression()
-  | <INTEGER>
-  | <TRUE>
-  | <FALSE>
-  | <IDENTIFIER>
-  | <THIS>
-  | <NEW> <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET>
-  | <NEW> Expression()
-  | <NOT> Expression()
-  | <LPAR> Expression() <RPAR>
+      <INTEGER>
+      | <TRUE>
+      | <FALSE>
+      | <IDENTIFIER>
+      | <THIS>
+      | <NEW> <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET>
+      | <NEW> Expression()
+      | <NOT> Expression()
+      | <LPAR> Expression()
+      NewExpression() NewExpression2() NewExpression3() NewExpression4()
+
 
 }
 
+void NewExpression():{}
+{
+    SubExpression() Expression() NewExpression()
+  | ""
+
+}
+
+void NewExpression2():{}
+{
+    <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> NewExpression2()
+  | ""
+
+}
+
+void NewExpression3():{}
+{
+    <DOT> <LENGTH> NewExpression3()
+  | ""
+
+}
+
+void NewExpression4():{}
+{
+    <DOT> <IDENTIFIER> AuxExpression() NewExpression4()
+  | ""
+
+}
 void SubExpression() : {}
 {
     <AND>
