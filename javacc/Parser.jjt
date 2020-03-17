@@ -153,9 +153,11 @@ void Statement(): {}
 
 void Expression():{}
 {
-    Expression() <LSQUAREBRACKET> Expression() <RSQUAREBRACKET>
+    Expression() SubExpression() Expression()
+  | Expression() <LSQUAREBRACKET> Expression() <RSQUAREBRACKET>
   | Expression() <DOT> <LENGTH>
   | Expression() <DOT> <IDENTIFIER> AuxExpression()
+
   | <INTEGER>
   | <TRUE>
   | <FALSE>
@@ -164,14 +166,7 @@ void Expression():{}
   | <NEW> <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET>
   | <NEW> Expression()
   | <NOT> Expression()
-  | <LPAR> Expression() <RPAR>
-    NewExpression()
-}
-
-void NewExpression():{}
-{ 
-    SubExpression() Expression() NewExpression()
-  | ""
+  | <LPAR> Expression() <RPAR
 
 }
 
