@@ -102,7 +102,7 @@ void AuxImport():{}
 void ClassDeclaration() : {}
 {
   <CLASS> <IDENTIFIER> 
-  (<EXTENDS> <IDENTIFIER>)? //optional
+  (<EXTENDS> <IDENTIFIER>)?
   <LBRACKET>
     (VarDeclaration())*
     (MethodDeclaration())*
@@ -147,7 +147,7 @@ void Statement(): {}
   | <WHILE> <LPAR> Expression() <RPAR> Statement()
   | Expression() <SEMICOLON>
   | <IDENTIFIER> <EQUAL> Expression() <SEMICOLON>
-  | <IDENTIFIER> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> <EQUAL> Expression <SEMICOLON>
+  | <IDENTIFIER> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> <EQUAL> Expression() <SEMICOLON>
 
 }
 
@@ -165,7 +165,7 @@ void Expression():{}
   | <NEW> <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET>
   | <NEW> Expression()
   | <NOT> Expression()
-  | <LPAR> Expression() <RPAR
+  | <LPAR> Expression() <RPAR>
 
 }
 
