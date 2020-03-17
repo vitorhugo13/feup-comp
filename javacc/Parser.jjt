@@ -30,45 +30,44 @@ SKIP: {
 TOKEN: {
 
     < INTEGER : (["0" - "9"])+ >
-  | < IDENTIFIER: ["a"-"z", "A"-"Z"](["_", "a"-"z", "A"-"Z", "0"-"9"])* >
-  | < INT: "int" >
-  | < BOOLEAN: "boolean" >
-  | < STRING: "string" >
-  | < SEMICOLON: ";" >
-  | < COLON: "," >
-  | < DOT: "." >
-  | < TRUE: "true" >
-  | < FALSE: "false" >
-  | < NEW: "new" >
-  | < THIS: "this" >
-  | < LBRACKET: "{" >
-  | < RBRACKET: "}" >
-  | < LSQUAREBRACKET: "[" >
-  | < RSQUAREBRACKET: "]" >
-  | < LPAR: "(" >
-  | < RPAR: ")" >
-  | < PUBLIC: "public" >
-  | < STATIC: "static" >
-  | < VOID: "void" >
-  | < MAIN: "main" >
-  | < RETURN: "return" >
-  | < EXTENDS: "extends" >
-  | < IMPORT: "import" >
-  | < CLASS: "class" >
-  | < WHILE: "while" >
-  | < IF: "if" >
-  | < ELSE: "else" >
-  | < EQUAL: "=" >
-  | < ADD: "+" >
-  | < SUB: "-" >
-  | < MUL: "*" >
-  | < DIV: "/" >
-  | < NOT: "!" >
-  | < MINOR: "<" >
-  | < AND: "&&" >
-  | < LENGTH: "length" >
-  | < STRINGARRAY: "String[]" >
-  
+	| < INT: "int" >
+	| < BOOLEAN: "boolean" >
+	| < STRING: "string" >
+	| < SEMICOLON: ";" >
+	| < COLON: "," >
+	| < DOT: "." >
+	| < TRUE: "true" >
+	| < FALSE: "false" >
+	| < NEW: "new" >
+	| < THIS: "this" >
+	| < LBRACKET: "{" >
+	| < RBRACKET: "}" >
+	| < LSQUAREBRACKET: "[" >
+	| < RSQUAREBRACKET: "]" >
+	| < LPAR: "(" >
+	| < RPAR: ")" >
+	| < PUBLIC: "public" >
+	| < STATIC: "static" >
+	| < VOID: "void" >
+	| < MAIN: "main" >
+	| < RETURN: "return" >
+	| < EXTENDS: "extends" >
+	| < IMPORT: "import" >
+	| < CLASS: "class" >
+	| < WHILE: "while" >
+	| < IF: "if" >
+	| < ELSE: "else" >
+	| < EQUAL: "=" >
+	| < ADD: "+" >
+	| < SUB: "-" >
+	| < MUL: "*" >
+	| < DIV: "/" >
+	| < NOT: "!" >
+	| < MINOR: "<" >
+	| < AND: "&&" >
+	| < LENGTH: "length" >
+	| < STRINGARRAY: "String[]" >
+	| < IDENTIFIER: ["a"-"z", "A"-"Z"](["_", "a"-"z", "A"-"Z", "0"-"9"])* >
 }
 
 
@@ -116,80 +115,76 @@ void VarDeclaration() : {}
 
 
 void MethodDeclaration() : {}
-{
+{ // <a> (<b> | <c>)
 
-  <PUBLIC> Type() <IDENTIFIER> <LPAR> (  Type() <IDENTIFIER> ( <COLON> Type() <IDENTIFIER> )*  )? <RPAR> <LBRACKET>
-    (VarDeclaration())*
+  <PUBLIC> (
+    Type() <IDENTIFIER> <LPAR> ( Type() <IDENTIFIER> ( <COLON> Type() <IDENTIFIER> )* )? <RPAR> <LBRACKET>
+    (LOOKAHEAD(2) VarDeclaration())*
     (Statement())*
     <RETURN> Expression() <SEMICOLON>
-  <RBRACKET>
-  | <PUBLIC> <STATIC> <VOID> <MAIN> <RPAR> ( <STRINGARRAY> <IDENTIFIER> )?<LPAR><LBRACKET>
-    (VarDeclaration())*
-    (Statement())*
+    | <STATIC> <VOID> <MAIN> <LPAR> ( <STRINGARRAY> <IDENTIFIER> )?<RPAR> <LBRACKET>
+    (LOOKAHEAD(2) VarDeclaration())*
+    (Statement())*)
   <RBRACKET>
 
 }
-
+ 
 void Type(): {}
 {
-
-    <INTEGER> (<LSQUAREBRACKET> <RSQUAREBRACKET>)? //int or int[]
-  | <BOOLEAN>
-  | <IDENTIFIER>
-
+  	<INTEGER> (<LSQUAREBRACKET> <RSQUAREBRACKET>)? //int or int[]
+  	| <BOOLEAN>
+  	| <IDENTIFIER>
 }
 
 void Statement(): {}
 {
-  
-    <LBRACKET> (Statement())* <RBRACKET>
-  | <IF> <LPAR> Expression() <RPAR> Statement() <ELSE> Statement()
-  | <WHILE> <LPAR> Expression() <RPAR> Statement()
-  | Expression() <SEMICOLON>
-  | <IDENTIFIER> <EQUAL> Expression() <SEMICOLON>
-  | <IDENTIFIER> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> <EQUAL> Expression() <SEMICOLON>
-
+	<LBRACKET> (Statement())* <RBRACKET>
+	| <IF> <LPAR> Expression() <RPAR> Statement() <ELSE> Statement()
+	| <WHILE> <LPAR> Expression() <RPAR> Statement()
+	| LOOKAHEAD(2) Expression() <SEMICOLON>
+	| <IDENTIFIER> ( <EQUAL> | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> <EQUAL> ) Expression() <SEMICOLON>
 }
 
 void Expression():{}
 {
-    Expression() SubExpression() Expression()
-  | Expression() <LSQUAREBRACKET> Expression() <RSQUAREBRACKET>
-  | Expression() <DOT> <LENGTH>
-  | Expression() <DOT> <IDENTIFIER> AuxExpression()
-  | <INTEGER>
-  | <TRUE>
-  | <FALSE>
-  | <IDENTIFIER>
-  | <THIS>
-  | <NEW> <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET>
-  | <NEW> Expression()
-  | <NOT> Expression()
-  | <LPAR> Expression() <RPAR>
-
+    <INTEGER> NewExpression()
+    | <TRUE> NewExpression()
+    | <FALSE> NewExpression()
+    | <IDENTIFIER> NewExpression()
+    | <THIS> NewExpression() 
+    | <NEW> ( <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> | Expression() ) NewExpression()
+    | <NOT> Expression() NewExpression()
+	| <LPAR> Expression() NewExpression()
 }
 
+void NewExpression():{}
+{	
+	SubExpression() Expression() NewExpression()
+  	| <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> NewExpression()
+  	| <DOT> ( <LENGTH> | <IDENTIFIER> AuxExpression() ) NewExpression()
+	| {}
+}
+
+/* ----------- -----------*/
 void SubExpression() : {}
 {
-    <AND>
-  | <MINOR>
-  | <ADD>
-  | <SUB>
-  | <MUL>
-  | <DIV>
+	<AND>
+	| <MINOR>
+	| <ADD>
+	| <SUB>
+	| <MUL>
+	| <DIV>
 
 }
 
 void AuxExpression() : {}
 {
-  
   <LPAR>
     (
       Expression()
       (<COLON> Expression())*
     )?
   <RPAR>
-
 }
 
 
