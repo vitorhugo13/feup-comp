@@ -21,10 +21,12 @@ PARSER_END(Parser)
 //characters to ignore/skip
 SKIP: {
     " " 
-  | "\r" 
-  | "\t" 
-  | "\n" 
-  | <"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")> 
+  | "\r"    //move the cursor at start of current line 
+  | "\t"   //tab
+  | "\n"  //newline
+  | < "/*" (~["*"])* "*" (~["*","/"] (~["*"])* "*" | "*")* "/" >  /*multiline comment*/
+  | <"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")> //inline comment
+
 }
 
 TOKEN: {
