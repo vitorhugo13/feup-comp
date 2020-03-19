@@ -100,13 +100,15 @@ void ImportDeclaration() : {}
   <SEMICOLON>
 }
 
-void StaticImport(): {
+void StaticImport(): {}
+{
   <STATIC>
   <IDENTIFIER> // class identifier
   MethodImport()
 }
 
-void NonStaticImport(): {
+void NonStaticImport(): {}
+{
   <IDENTIFIER> // class identifier
   (MethodImport())?
 }
