@@ -99,7 +99,7 @@ void ImportDeclaration() : {}
 
 void MethodImport():{}
 {
-  <DOT> <IDENTIFIER> <LPAR> Type() (<COLON> Type())* <RPAR> Type();
+  <DOT> <IDENTIFIER> <LPAR> Type() (<COLON> Type())* <RPAR> Type()
 }
 
 void ClassDeclaration() : {}
