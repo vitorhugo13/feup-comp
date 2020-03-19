@@ -1,18 +1,14 @@
 options {
-
   LOOKAHEAD = 1;
-
 }
 
 
 PARSER_BEGIN(Parser)
 
 public class Parser{
+   	public static void main(String args[]) throws ParseException {
 
-   public static void main(String args[]) throws ParseException {
-
-   }
-
+   	}
 }
 
 PARSER_END(Parser)
@@ -20,17 +16,15 @@ PARSER_END(Parser)
 
 //characters to ignore/skip
 SKIP: {
-    " " 
-  | "\r"    //move the cursor at start of current line 
-  | "\t"   //tab
-  | "\n"  //newline
-  | < "/*" (~["*"])* "*" (~["*","/"] (~["*"])* "*" | "*")* "/" >  /*multiline comment*/
-  | <"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")> //inline comment
-
+  	  " " 
+  	| "\r"	//move the cursor at start of current line 
+  	| "\t"	//tab
+  	| "\n"	//newline
+  	| < "/*" (~["*"])* "*" (~["*","/"] (~["*"])* "*" | "*")* "/" >  /*multiline comment*/
+  	| <"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")> //inline comment
 }
 
 TOKEN: {
-
     < INTEGER : (["0" - "9"])+ >
     | < INT: "int" >
     | < BOOLEAN: "boolean" >
@@ -77,7 +71,7 @@ TOKEN: {
 
 void Program() : {}
 {
-  Imports() ClassDeclaration() <EOF>
+  	Imports() ClassDeclaration() <EOF>
 }
 
 
@@ -88,58 +82,56 @@ void Program() : {}
 
 void Imports() : {}
 {
-  (
-    ImportDeclaration()
-  )*
+  	(ImportDeclaration())*
 }
 
 void ImportDeclaration() : {}
 {
-  <IMPORT> (
-    StaticImport()
-    | NonStaticImport()
-  )
-  <SEMICOLON>
+  	<IMPORT> (
+  	  	StaticImport()
+  	  	| NonStaticImport()
+  	)
+  	<SEMICOLON>
 }
 
 void StaticImport(): {}
 {
-  <STATIC>
-  <IDENTIFIER> // class identifier
-  MethodImport()
+  	<STATIC>
+  	<IDENTIFIER> // class identifier
+  	MethodImport()
 }
 
 void NonStaticImport(): {}
 {
-  <IDENTIFIER> // class identifier
-  (MethodImport())?
+  	<IDENTIFIER> // class identifier
+  	(MethodImport())?
 }
 
 void MethodImport():{}
 {
-  <DOT> <IDENTIFIER> <LPAR> Type() (<COLON> Type())* <RPAR> Type()
+  	<DOT> <IDENTIFIER> <LPAR> Type() (<COLON> Type())* <RPAR> Type()
 }
 
 void ClassDeclaration() : {}
 {
-  <CLASS> <IDENTIFIER> 
-  (<EXTENDS> <IDENTIFIER>)?
-  <LBRACKET>
-    (VarDeclaration())*
-    (MethodDeclaration())*
-  <RBRACKET>
+  	<CLASS> <IDENTIFIER> 
+  	(<EXTENDS> <IDENTIFIER>)?
+  	<LBRACKET>
+  	  	(VarDeclaration())*
+  	  	(MethodDeclaration())*
+  	<RBRACKET>
 }
 
 void VarDeclaration() : {}
 {
-  Type() <IDENTIFIER> <SEMICOLON>
+  	Type() <IDENTIFIER> <SEMICOLON>
 }
 
 
 void MethodDeclaration() : {}
 { // <a> (<b> | <c>)
 
-  <PUBLIC> (
+  	<PUBLIC> (
     Type() <IDENTIFIER> <LPAR> ( Type() <IDENTIFIER> ( <COLON> Type() <IDENTIFIER> )* )? <RPAR> <LBRACKET>
     (LOOKAHEAD(2) VarDeclaration())*
     (Statement())*
@@ -147,15 +139,15 @@ void MethodDeclaration() : {}
     | <STATIC> <VOID> <MAIN> <LPAR> ( <STRINGARRAY> <IDENTIFIER> )? <RPAR> <LBRACKET>
     (LOOKAHEAD(2) VarDeclaration())*
     (Statement())*)
-  <RBRACKET>
+  	<RBRACKET>
 
 }
  
 void Type(): {}
 {
-      <INTEGER> (<LSQUAREBRACKET> <RSQUAREBRACKET>)? //int or int[]
-      | <BOOLEAN>
-      | <IDENTIFIER>
+    <INTEGER> (<LSQUAREBRACKET> <RSQUAREBRACKET>)? //int or int[]
+    | <BOOLEAN>
+    | <IDENTIFIER>
 }
 
 void Statement(): {}
@@ -182,8 +174,8 @@ void Expression():{}
 void NewExpression():{}
 {	
     SubExpression() Expression() NewExpression()
-      | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> NewExpression()
-      | <DOT> ( <LENGTH> | <IDENTIFIER> AuxExpression() ) NewExpression()
+    | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> NewExpression()
+    | <DOT> ( <LENGTH> | <IDENTIFIER> AuxExpression() ) NewExpression()
     | {}
 }
 
@@ -201,7 +193,7 @@ void SubExpression() : {}
 
 void AuxExpression() : {}
 {
-  <LPAR> ( Expression() ( <COLON> Expression() )* )? <RPAR>
+  	<LPAR> ( Expression() ( <COLON> Expression() )* )? <RPAR>
 }
 
 
