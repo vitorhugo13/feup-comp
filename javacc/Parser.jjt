@@ -109,7 +109,8 @@ void NonStaticImport(): {}
 
 void MethodImport():{}
 {
-  	<DOT> <IDENTIFIER> <LPAR> Type() (<COLON> Type())* <RPAR> Type()
+  	// <DOT> <IDENTIFIER> <LPAR> Type() (<COLON> Type())* <RPAR> Type()
+  	<DOT> <IDENTIFIER> <LPAR> (Type() | <VOID>) (<COLON> (Type() | <VOID>))* <RPAR> (Type() | <VOID>)
 }
 
 void ClassDeclaration() : {}
@@ -145,7 +146,7 @@ void MethodDeclaration() : {}
  
 void Type(): {}
 {
-    <INTEGER> (<LSQUAREBRACKET> <RSQUAREBRACKET>)? //int or int[]
+    <INT> (<LSQUAREBRACKET> <RSQUAREBRACKET>)? //int or int[]
     | <BOOLEAN>
     | <IDENTIFIER>
 }
@@ -156,7 +157,11 @@ void Statement(): {}
     | <IF> <LPAR> Expression() <RPAR> Statement() <ELSE> Statement()
     | <WHILE> <LPAR> Expression() <RPAR> Statement()
     | LOOKAHEAD(2) Expression() <SEMICOLON>
-    | <IDENTIFIER> ( <EQUAL> | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> <EQUAL> ) Expression() <SEMICOLON>
+    // | <IDENTIFIER> ( <EQUAL> | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> <EQUAL> ) Expression() <SEMICOLON>
+	| <IDENTIFIER> (<LSQUAREBRACKET> <IDENTIFIER> <RSQUAREBRACKET>)? <EQUAL> Expression() <SEMICOLON>
+	// | <IDENTIFIER> NewExpression() <EQUAL> Expression() <SEMICOLON>
+
+
 }
 
 void Expression():{}
@@ -166,9 +171,9 @@ void Expression():{}
     | <FALSE> NewExpression()
     | <IDENTIFIER> NewExpression()
     | <THIS> NewExpression() 
-    | <NEW> ( <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> |    Expression() ) NewExpression()
+    | <NEW> ( <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> | Expression() ) NewExpression()
     | <NOT> Expression() NewExpression()
-    | <LPAR> Expression() NewExpression()
+    | <LPAR> Expression() <RPAR> NewExpression()
 }
 
 void NewExpression():{}
