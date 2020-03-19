@@ -67,7 +67,7 @@ TOKEN: {
 	| < AND: "&&" >
 	| < LENGTH: "length" >
 	| < STRINGARRAY: "String[]" >
-	| < IDENTIFIER: ["a"-"z", "A"-"Z"](["_", "a"-"z", "A"-"Z", "0"-"9"])* >
+	| < IDENTIFIER: ["a"-"z", "A"-"Z", "_"](["_", "a"-"z", "A"-"Z", "0"-"9"])* >
 }
 
 
@@ -80,22 +80,26 @@ void Program() : {}
 
 
 //Implemented following teachers examples (Lazysort.jmm)
+// Can be one of following formats:
+// import Class;
+// import [static] Class.method(type1, type2, ...) type;
 
 void ImportDeclaration() : {}
 {
   (
     
-    <IMPORT> (<STATIC>)? <IDENTIFIER>
-    (AuxImport())?
-    (Type())?
+	<IMPORT>
+	(<STATIC>)?
+	<IDENTIFIER>
+    (MethodImport())?
     <SEMICOLON>
   
   )*
 }
 
-void AuxImport():{}
+void MethodImport():{}
 {
-  <DOT> <IDENTIFIER> <LPAR> Type() (<COLON> Type())* <RPAR>
+  <DOT> <IDENTIFIER> <LPAR> Type() (<COLON> Type())* <RPAR> Type();
 }
 
 void ClassDeclaration() : {}
