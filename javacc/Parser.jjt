@@ -173,14 +173,14 @@ void Expression():{}
 
 void NewExpression():{}
 {	
-    SubExpression() Expression() NewExpression()
+    BinaryOperator() Expression() NewExpression()
     | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> NewExpression()
     | <DOT> ( <LENGTH> | <IDENTIFIER> AuxExpression() ) NewExpression()
     | {}
 }
 
 /* ----------- -----------*/
-void SubExpression() : {}
+void BinaryOperator() : {}
 {
     <AND>
     | <MINOR>
