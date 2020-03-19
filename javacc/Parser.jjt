@@ -86,15 +86,7 @@ void Program() : {}
 
 void ImportDeclaration() : {}
 {
-  (
-    
-	<IMPORT>
-	(<STATIC>)?
-	<IDENTIFIER>
-    (MethodImport())?
-    <SEMICOLON>
-  
-  )*
+  ( <IMPORT> (<STATIC>)? <IDENTIFIER> (MethodImport())? <SEMICOLON> )*
 }
 
 void MethodImport():{}
@@ -126,7 +118,7 @@ void MethodDeclaration() : {}
     (LOOKAHEAD(2) VarDeclaration())*
     (Statement())*
     <RETURN> Expression() <SEMICOLON>
-    | <STATIC> <VOID> <MAIN> <LPAR> ( <STRINGARRAY> <IDENTIFIER> )?<RPAR> <LBRACKET>
+    | <STATIC> <VOID> <MAIN> <LPAR> ( <STRINGARRAY> <IDENTIFIER> )? <RPAR> <LBRACKET>
     (LOOKAHEAD(2) VarDeclaration())*
     (Statement())*)
   <RBRACKET>
@@ -183,12 +175,7 @@ void SubExpression() : {}
 
 void AuxExpression() : {}
 {
-  <LPAR>
-    (
-      Expression()
-      (<COLON> Expression())*
-    )?
-  <RPAR>
+  <LPAR> ( Expression() ( <COLON> Expression() )* )? <RPAR>
 }
 
 
