@@ -5,9 +5,9 @@ options {
 
 PARSER_BEGIN(Parser)
 
-public class Parser{
+public class Parser {
    	public static void main(String args[]) throws ParseException {
-
+		
    	}
 }
 
@@ -166,7 +166,7 @@ void Expression():{}
     | <FALSE> NewExpression()
     | <IDENTIFIER> NewExpression()
     | <THIS> NewExpression() 
-    | <NEW> ( <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> | Expression() ) NewExpression()
+    | <NEW> ( <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> |    Expression() ) NewExpression()
     | <NOT> Expression() NewExpression()
     | <LPAR> Expression() NewExpression()
 }
