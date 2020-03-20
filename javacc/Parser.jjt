@@ -6,9 +6,9 @@ options {
 PARSER_BEGIN(Parser)
 
 public class Parser {
-   	public static void main(String args[]) throws ParseException {
-		
-   	}
+
+    static int errors = 0;
+
 }
 
 PARSER_END(Parser)
@@ -69,7 +69,7 @@ TOKEN: {
 
 //DECLARATIONS
 
-void Program() : {}
+void Program() : { Parser.errors = 0; }
 {
   	Imports() ClassDeclaration() <EOF>
 }
@@ -110,7 +110,7 @@ void NonStaticImport(): {}
 void MethodImport():{}
 {
   	// <DOT> <IDENTIFIER> <LPAR> Type() (<COLON> Type())* <RPAR> Type()
-  	<DOT> <IDENTIFIER> <LPAR> (Type() | <VOID>) (<COLON> (Type() | <VOID>))* <RPAR> (Type() | <VOID>)
+  	<DOT> <IDENTIFIER> <LPAR> (Type() | <VOID>) (<COLON> Type())* <RPAR> (Type() | <VOID>)
 }
 
 void ClassDeclaration() : {}
@@ -155,11 +155,32 @@ void Statement(): {}
 {
     <LBRACKET> (Statement())* <RBRACKET>
     | <IF> <LPAR> Expression() <RPAR> Statement() <ELSE> Statement()
-    | <WHILE> <LPAR> Expression()  <RPAR> Statement()
+    | <WHILE> WhileCondition() Statement()
     | StatementInitialIdentifier()
     // | Expression() <SEMICOLON>
     // | <IDENTIFIER> ( <EQUAL> | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> <EQUAL> ) Expression() <SEMICOLON>
 	// | <IDENTIFIER> NewExpression() <EQUAL> Expression() <SEMICOLON>
+}
+
+void WhileCondition(): {}
+{
+    try
+    {
+        <LPAR> Expression() <RPAR>
+    }
+    catch (ParseException e)
+    {
+        System.out.println(e.toString());
+        if (Parser.errors >= 10) {
+            System.out.println("Encountered too many parsing errors. Exiting now.");
+            System.exit(1);
+        }
+        Parser.errors += 1;
+        Token t;
+        do {
+            t = getNextToken();
+        } while (t.kind != LBRACKET);
+    }
 }
 
 void StatementInitialIdentifier():{}
