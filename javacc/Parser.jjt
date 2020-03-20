@@ -130,18 +130,18 @@ void VarDeclaration() : {}
 
 
 void MethodDeclaration() : {}
-{ // <a> (<b> | <c>)
-
-  	<PUBLIC> (
-    Type() <IDENTIFIER> <LPAR> ( Type() <IDENTIFIER> ( <COLON> Type() <IDENTIFIER> )* )? <RPAR> <LBRACKET>
-    (LOOKAHEAD(2) VarDeclaration())*
-    (Statement())*
-    <RETURN> Expression() <SEMICOLON>
-    | <STATIC> <VOID> <MAIN> <LPAR> ( <STRINGARRAY> <IDENTIFIER> )? <RPAR> <LBRACKET>
-    (LOOKAHEAD(2) VarDeclaration())*
-    (Statement())*)
+{ 
+  	<PUBLIC>
+        (Type() <IDENTIFIER> <LPAR> ( Type() <IDENTIFIER> ( <COLON> Type() <IDENTIFIER> )* )? <RPAR> <LBRACKET>
+        (LOOKAHEAD(2) VarDeclaration())*
+        (Statement())*
+        <RETURN> Expression() <SEMICOLON>)
+        |
+        (<STATIC> <VOID> <MAIN> <LPAR> ( <STRINGARRAY> <IDENTIFIER> )? <RPAR> <LBRACKET>
+        // (VarDeclaration() | Statement())*
+        (LOOKAHEAD(2) VarDeclaration())*
+        (Statement())*)
   	<RBRACKET>
-
 }
  
 void Type(): {}
@@ -155,23 +155,28 @@ void Statement(): {}
 {
     <LBRACKET> (Statement())* <RBRACKET>
     | <IF> <LPAR> Expression() <RPAR> Statement() <ELSE> Statement()
-    | <WHILE> <LPAR> Expression() <RPAR> Statement()
-    | LOOKAHEAD(2) Expression() <SEMICOLON>
+    | <WHILE> <LPAR> Expression()  <RPAR> Statement()
+    | StatementInitialIdentifier()
+    // | Expression() <SEMICOLON>
     // | <IDENTIFIER> ( <EQUAL> | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> <EQUAL> ) Expression() <SEMICOLON>
-	| <IDENTIFIER> (<LSQUAREBRACKET> <IDENTIFIER> <RSQUAREBRACKET>)? <EQUAL> Expression() <SEMICOLON>
 	// | <IDENTIFIER> NewExpression() <EQUAL> Expression() <SEMICOLON>
+}
 
-
+void StatementInitialIdentifier():{}
+{
+    Expression() (<EQUAL> Expression())?  // assignment expression after =
+    <SEMICOLON>
+    
 }
 
 void Expression():{}
 {
-    <INTEGER> NewExpression()
+    <IDENTIFIER> NewExpression()
+    | <INTEGER> NewExpression()
     | <TRUE> NewExpression()
     | <FALSE> NewExpression()
-    | <IDENTIFIER> NewExpression()
     | <THIS> NewExpression() 
-    | <NEW> ( <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> | Expression() ) NewExpression()
+    | <NEW> ( (<INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET>) | (<IDENTIFIER> <LPAR> <RPAR>) ) NewExpression()
     | <NOT> Expression() NewExpression()
     | <LPAR> Expression() <RPAR> NewExpression()
 }
@@ -193,7 +198,6 @@ void BinaryOperator() : {}
     | <SUB>
     | <MUL>
     | <DIV>
-
 }
 
 void AuxExpression() : {}
