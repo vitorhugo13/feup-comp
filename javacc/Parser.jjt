@@ -102,7 +102,7 @@ void NonStaticImport() : {}
 
 void MethodImport() : {}
 {
-  	<DOT> <IDENTIFIER> <LPAR> (Type() | <VOID>) (<COLON> Type())* <RPAR> (Type() | <VOID>)
+  	<DOT> <IDENTIFIER> <LPAR> (Type() | <VOID>)? (<COLON> Type())* <RPAR> (Type() | <VOID>)
 }
 
 void ClassDeclaration() : {}
