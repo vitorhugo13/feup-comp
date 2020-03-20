@@ -63,7 +63,7 @@ TOKEN: {
     | < AND: "&&" >
     | < LENGTH: "length" >
     | < STRINGARRAY: "String[]" >
-    | < IDENTIFIER: ["a"-"z", "A"-"Z", "_"](["_", "a"-"z", "A"-"Z", "0"-"9"])* >
+    | < IDENTIFIER: ["$","a"-"z", "A"-"Z", "_"](["_", "a"-"z", "A"-"Z", "0"-"9"])* >
 }
 
 
