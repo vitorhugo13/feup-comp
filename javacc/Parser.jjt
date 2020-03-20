@@ -143,14 +143,6 @@ void Type() : {}
     | <IDENTIFIER>
 }
 
-void Statement() : {}
-{
-    <LBRACKET> (Statement())* <RBRACKET>
-    | <IF> <LPAR> Expression() <RPAR> Statement() <ELSE> Statement()
-    | <WHILE> WhileCondition() Statement()
-    | StatementInitialIdentifier()
-}
-
 void WhileCondition() : {}
 {
     try
@@ -172,48 +164,102 @@ void WhileCondition() : {}
     }
 }
 
-void StatementInitialIdentifier() : {}
-{
-    Expression() (<EQUAL> Expression())? <SEMICOLON>
-    
-}
-
-void Expression() : {}
-{
-    <IDENTIFIER> NewExpression()
-    | <INTEGER> NewExpression()
-    | <TRUE> NewExpression()
-    | <FALSE> NewExpression()
-    | <THIS> NewExpression() 
-    | <NEW> ( (<INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET>) | (<IDENTIFIER> <LPAR> <RPAR>) ) NewExpression()
-    | <NOT> Expression() NewExpression()
-    | <LPAR> Expression() <RPAR> NewExpression()
-}
-
-void NewExpression() : {}
-{	
-    BinaryOperator() Expression() NewExpression()
-    | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> NewExpression()
-    | <DOT> ( <LENGTH> | <IDENTIFIER> AuxExpression() ) NewExpression()
-    | {}
-}
-
-/* ----------- -----------*/
-void BinaryOperator() : {}
-{
-    <AND>
-    | <MINOR>
-    | <ADD>
-    | <SUB>
-    | <MUL>
-    | <DIV>
-}
-
 void AuxExpression() : {}
 {
   	<LPAR> ( Expression() ( <COLON> Expression() )* )? <RPAR>
 }
 
+void Statement() : {}
+{
+    <LBRACKET> (Statement())* <RBRACKET>
+    | <IF> <LPAR> Expression() <RPAR> Statement() <ELSE> Statement()
+    | <WHILE> WhileCondition() Statement()
+    | <IDENTIFIER> 
+        (
+            NewExpression2()
+            | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> (Assignment())?
+            | Assignment()
+        )? <SEMICOLON>
+    | Expression2() <SEMICOLON>
+}
+
+void Assignment() : {}
+{
+    <EQUAL> Expression()
+}
+
+void Expression() : {}
+{
+    <IDENTIFIER> NewExpression()
+    | Expression2()
+}
+
+void Expression2() : {}
+{
+    <INTEGER> NewExpression()
+    | <TRUE> NewExpression()
+    | <FALSE> NewExpression()
+    | <THIS> NewExpression()
+    | <NEW> (<INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> | <IDENTIFIER> <LPAR> <RPAR>) NewExpression()
+    | <NOT> Expression() NewExpression()
+    | <LPAR> Expression() <RPAR> NewExpression()
+}
+
+void NewExpression() : {}
+{
+    NewExpression2()
+    | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> NewExpression()
+    | {}
+}
+
+void NewExpression2() : {}
+{
+    (<AND> | <MINOR> | <ADD> | <SUB> | <MUL> | <DIV>) Expression() NewExpression()
+    | <DOT> (<LENGTH> | <IDENTIFIER> AuxExpression()) NewExpression()
+}
 
 
 
+// void Statement() : {}
+// {
+//     <LBRACKET> (Statement())* <RBRACKET>
+//     | <IF> <LPAR> Expression() <RPAR> Statement() <ELSE> Statement()
+//     | <WHILE> WhileCondition() Statement()
+//     | StatementInitialIdentifier()
+// }
+
+// void StatementInitialIdentifier() : {}
+// {
+//     Expression() (<EQUAL> Expression())? <SEMICOLON>
+// }
+
+// void Expression() : {}
+// {
+//     <IDENTIFIER> NewExpression()
+//     | <INTEGER> NewExpression()
+//     | <TRUE> NewExpression()
+//     | <FALSE> NewExpression()
+//     | <THIS> NewExpression() 
+//     | <NEW> ( (<INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET>) | (<IDENTIFIER> <LPAR> <RPAR>) ) NewExpression()
+//     | <NOT> Expression() NewExpression()
+//     | <LPAR> Expression() <RPAR> NewExpression()
+// }
+
+// void NewExpression() : {}
+// {	
+//     BinaryOperator() Expression() NewExpression()
+//     | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> NewExpression()
+//     | <DOT> ( <LENGTH> | <IDENTIFIER> AuxExpression() ) NewExpression()
+//     | {}
+// }
+
+// /* ----------- -----------*/
+// void BinaryOperator() : {}
+// {
+//     <AND>
+//     | <MINOR>
+//     | <ADD>
+//     | <SUB>
+//     | <MUL>
+//     | <DIV>
+// }
