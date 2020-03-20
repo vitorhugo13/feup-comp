@@ -14,7 +14,7 @@ class Quicksort {
 
             i = i + 1;
         }
-        a;
+
         q = new Quicksort();
 
         q.quicksort(L);
