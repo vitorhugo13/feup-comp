@@ -151,12 +151,12 @@ void WhileCondition() : {}
     }
     catch (ParseException e)
     {
+        Parser.errors += 1;
         System.out.println(e.toString());
         if (Parser.errors >= 10) {
             System.out.println("Encountered too many parsing errors. Exiting now.");
             System.exit(1);
         }
-        Parser.errors += 1;
         Token t;
         do {
             t = getNextToken();
@@ -174,8 +174,7 @@ void Statement() : {}
     <LBRACKET> (Statement())* <RBRACKET>
     | <IF> <LPAR> Expression() <RPAR> Statement() <ELSE> Statement()
     | <WHILE> WhileCondition() Statement()
-    | <IDENTIFIER> 
-        (
+    | <IDENTIFIER> (
             NewExpression2()
             | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> (Assignment())?
             | Assignment()
@@ -214,10 +213,19 @@ void NewExpression() : {}
 
 void NewExpression2() : {}
 {
-    (<AND> | <MINOR> | <ADD> | <SUB> | <MUL> | <DIV>) Expression() NewExpression()
+    BinaryOperator() Expression() NewExpression()
     | <DOT> (<LENGTH> | <IDENTIFIER> AuxExpression()) NewExpression()
 }
 
+void BinaryOperator() : {}
+{
+    <MINOR>     
+    | <AND>     
+    | <ADD>     
+    | <SUB>     
+    | <MUL>     
+    | <DIV>     
+}
 
 
 // void Statement() : {}
@@ -254,15 +262,7 @@ void NewExpression2() : {}
 // }
 
 // /* ----------- -----------*/
-// void BinaryOperator() : {}
-// {
-//     <AND>
-//     | <MINOR>
-//     | <ADD>
-//     | <SUB>
-//     | <MUL>
-//     | <DIV>
-// }
+
 
 
 
