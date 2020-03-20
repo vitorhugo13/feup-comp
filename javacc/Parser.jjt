@@ -21,11 +21,12 @@ SKIP: {
   	| "\t"	//tab
   	| "\n"	//newline
   	| < "/*" (~["*"])* "*" (~["*","/"] (~["*"])* "*" | "*")* "/" >  /*multiline comment*/
-  	| <"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")> //inline comment
+  	| < "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")> //inline comment
 }
 
 TOKEN: {
     < INTEGER : (["0" - "9"])+ >
+    | < STATIC: "static" >
     | < INT: "int" >
     | < BOOLEAN: "boolean" >
     | < STRING: "string" >
@@ -43,7 +44,6 @@ TOKEN: {
     | < LPAR: "(" >
     | < RPAR: ")" >
     | < PUBLIC: "public" >
-    | < STATIC: "static" >
     | < VOID: "void" >
     | < MAIN: "main" >
     | < RETURN: "return" >
@@ -87,36 +87,27 @@ void Imports() : {}
 
 void ImportDeclaration() : {}
 {
-  	<IMPORT> (
-  	  	StaticImport()
-  	  	| NonStaticImport()
-  	)
-  	<SEMICOLON>
+  	<IMPORT> ( StaticImport() | NonStaticImport() ) <SEMICOLON>
 }
 
 void StaticImport(): {}
 {
-  	<STATIC>
-  	<IDENTIFIER> // class identifier
-  	MethodImport()
+  	<STATIC> <IDENTIFIER> MethodImport()
 }
 
 void NonStaticImport(): {}
 {
-  	<IDENTIFIER> // class identifier
-  	(MethodImport())?
+  	<IDENTIFIER> (MethodImport())?
 }
 
 void MethodImport():{}
 {
-  	// <DOT> <IDENTIFIER> <LPAR> Type() (<COLON> Type())* <RPAR> Type()
-  	<DOT> <IDENTIFIER> <LPAR> (Type() | <VOID>) (<COLON> (Type() | <VOID>))* <RPAR> (Type() | <VOID>)
+  	<DOT> <IDENTIFIER> <LPAR> (Type() | <VOID>) (<COLON> Type())* <RPAR> (Type() | <VOID>)
 }
 
 void ClassDeclaration() : {}
 {
-  	<CLASS> <IDENTIFIER> 
-  	(<EXTENDS> <IDENTIFIER>)?
+  	<CLASS> <IDENTIFIER> (<EXTENDS> <IDENTIFIER>)?
   	<LBRACKET>
   	  	(VarDeclaration())*
   	  	(MethodDeclaration())*
@@ -132,15 +123,16 @@ void VarDeclaration() : {}
 void MethodDeclaration() : {}
 { 
   	<PUBLIC>
-        (Type() <IDENTIFIER> <LPAR> ( Type() <IDENTIFIER> ( <COLON> Type() <IDENTIFIER> )* )? <RPAR> <LBRACKET>
-        (LOOKAHEAD(2) VarDeclaration())*
-        (Statement())*
-        <RETURN> Expression() <SEMICOLON>)
+        (
+            Type() <IDENTIFIER> <LPAR> ( Type() <IDENTIFIER> ( <COLON> Type() <IDENTIFIER> )* )? <RPAR> <LBRACKET>
+            (LOOKAHEAD(2) VarDeclaration())*
+            (Statement())*
+            <RETURN> Expression() <SEMICOLON>
         |
-        (<STATIC> <VOID> <MAIN> <LPAR> ( <STRINGARRAY> <IDENTIFIER> )? <RPAR> <LBRACKET>
-        // (VarDeclaration() | Statement())*
-        (LOOKAHEAD(2) VarDeclaration())*
-        (Statement())*)
+            <STATIC> <VOID> <MAIN> <LPAR> ( <STRINGARRAY> <IDENTIFIER> )? <RPAR> <LBRACKET>
+            (LOOKAHEAD(2) VarDeclaration())*
+            (Statement())*
+        )
   	<RBRACKET>
 }
  
@@ -157,15 +149,11 @@ void Statement(): {}
     | <IF> <LPAR> Expression() <RPAR> Statement() <ELSE> Statement()
     | <WHILE> <LPAR> Expression()  <RPAR> Statement()
     | StatementInitialIdentifier()
-    // | Expression() <SEMICOLON>
-    // | <IDENTIFIER> ( <EQUAL> | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> <EQUAL> ) Expression() <SEMICOLON>
-	// | <IDENTIFIER> NewExpression() <EQUAL> Expression() <SEMICOLON>
 }
 
 void StatementInitialIdentifier():{}
 {
-    Expression() (<EQUAL> Expression())?  // assignment expression after =
-    <SEMICOLON>
+    Expression() (<EQUAL> Expression())? <SEMICOLON>
     
 }
 
