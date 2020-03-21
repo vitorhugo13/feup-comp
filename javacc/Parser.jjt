@@ -88,17 +88,17 @@ SimpleNode Program() : { Parser.errors = 0; }
 // import Class;
 // import [static] Class.method(type1, type2, ...) type;
 
-void Imports() : {}
+void Imports() #void: {}
 {
   	(ImportDeclaration())*
 }
 
-void ImportDeclaration() : {}
+void ImportDeclaration() #void: {}
 {
   	<IMPORT> ( StaticImport() | NonStaticImport() ) <SEMICOLON>
 }
 
-void StaticImport() : {}
+void StaticImport(): {}
 {
   	<STATIC> <IDENTIFIER> MethodImport()
 }
@@ -110,7 +110,13 @@ void NonStaticImport() : {}
 
 void MethodImport() : {}
 {
-  	<DOT> <IDENTIFIER> <LPAR> (Type() | <VOID>)? (<COLON> Type())* <RPAR> (Type() | <VOID>)
+  	<DOT> <IDENTIFIER> <LPAR> (Type() | (<VOID> #VoidType))? (<COLON> Type())* <RPAR> (Type() | (<VOID> #VoidType)) #Ret
+}
+
+void ArgTypes(): {}
+{
+    <VOID> #VoidType
+    | Type() (<COLON> Type())*
 }
 
 void ClassDeclaration() : {}
@@ -124,7 +130,7 @@ void ClassDeclaration() : {}
 
 void VarDeclaration() : {}
 {
-  	Type() <IDENTIFIER> <SEMICOLON>
+  	Type() TerminalId() <SEMICOLON> #VARDECLARATION
 }
 
 
@@ -146,12 +152,15 @@ void MethodDeclaration() : {}
  
 void Type() : {}
 {
-    <INT> (<LSQUAREBRACKET> <RSQUAREBRACKET>)? //int or int[]
-    | <BOOLEAN>
-    | <IDENTIFIER>
+    <INT> (
+        <LSQUAREBRACKET> <RSQUAREBRACKET> #IntArrayType
+        | {}  #IntType
+    )
+    | <BOOLEAN> #Bool
+    | TerminalId()
 }
 
-void WhileCondition() : {}
+void WhileCondition() #void: {}
 {
     try
     {
@@ -172,103 +181,131 @@ void WhileCondition() : {}
     }
 }
 
-void AuxExpression() : {}
+void BinaryOperator() #void: {}
 {
-  	<LPAR> ( Expression() ( <COLON> Expression() )* )? <RPAR>
+    <MINOR> #LessThan
+    | <AND> #And
+    | <ADD> #Add
+    | <SUB> #Sub
+    | <MUL> #Mul
+    | <DIV> #Div
 }
 
-void Statement() : {}
+void Statement() #void: {}
 {
-    <LBRACKET> (Statement())* <RBRACKET>
-    | <IF> <LPAR> Expression() <RPAR> Statement() <ELSE> Statement()
-    | <WHILE> WhileCondition() Statement()
-    | <IDENTIFIER> (
-            NewExpression2()
-            | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> (Assignment())?
-            | Assignment()
-        )? <SEMICOLON>
-    | Expression2() <SEMICOLON>
+    <WHILE> WhileCondition() Statement() #While
+    | <IF> <LPAR> Expression() <RPAR> Statement() <ELSE> Statement() #IfElse
+    | <LBRACKET> Block() <RBRACKET>
+    | TerminalId() (
+        DotExpression() DetachedExpansion()
+        | <EQUAL> Expression() #Assignment
+        | SquareBracketExpression() (
+            <EQUAL> Expression() #Assignment
+            | DetachedExpansion()
+        )
+    ) <SEMICOLON>
+    | TerminalNonId() DetachedExpansion() <SEMICOLON>
+
 }
 
-void Assignment() : {}
+void Block(): {}
 {
-    <EQUAL> Expression()
+    (Statement())*
 }
 
-void Expression() : {}
+void DetachedExpansion() : {}
 {
-    <IDENTIFIER> NewExpression()
-    | Expression2()
+    (UnaryExpression2() #DetachedUnaryOp)? (BinaryOperator() Expression() #DetachedBinaryOp)?
 }
 
-void Expression2() : {}
+void Expression() #void: {}
 {
-    <INTEGER> NewExpression()
-    | <TRUE> NewExpression()
-    | <FALSE> NewExpression()
-    | <THIS> NewExpression()
-    | <NEW> (<INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> | <IDENTIFIER> <LPAR> <RPAR>) NewExpression()
-    | <NOT> Expression() NewExpression()
-    | <LPAR> Expression() <RPAR> NewExpression()
+    LessThanExpression() (<AND> Expression() #And)?
 }
 
-void NewExpression() : {}
+void LessThanExpression() #void: {}
 {
-    NewExpression2()
-    | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> NewExpression()
-    | {}
+    SumExpression() (<MINOR> SumExpression() #LessThan)?
 }
 
-void NewExpression2() : {}
+void SumExpression() #void: {}
 {
-    BinaryOperator() Expression() NewExpression()
-    | <DOT> (<LENGTH> | <IDENTIFIER> AuxExpression()) NewExpression()
+    ProductExpression() (
+        <ADD> SumExpression() #Add
+        | <SUB> SumExpression() #Sub
+    )?
 }
 
-void BinaryOperator() : {}
+void ProductExpression() #void: {}
 {
-    <MINOR>     
-    | <AND>     
-    | <ADD>     
-    | <SUB>     
-    | <MUL>     
-    | <DIV>     
+    NegationExpression() (
+        <MUL> ProductExpression() #Mul
+        | <DIV> ProductExpression() #Div
+    )?
 }
 
+void NegationExpression() #void: {}
+{
+    <NOT> UnaryExpression1() #Not
+    | UnaryExpression1()
+}
 
-// void Statement() : {}
-// {
-//     <LBRACKET> (Statement())* <RBRACKET>
-//     | <IF> <LPAR> Expression() <RPAR> Statement() <ELSE> Statement()
-//     | <WHILE> WhileCondition() Statement()
-//     | StatementInitialIdentifier()
-// }
+void UnaryExpression1() #void: {}
+{
+    Terminal() (UnaryExpression2())?
+}
 
-// void StatementInitialIdentifier() : {}
-// {
-//     Expression() (<EQUAL> Expression())? <SEMICOLON>
-// }
+void UnaryExpression2() #void: {}
+{
+    (
+        DotExpression()
+        | SquareBracketExpression()
+    ) (UnaryExpression2())?
+}
 
-// void Expression() : {}
-// {
-//     <IDENTIFIER> NewExpression()
-//     | <INTEGER> NewExpression()
-//     | <TRUE> NewExpression()
-//     | <FALSE> NewExpression()
-//     | <THIS> NewExpression() 
-//     | <NEW> ( (<INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET>) | (<IDENTIFIER> <LPAR> <RPAR>) ) NewExpression()
-//     | <NOT> Expression() NewExpression()
-//     | <LPAR> Expression() <RPAR> NewExpression()
-// }
+void DotExpression() #void: {}
+{
+    <DOT> (
+        <LENGTH> #Len
+        | Method() #MethodInvocation
+    )
+}
 
-// void NewExpression() : {}
-// {	
-//     BinaryOperator() Expression() NewExpression()
-//     | <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> NewExpression()
-//     | <DOT> ( <LENGTH> | <IDENTIFIER> AuxExpression() ) NewExpression()
-//     | {}
-// }
+void SquareBracketExpression() #void: {}
+{
+    <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> #Arr
+}
 
-// /* ----------- -----------*/
+void Terminal() #void: {}
+{
+    TerminalId()
+    | TerminalNonId()
+}
 
+void TerminalNonId() #void: {Token t;}
+{
+    <TRUE> #True
+    | <FALSE> #False
+    | <THIS> #This
+    | <NEW> (
+        <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> #NewIntArray
+        | TerminalId() <LPAR> <RPAR> #NewObject
+    )
+    | t=<INTEGER> {jjtThis.value = Integer.valueOf(t.image);} #Int
+    | <LPAR> Expression() <RPAR>
+}
 
+void Method(): {}
+{
+    TerminalId() <LPAR> ArgList() <RPAR>
+}
+
+void TerminalId() #void: {Token t;}
+{
+    t=<IDENTIFIER> {jjtThis.value = t.image;} #Id
+}
+
+void ArgList() : {}
+{
+    (Expression() (<COLON> Expression())*)?
+}
