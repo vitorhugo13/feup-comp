@@ -152,7 +152,20 @@ void WhileCondition() : {}
     catch (ParseException e)
     {
         Parser.errors += 1;
-        System.out.println(e.toString());
+        String expectedTokens = new String(" ");
+        for (int i = 0; i < e.expectedTokenSequences.length; i++) {
+            for (int j = 0; j < e.expectedTokenSequences[i].length; j++) {
+                if (i != 0) expectedTokens += ", ";
+                expectedTokens += e.tokenImage[e.expectedTokenSequences[i][j]];
+            }
+        }
+
+        System.out.println(
+            "Error in line " + e.currentToken.next.beginLine + 
+            ", column " + e.currentToken.next.beginColumn +
+            ": found \"" + e.currentToken.next + "\"" +
+            " but was expecting" + expectedTokens + ".");
+
         if (Parser.errors >= 10) {
             System.out.println("Encountered too many parsing errors. Exiting now.");
             System.exit(1);
