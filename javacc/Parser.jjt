@@ -69,9 +69,17 @@ TOKEN: {
 
 //DECLARATIONS
 
-void Program() : { Parser.errors = 0; }
+SimpleNode Program() : { Parser.errors = 0; }
 {
-  	Imports() ClassDeclaration() <EOF>
+    try
+    {
+        Imports() ClassDeclaration() <EOF> { return jjtThis; }
+    } 
+    catch (ParseException e)
+    {
+        System.out.println(e.toString());
+        throw e;
+    }
 }
 
 

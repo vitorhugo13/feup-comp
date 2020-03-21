@@ -16,8 +16,8 @@ public class Main {
 
         Parser parser = new Parser(in);
 
-        parser.Program();
-        // SimpleNode root = parser.Program();
-        // root.dump("");
+        // parser.Program();
+        SimpleNode root = parser.Program();
+        root.dump("");
     }
 }
