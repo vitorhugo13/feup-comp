@@ -98,69 +98,88 @@ void ImportDeclaration() #void: {}
   	<IMPORT> ( StaticImport() | NonStaticImport() ) <SEMICOLON>
 }
 
-void StaticImport(): {}
+void StaticImport(): {Token t;}
 {
-  	<STATIC> <IDENTIFIER> MethodImport()
+    <STATIC> <IDENTIFIER> MethodImport()
 }
 
-void NonStaticImport() : {}
+void NonStaticImport() : {Token t;}
 {
   	<IDENTIFIER> (MethodImport())?
 }
 
 void MethodImport() : {}
 {
-  	<DOT> <IDENTIFIER> <LPAR> (Type() | (<VOID> #VoidType))? (<COLON> Type())* <RPAR> (Type() | (<VOID> #VoidType)) #Ret
+  	<DOT> <IDENTIFIER> <LPAR> ImportParamList() <RPAR> Return()
 }
 
-void ArgTypes(): {}
+void ImportParamList() #ParamList: {}
 {
-    <VOID> #VoidType
-    | Type() (<COLON> Type())*
+    (Type() | <VOID>)? (<COLON> Type())*
 }
 
-void ClassDeclaration() : {}
+void Return() : {}
 {
-  	<CLASS> <IDENTIFIER> (<EXTENDS> <IDENTIFIER>)?
+    (Type() | <VOID>)
+}
+
+void ClassDeclaration() #Class : {Token t;}
+{
+  	<CLASS> t = <IDENTIFIER> {jjtThis.value = t.image;} (<EXTENDS> <IDENTIFIER>)?
   	<LBRACKET>
-  	  	(VarDeclaration())*
+  	  	(VarDeclaration() <SEMICOLON>)*
   	  	(MethodDeclaration())*
   	<RBRACKET>
 }
 
 void VarDeclaration() : {}
 {
-  	Type() TerminalId() <SEMICOLON> #VARDECLARATION
+  	Type() TerminalId()
 }
 
 
-void MethodDeclaration() : {}
+void MethodDeclaration() #Method : {Token t;}
 { 
   	<PUBLIC>
         (
-            Type() <IDENTIFIER> <LPAR> ( Type() <IDENTIFIER> ( <COLON> Type() <IDENTIFIER> )* )? <RPAR> <LBRACKET>
-            (LOOKAHEAD(2) VarDeclaration())*
-            (Statement())*
-            <RETURN> Expression() <SEMICOLON>
+            Type() t = <IDENTIFIER> {jjtThis.value = t.image;} <LPAR> MethodParamList() <RPAR> <LBRACKET>
+            (
+                (LOOKAHEAD(2) VarDeclaration() <SEMICOLON>)*
+                (Statement())*
+                MethodReturn()
+            ) #Body
         |
-            <STATIC> <VOID> <MAIN> <LPAR> ( <STRINGARRAY> <IDENTIFIER> )? <RPAR> <LBRACKET>
-            (LOOKAHEAD(2) VarDeclaration())*
-            (Statement())*
+            <STATIC> <VOID> t = <MAIN> {jjtThis.value = t.image;} <LPAR> MainParamList() <RPAR> <LBRACKET>
+            (
+                (LOOKAHEAD(2) VarDeclaration() <SEMICOLON>)*
+                (Statement())*
+            ) #Body
         )
   	<RBRACKET>
 }
- 
-void Type() : {}
+
+void MethodParamList() #ParamList: {}
 {
-    <INT> (
-        <LSQUAREBRACKET> <RSQUAREBRACKET> #IntArrayType
-        | {}  #IntType
-    )
-    | <BOOLEAN> #Bool
+    ( VarDeclaration() ( <COLON> VarDeclaration() )* )?
+}
+void MethodReturn() #Return: {}
+{
+    <RETURN> Expression() <SEMICOLON>
+}
+
+void MainParamList() #ParamList: {}
+{
+    (<STRINGARRAY> <IDENTIFIER>)?
+}
+ 
+void Type() : {Token t;}
+{
+    t = <INT> {jjtThis.value = t.image;} (<LSQUAREBRACKET> <RSQUAREBRACKET>)?
+    | t = <BOOLEAN> {jjtThis.value = t.image;}
     | TerminalId()
 }
 
-void WhileCondition() #void: {}
+void WhileCondition() #Condition: {}
 {
     try
     {
@@ -206,60 +225,71 @@ void BinaryOperator() #void: {}
 
 void Statement() #void: {}
 {
-    <WHILE> WhileCondition() Statement() #While
-    | <IF> <LPAR> Expression() <RPAR> Statement() <ELSE> Statement() #IfElse
-    | <LBRACKET> Block() <RBRACKET>
+    WhileLoop()
+    | IfStatement()
+    | Scope()
     | TerminalId() (
         DotExpression() DetachedExpansion()
-        | <EQUAL> Expression() #Assignment
+        | <EQUAL> Expression() #Assignment(2)
         | SquareBracketExpression() (
-            <EQUAL> Expression() #Assignment
+            <EQUAL> Expression() #Assignment(2)
             | DetachedExpansion()
         )
+        | BinaryOperator() Expression() #DetachedBinaryOp(3)
     ) <SEMICOLON>
     | TerminalNonId() DetachedExpansion() <SEMICOLON>
 
 }
 
-void Block(): {}
+void WhileLoop() #While : {}
 {
-    (Statement())*
+    <WHILE> WhileCondition() Statement()
 }
 
-void DetachedExpansion() : {}
+void IfStatement() : {}
 {
-    (UnaryExpression2() #DetachedUnaryOp)? (BinaryOperator() Expression() #DetachedBinaryOp)?
+    <IF> <LPAR> Expression() #Condition <RPAR> Statement() <ELSE> Statement()
+}
+
+void Scope(): {}
+{
+    <LBRACKET> (Statement())* <RBRACKET>
+}
+
+void DetachedExpansion() #void: {}
+{
+    (UnaryExpression2() #DetachedUnaryOp(2))? (BinaryOperator() Expression() #DetachedBinaryOp(3))?
 }
 
 void Expression() #void: {}
 {
-    LessThanExpression() (<AND> Expression() #And)?
+    LessThanExpression() (<AND> Expression() #And(2))?
 }
 
 void LessThanExpression() #void: {}
 {
-    SumExpression() (<MINOR> SumExpression() #LessThan)?
+    SumExpression() (<MINOR> SumExpression() #LessThan(2))?
 }
 
 void SumExpression() #void: {}
 {
     ProductExpression() (
-        <ADD> SumExpression() #Add
-        | <SUB> SumExpression() #Sub
+        <ADD> SumExpression() #Add(2)
+        | <SUB> SumExpression() #Sub(2)
     )?
 }
 
 void ProductExpression() #void: {}
 {
     NegationExpression() (
-        <MUL> ProductExpression() #Mul
-        | <DIV> ProductExpression() #Div
+        <MUL> ProductExpression() #Mul(2)
+        | <DIV> ProductExpression() #Div(2)
     )?
 }
 
-void NegationExpression() #void: {}
+void NegationExpression() #void : {}
 {
-    <NOT> UnaryExpression1() #Not
+    <NOT> UnaryExpression1() #Not(1)
     | UnaryExpression1()
 }
 
@@ -279,14 +309,14 @@ void UnaryExpression2() #void: {}
 void DotExpression() #void: {}
 {
     <DOT> (
-        <LENGTH> #Len
-        | Method() #MethodInvocation
+        <LENGTH> #Length(1)
+        | MethodInvocation() #MethodInvocation(2)
     )
 }
 
 void SquareBracketExpression() #void: {}
 {
-    <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> #Arr
+    <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> #Arr(2)
 }
 
 void Terminal() #void: {}
@@ -297,28 +327,28 @@ void Terminal() #void: {}
 
 void TerminalNonId() #void: {Token t;}
 {
-    <TRUE> #True
-    | <FALSE> #False
+    t = <TRUE> {jjtThis.value = Boolean.valueOf(t.image);} #Boolean
+    | t = <FALSE> {jjtThis.value = Boolean.valueOf(t.image);} #Boolean
     | <THIS> #This
     | <NEW> (
-        <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> #NewIntArray
-        | TerminalId() <LPAR> <RPAR> #NewObject
+        <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> #NewIntArray(1)
+        | TerminalId() <LPAR> <RPAR> #NewObject(1)
     )
-    | t=<INTEGER> {jjtThis.value = Integer.valueOf(t.image);} #Int
+    | t = <INTEGER> {jjtThis.value = Integer.valueOf(t.image);} #Integer
     | <LPAR> Expression() <RPAR>
 }
 
-void Method(): {}
+void MethodInvocation() #void: {}
 {
-    TerminalId() <LPAR> ArgList() <RPAR>
+    TerminalId() <LPAR> ArgList() <RPAR> 
 }
 
-void TerminalId() #void: {Token t;}
+void TerminalId() #Identifier: {Token t;}
 {
-    t=<IDENTIFIER> {jjtThis.value = t.image;} #Id
+    t = <IDENTIFIER> {jjtThis.value = t.image;}
 }
 
-void ArgList() : {}
+void ArgList(): {}
 {
     (Expression() (<COLON> Expression())*)?
 }
