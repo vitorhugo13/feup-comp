@@ -63,7 +63,7 @@ TOKEN: {
     | < AND: "&&" >
     | < LENGTH: "length" >
     | < STRINGARRAY: "String[]" >
-    | < IDENTIFIER: ["$","a"-"z", "A"-"Z", "_"](["_", "a"-"z", "A"-"Z", "0"-"9"])* >
+    | < IDENTIFIER: ["$","a"-"z", "A"-"Z", "_"](["$", "_", "a"-"z", "A"-"Z", "0"-"9"])* >
 }
 
 
@@ -184,7 +184,8 @@ void WhileCondition() #Condition: {}
         String expectedTokens = new String(" ");
         for (int i = 0; i < e.expectedTokenSequences.length; i++) {
             for (int j = 0; j < e.expectedTokenSequences[i].length; j++) {
-                if (i != 0) expectedTokens += ", ";
+                if (i != 0) 
+                    expectedTokens += ", ";
                 expectedTokens += e.tokenImage[e.expectedTokenSequences[i][j]];
             }
         }
@@ -199,7 +200,14 @@ void WhileCondition() #Condition: {}
             throw new ParseException("Encountered too many parsing errors. Exiting now.");
         }
         Token t = getToken(0);
-        while (t.kind != RPAR && t.next.kind != LBRACKET) {
+        while (true) {
+            if (t.kind == RPAR && getToken(1).kind != RPAR) {
+                break;
+            }
+            else if (getToken(1).kind == LBRACKET){
+                break;
+            }    
+
             t = getNextToken();
         }
     }
@@ -225,7 +233,7 @@ void Statement() #void: {}
             | Assignment()
             | SquareBracketExpression() ( Assignment() | DetachedExpansion() )
             | BinaryOperator() Expression() #DetachedBinaryOp(3)
-        ) <SEMICOLON>
+        )? <SEMICOLON>
     | TerminalNonId() DetachedExpansion() <SEMICOLON>
 
 }
