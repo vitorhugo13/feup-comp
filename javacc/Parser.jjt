@@ -71,15 +71,7 @@ TOKEN: {
 
 SimpleNode Program() : { Parser.errors = 0; }
 {
-    try
-    {
-        Imports() ClassDeclaration() <EOF> { return jjtThis; }
-    } 
-    catch (ParseException e)
-    {
-        System.out.println(e.toString());
-        throw e;
-    }
+    Imports() ClassDeclaration() <EOF> { return jjtThis; }
 }
 
 
@@ -204,13 +196,12 @@ void WhileCondition() #Condition: {}
             " but was expecting" + expectedTokens + ".");
 
         if (Parser.errors >= 10) {
-            System.out.println("Encountered too many parsing errors. Exiting now.");
-            System.exit(1);
+            throw new ParseException("Encountered too many parsing errors. Exiting now.");
         }
-        Token t;
-        do {
+        Token t = getToken(0);
+        while (t.kind != RPAR && t.next.kind != LBRACKET) {
             t = getNextToken();
-        } while (t.kind != LBRACKET);
+        }
     }
 }
 

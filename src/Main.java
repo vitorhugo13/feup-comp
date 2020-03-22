@@ -18,6 +18,11 @@ public class Main {
 
         // parser.Program();
         SimpleNode root = parser.Program();
+
+        if (parser.errors > 0) {
+            throw new ParseException("Parsing errors encountered!");
+        }
+
         root.dump("");
     }
 }

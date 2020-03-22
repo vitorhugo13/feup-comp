@@ -19,34 +19,32 @@ class WhileAndIf {
 
         while((0-1 < c){
             while((0-1 < c){
-            while((0-1 < c){
-            while((0-1 < c){
-            while((0-1 < c){
-            while((0-1 < c){
-            while((0-1 < c){
-            while((0-1 < c){
-            while((0-1 < c){
-            while((0-1 < c){
-            while((0-1 < c){
-            while((0-1 < c){
-            while((0-1 < c){
-            while((0-1 < c){
-            while((0-1 < c){
-            
-        } 
-        }
-        }
-        }
-        }
-        }
-        }
-        }
-        }
-        }
-        }
-        }
-        }
-        }
+                while((0-1 < c){
+                    while((0-1 < c){
+                        while((0-1 < c){
+                            while((0-1 < c){
+                                while((0-1 < c){
+                                    while((0-1 < c){
+                                        while((0-1 < c){
+                                            while((0-1 < c){
+                                                while((0-1 < c){
+                                                    while((0-1 < c){
+                                                        
+                                                        
+                                                    }
+                                                }
+                                            }
+                                            
+                                        }
+                                    }
+                                }   
+                                
+                            }
+                        }
+                    }
+
+                }
+            }
         }
         
         c=0;
@@ -55,5 +53,4 @@ class WhileAndIf {
             c= c+1;
         }
     }
-
 }
