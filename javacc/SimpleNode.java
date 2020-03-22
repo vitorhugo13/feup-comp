@@ -57,7 +57,7 @@ class SimpleNode implements Node {
 
   public String toString() {
     switch (ParserTreeConstants.jjtNodeName[id]) {
-      case "Type": case "StaticImport": case "NonStaticImport": case "Class": case "Method": case "Identifier": case "Integer": case "Boolean":
+      case "Type": case "Class": case "Method": case "Identifier": case "Integer": case "Boolean":
         return ParserTreeConstants.jjtNodeName[id] + "[" + this.value + "]";
       default:
         return ParserTreeConstants.jjtNodeName[id];

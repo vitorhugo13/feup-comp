@@ -98,19 +98,19 @@ void ImportDeclaration() #void: {}
   	<IMPORT> ( StaticImport() | NonStaticImport() ) <SEMICOLON>
 }
 
-void StaticImport(): {Token t;}
+void StaticImport(): {}
 {
-    <STATIC> <IDENTIFIER> MethodImport()
+    <STATIC> TerminalId() MethodImport()
 }
 
-void NonStaticImport() : {Token t;}
+void NonStaticImport() : {}
 {
-  	<IDENTIFIER> (MethodImport())?
+  	TerminalId() (MethodImport())?
 }
 
 void MethodImport() : {}
 {
-  	<DOT> <IDENTIFIER> <LPAR> ImportParamList() <RPAR> Return()
+  	<DOT> TerminalId() <LPAR> ImportParamList() <RPAR> Return()
 }
 
 void ImportParamList() #ParamList: {}
@@ -162,6 +162,7 @@ void MethodParamList() #ParamList: {}
 {
     ( VarDeclaration() ( <COLON> VarDeclaration() )* )?
 }
+
 void MethodReturn() #Return: {}
 {
     <RETURN> Expression() <SEMICOLON>
@@ -229,16 +230,18 @@ void Statement() #void: {}
     | IfStatement()
     | Scope()
     | TerminalId() (
-        DotExpression() DetachedExpansion()
-        | <EQUAL> Expression() #Assignment(2)
-        | SquareBracketExpression() (
-            <EQUAL> Expression() #Assignment(2)
-            | DetachedExpansion()
-        )
-        | BinaryOperator() Expression() #DetachedBinaryOp(3)
-    ) <SEMICOLON>
+            DotExpression() DetachedExpansion()
+            | Assignment()
+            | SquareBracketExpression() ( Assignment() | DetachedExpansion() )
+            | BinaryOperator() Expression() #DetachedBinaryOp(3)
+        ) <SEMICOLON>
     | TerminalNonId() DetachedExpansion() <SEMICOLON>
 
+}
+
+void Assignment() #Assignment(2) : {}
+{
+    <EQUAL> Expression()
 }
 
 void WhileLoop() #While : {}
@@ -338,14 +341,14 @@ void TerminalNonId() #void: {Token t;}
     | <LPAR> Expression() <RPAR>
 }
 
-void MethodInvocation() #void: {}
-{
-    TerminalId() <LPAR> ArgList() <RPAR> 
-}
-
 void TerminalId() #Identifier: {Token t;}
 {
     t = <IDENTIFIER> {jjtThis.value = t.image;}
+}
+
+void MethodInvocation() #void: {}
+{
+    TerminalId() <LPAR> ArgList() <RPAR> 
 }
 
 void ArgList(): {}

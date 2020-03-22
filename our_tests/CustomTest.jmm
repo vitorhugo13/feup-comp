@@ -1,5 +1,5 @@
 import static ioPlus.printHelloWorld(void) void;
-import static ioPlus.printINT(int) int;
+import static ioPlus.printINT(String) int;
 import ioPlus;
 
 class CustomTest {
