@@ -260,7 +260,7 @@ void Scope(): {}
 
 void DetachedExpansion() #void: {}
 {
-    (UnaryExpression2() #DetachedUnaryOp(2))? (BinaryOperator() Expression() #DetachedBinaryOp(3))?
+    (UnaryExpression2())? (BinaryOperator() Expression() #DetachedBinaryOp(3))?
 }
 
 void Expression() #void: {}
@@ -310,10 +310,7 @@ void UnaryExpression2() #void: {}
 
 void DotExpression() #void: {}
 {
-    <DOT> (
-        <LENGTH> #Length(1)
-        | MethodInvocation() #MethodInvocation(2)
-    )
+    <DOT> (<LENGTH> #Length(1) | MethodInvocation())
 }
 
 void SquareBracketExpression() #void: {}
@@ -345,7 +342,7 @@ void TerminalId() #Identifier: {Token t;}
     t = <IDENTIFIER> {jjtThis.value = t.image;}
 }
 
-void MethodInvocation() #void: {}
+void MethodInvocation() #MethodInvocation(3) : {}
 {
     TerminalId() <LPAR> ArgList() <RPAR> 
 }
