@@ -31,7 +31,7 @@ TOKEN: {
     | < BOOLEAN: "boolean" >
     | < STRING: "string" >
     | < SEMICOLON: ";" >
-    | < COLON: "," >
+    | < COMMA: "," >
     | < DOT: "." >
     | < TRUE: "true" >
     | < FALSE: "false" >
@@ -74,31 +74,9 @@ SimpleNode Program() : { Parser.errors = 0; }
     Imports() ClassDeclaration() <EOF> { return jjtThis; }
 }
 
-
-//Implemented following teachers examples (Lazysort.jmm)
-// Can be one of following formats:
-// import Class;
-// import [static] Class.method(type1, type2, ...) type;
-
-
-//GIVEN BY PROFESSORS
-/*
-void Import(): {Token t;}{
-  <IMPORT> [<STATIC> jjtThis.isStatic=<TRUE><SEMICOLON>] t=<IDENTIFIER>{jjtThis.className=t.image;} [<DOT> t=<IDENTIFIER> {jjtThis.methodName=t.image}] ([<LBRACKET> ParamList() <RBRACKET> [Type()|<VOID>#Void] ]
-}
-void ParamList(): {
-    [Type()  (<COLON> Type())*]
-}*/
-
-
 void Imports() #void: {}
 {
-  	(ImportDeclaration())*
-}
-
-void ImportDeclaration() #void: {}
-{
-  	<IMPORT> ( StaticImport() | NonStaticImport() ) <SEMICOLON>
+  	(<IMPORT> ( StaticImport() | NonStaticImport() ) <SEMICOLON>)*
 }
 
 void StaticImport(): {}
@@ -108,19 +86,18 @@ void StaticImport(): {}
 
 void NonStaticImport() : {}
 {
-  	TerminalId() (MethodImport())?
+  	TerminalId() [<LPAR> ImportParamList() <RPAR> | MethodImport()]
 }
 
-void MethodImport() : {}
+void MethodImport() #Method: { Token t; }
 {
-  	<DOT> TerminalId() <LPAR> ImportParamList() <RPAR> Return()
+  	<DOT> t = <IDENTIFIER> {jjtThis.value = t.image;} [<LPAR> ImportParamList() <RPAR>] [Return()]
 }
 
 void ImportParamList() #ParamList: {}
 {
-    (Type() | <VOID>)? (<COLON> Type())*
+    [(Type() (<COMMA> Type())*) | <VOID>]
 }
-
 
 void Return() : {}
 {
@@ -164,7 +141,7 @@ void MethodDeclaration() #Method : {Token t;}
 
 void MethodParamList() #ParamList: {}
 {
-    ( VarDeclaration() ( <COLON> VarDeclaration() )* )?
+    ( VarDeclaration() ( <COMMA> VarDeclaration() )* )?
 }
 
 void MethodReturn() #Return: {}
@@ -179,9 +156,9 @@ void MainParamList() #ParamList: {}
  
 void Type() : {Token t;}
 {
-    t = <INT> {jjtThis.value = t.image;} (<LSQUAREBRACKET> <RSQUAREBRACKET>)?
+    t = <INT> {jjtThis.value = t.image;} (<LSQUAREBRACKET> <RSQUAREBRACKET> {jjtThis.value = "array";})?
     | t = <BOOLEAN> {jjtThis.value = t.image;}
-    | TerminalId()
+    | t = <IDENTIFIER> {jjtThis.value = t.image;}
 }
 
 void WhileCondition() #Condition: {}
@@ -361,5 +338,5 @@ void MethodInvocation() #MethodInvocation(3) : {}
 
 void ArgList(): {}
 {
-    (Expression() (<COLON> Expression())*)?
+    (Expression() (<COMMA> Expression())*)?
 }

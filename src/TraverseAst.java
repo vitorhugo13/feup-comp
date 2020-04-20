@@ -12,9 +12,8 @@ class TraverseAst{
     public void execute(Node node){
         if(node.toString().equals("VarDeclaration")){
             System.out.println("Node ID: "+ node.getId() + " TYPE: " + node.toString() + " VARTYPE: " +node.jjtGetChild(0) + " Identifier: "+node.jjtGetChild(1) );
-            VarDescriptor descriptor = new VarDescriptor(node.toString(), "1");
+            VarDescriptor descriptor = new VarDescriptor(node.toString());
             symbolTable.add(node.jjtGetChild(1).toString(), descriptor);
-
             System.out.println("table: "+ symbolTable.toString());
         }
         else if(node.toString().equals("StaticImport")){
