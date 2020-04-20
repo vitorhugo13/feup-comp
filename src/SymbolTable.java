@@ -1,5 +1,5 @@
 import java.util.Stack;
-import java.util.Hashtable;
+import java.util.HashMap;
 import descriptors.*;
 
 public class SymbolTable{
@@ -8,14 +8,14 @@ public class SymbolTable{
 
     /** Creates an empty symbol table. */
     public SymbolTable() {
-        tbl = new Stack();
+        tbl = new Stack<HashMap>();
     }
 
     /** Enters a new scope. A scope must be entered before anything
      * can be added to the table.
      * */
     public void enterScope() {
-        tbl.push(new Hashtable<String, Descriptor>());
+        tbl.push(new HashMap<String, Descriptor>());
     }
 
     /** Exits the most recently entered scope. */
@@ -31,11 +31,11 @@ public class SymbolTable{
      * @param id the symbol
      * @param info the data asosciated with id
      * */
-    public void addId(String id, Object info) {
+    public void addId(String id, Descriptor info) {
         if (tbl.empty()) {
             System.err.println("addId: can't add a symbol without a scope.");
         }
-        ((Hashtable)tbl.peek()).put(id, info);
+        ((HashMap)tbl.peek()).put(id, info);
     }
 
     /**
@@ -46,15 +46,15 @@ public class SymbolTable{
      * @param sym the symbol
      * @return the info associated with sym, or null if not found
      * */
-    public Object lookup(String sym) {
+    public Descriptor lookup(String sym) {
         if (tbl.empty()) {
             System.err.println("lookup: no scope in symbol table.");
         }
         // I break the abstraction here a bit by knowing that stack is
         // really a vector...
         for (int i = tbl.size() - 1; i >= 0; i--) {
-            Object info = ((Hashtable)tbl.elementAt(i)).get(sym);
-            if (info != null) return info;
+            Object info = ((HashMap)tbl.elementAt(i)).get(sym);
+            if (info != null) return (Descriptor) info;
         }
         return null;
     }
@@ -71,7 +71,7 @@ public class SymbolTable{
         if (tbl.empty()) {
             System.err.println("lookup: no scope in symbol table.");
         }
-        return ((Hashtable)tbl.peek()).get(sym);
+        return ((HashMap)tbl.peek()).get(sym);
     }
 
     /** Gets the string representation of the symbol table.
