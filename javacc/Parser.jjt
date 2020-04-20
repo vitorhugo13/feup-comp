@@ -71,7 +71,7 @@ TOKEN: {
 
 SimpleNode Program() : { Parser.errors = 0; }
 {
-    Import() ClassDeclaration() <EOF> { return jjtThis; }
+    Imports() ClassDeclaration() <EOF> { return jjtThis; }
 }
 
 
@@ -82,15 +82,15 @@ SimpleNode Program() : { Parser.errors = 0; }
 
 
 //GIVEN BY PROFESSORS
-
+/*
 void Import(): {Token t;}{
-  <IMPORT> [<STATIC> jjtThis.isStatic=<TRUE><SEMICOLON>] t=<IDENTIFIER>{jjtThis.className=t.image;} [<DOT> t=<Identifier> {jjtThis.methodName=t.image}] ([<LBRACKET> ParamList() <RBRACKET> [Type()|<VOID>#Void] ]
+  <IMPORT> [<STATIC> jjtThis.isStatic=<TRUE><SEMICOLON>] t=<IDENTIFIER>{jjtThis.className=t.image;} [<DOT> t=<IDENTIFIER> {jjtThis.methodName=t.image}] ([<LBRACKET> ParamList() <RBRACKET> [Type()|<VOID>#Void] ]
 }
 void ParamList(): {
     [Type()  (<COLON> Type())*]
-}
+}*/
 
-/*
+
 void Imports() #void: {}
 {
   	(ImportDeclaration())*
@@ -120,7 +120,7 @@ void ImportParamList() #ParamList: {}
 {
     (Type() | <VOID>)? (<COLON> Type())*
 }
-*/
+
 
 void Return() : {}
 {
