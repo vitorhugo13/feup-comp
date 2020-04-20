@@ -1,6 +1,5 @@
 package descriptors;
 
-
 abstract public class Descriptor {
     //General
     protected Type type;
@@ -10,6 +9,10 @@ abstract public class Descriptor {
         METHOD,
         VAR,
         IMPORT
+    }
+
+    public Type get_type(){
+        return this.type;
     }
 
 }

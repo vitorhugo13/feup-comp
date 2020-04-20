@@ -1,9 +1,9 @@
 package descriptors;
 
-
 import java.util.ArrayList;
 
 public class MethodDescriptor extends Descriptor {
+
     protected String returnType;
     protected ArrayList<Descriptor> parameters;
 
@@ -15,4 +15,12 @@ public class MethodDescriptor extends Descriptor {
 
     }
 
+    public String get_returnType(){
+        return this.returnType;
+    }
+
+    public ArrayList<Descriptor> get_parameters(){
+        return this.parameters;
+    }
+    
 }
