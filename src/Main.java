@@ -26,6 +26,12 @@ public class Main {
 
         root.dump("");
 
+        symbolTable.enterScope();
+        TraverseAst traverseAst= new TraverseAst(root, symbolTable);
+        traverseAst.execute(root);
+
+
+
     }
 
  
