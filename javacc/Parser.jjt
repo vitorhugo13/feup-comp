@@ -89,9 +89,9 @@ void NonStaticImport() : {}
   	TerminalId() [<LPAR> ImportParamList() <RPAR> | MethodImport()]
 }
 
-void MethodImport() : {}
+void MethodImport() #Method: { Token t; }
 {
-  	<DOT> TerminalId() [<LPAR> ImportParamList() <RPAR>] [Return()]
+  	<DOT> t = <IDENTIFIER> {jjtThis.value = t.image;} [<LPAR> ImportParamList() <RPAR>] [Return()]
 }
 
 void ImportParamList() #ParamList: {}
@@ -156,9 +156,9 @@ void MainParamList() #ParamList: {}
  
 void Type() : {Token t;}
 {
-    t = <INT> {jjtThis.value = t.image;} (<LSQUAREBRACKET> <RSQUAREBRACKET>)?
+    t = <INT> {jjtThis.value = t.image;} (<LSQUAREBRACKET> <RSQUAREBRACKET> {jjtThis.value = "array";})?
     | t = <BOOLEAN> {jjtThis.value = t.image;}
-    | TerminalId()
+    | t = <IDENTIFIER> {jjtThis.value = t.image;}
 }
 
 void WhileCondition() #Condition: {}
