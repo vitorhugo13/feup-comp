@@ -24,13 +24,13 @@ public class SymbolTable{
         }
         tbl.pop();
     }
-
+    class Info extends Descriptor{};
     /** Adds a new entry to the symbol table.
      *
      * @param id the symbol
      * @param info the data asosciated with id
      * */
-    public void addId(String id, Object info) {
+    public void addId(String id, Info info) {
         if (tbl.empty()) {
             System.err.println("addId: can't add a symbol without a scope.");
         }
@@ -45,14 +45,14 @@ public class SymbolTable{
      * @param sym the symbol
      * @return the info associated with sym, or null if not found
      * */
-    public Object lookup(String sym) {
+    public Info lookup(String sym) {
         if (tbl.empty()) {
             System.err.println("lookup: no scope in symbol table.");
         }
         // I break the abstraction here a bit by knowing that stack is
         // really a vector...
         for (int i = tbl.size() - 1; i >= 0; i--) {
-            Object info = ((Hashtable)tbl.elementAt(i)).get(sym);
+            Info info = ((Hashtable)tbl.elementAt(i)).get(sym);
             if (info != null) return info;
         }
         return null;
@@ -66,7 +66,7 @@ public class SymbolTable{
      * @param sym the symbol
      * @return the info associated with sym, or null if not found
      * */
-    public Object probe(String sym) {
+    public Info probe(String sym) {
         if (tbl.empty()) {
             System.err.println("lookup: no scope in symbol table.");
         }
@@ -88,3 +88,34 @@ public class SymbolTable{
     }
 
 }
+/*
+H2()
+
+HashT1()
+HT0()
+
+enterScope()
+    class Exemplo{ insert()
+    #enterScope()
+        int a;insert(a,detalhes)detalhes.typeVar=int;detalhes.type=var;
+        int fc(int b){enterScope()
+        float c=1; insert(c, )
+        exitScope()
+        }
+        }
+
+}
+
+STACK
+        H3{
+
+        }
+
+        H2{
+            a: {type: var, typeValue: int}
+            fc: {type: func, typeValue: int, param:}
+        }
+        H1{
+            Exmplo: {type: class}
+        }
+        */

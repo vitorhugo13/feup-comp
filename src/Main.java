@@ -13,7 +13,7 @@ public class Main {
             System.out.println(args[0] + " file not found");
             return;
         }
-
+        SymbolTable symbolTable = new SymbolTable();
         Parser parser = new Parser(in);
 
         // parser.Program();
