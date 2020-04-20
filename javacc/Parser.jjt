@@ -31,7 +31,7 @@ TOKEN: {
     | < BOOLEAN: "boolean" >
     | < STRING: "string" >
     | < SEMICOLON: ";" >
-    | < COLON: "," >
+    | < COMMA: "," >
     | < DOT: "." >
     | < TRUE: "true" >
     | < FALSE: "false" >
@@ -76,12 +76,7 @@ SimpleNode Program() : { Parser.errors = 0; }
 
 void Imports() #void: {}
 {
-  	(ImportDeclaration())*
-}
-
-void ImportDeclaration() #void: {}
-{
-  	<IMPORT> ( StaticImport() | NonStaticImport() ) <SEMICOLON>
+  	(<IMPORT> ( StaticImport() | NonStaticImport() ) <SEMICOLON>)*
 }
 
 void StaticImport(): {}
@@ -101,7 +96,7 @@ void MethodImport() : {}
 
 void ImportParamList() #ParamList: {}
 {
-    [(Type() (<COLON> Type())*) | <VOID>]
+    [(Type() (<COMMA> Type())*) | <VOID>]
 }
 
 void Return() : {}
@@ -146,7 +141,7 @@ void MethodDeclaration() #Method : {Token t;}
 
 void MethodParamList() #ParamList: {}
 {
-    ( VarDeclaration() ( <COLON> VarDeclaration() )* )?
+    ( VarDeclaration() ( <COMMA> VarDeclaration() )* )?
 }
 
 void MethodReturn() #Return: {}
@@ -343,5 +338,5 @@ void MethodInvocation() #MethodInvocation(3) : {}
 
 void ArgList(): {}
 {
-    (Expression() (<COLON> Expression())*)?
+    (Expression() (<COMMA> Expression())*)?
 }
