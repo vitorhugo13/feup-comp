@@ -1,3 +1,6 @@
+package descriptors;
+
+
 abstract public class Descriptor {
     //General
     protected Type type;

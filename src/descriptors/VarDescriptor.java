@@ -1,3 +1,5 @@
+package descriptors;
+
 public class VarDescriptor extends Descriptor {
     protected String dataType;
     protected String initialValue;
