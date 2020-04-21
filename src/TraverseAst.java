@@ -39,6 +39,29 @@ public class TraverseAst{
         else if(node.toString().equals("Class")){
             symbolTable.enterScope();
         }
+        else if(node.toString().equals("Method[main]")){
+            symbolTable.enterScope();
+            ArrayList<VarDescriptor> params = new ArrayList<>();
+            Node paramList= node.jjtGetChild(0);
+            Node currentNode;
+
+            for(int i=0; i<paramList.jjtGetNumChildren(); i++){
+                currentNode= paramList.jjtGetChild(i); //VarDeclaration
+                VarDescriptor varDescriptor =new VarDescriptor(parseName(currentNode.jjtGetChild(0).toString()), parseName(currentNode.jjtGetChild(1).toString()));
+                params.add(varDescriptor);
+                symbolTable.add(node.toString(), varDescriptor);
+            }
+
+            MethodDescriptor methodDescriptor = new MethodDescriptor(parseName(node.toString()), null, params);
+            symbolTable.add(node.toString(), methodDescriptor);
+
+            for(int i=0; i<node.jjtGetChild(1).jjtGetNumChildren(); i++){
+                execute(node.jjtGetChild(1).jjtGetChild(i));
+            }
+
+            symbolTable.exitScope();
+
+        }
         else if(node.toString().contains("Method")){
             symbolTable.enterScope();
             ArrayList<VarDescriptor> params = new ArrayList<>();
@@ -54,7 +77,11 @@ public class TraverseAst{
 
             MethodDescriptor methodDescriptor = new MethodDescriptor(parseName(node.toString()), parseName(node.jjtGetChild(0).toString()), params);
             symbolTable.add(node.toString(), methodDescriptor);
-            // TODO: process body
+
+            for(int i=0; i<node.jjtGetChild(2).jjtGetNumChildren(); i++){
+                execute(node.jjtGetChild(2).jjtGetChild(i));
+            }
+
             symbolTable.exitScope();
 
         }
