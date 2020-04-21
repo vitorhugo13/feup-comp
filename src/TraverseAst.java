@@ -1,8 +1,10 @@
+import java.util.ArrayList;
 import descriptors.*;
 
 
 @SuppressWarnings({"unchecked"})
 public class TraverseAst{
+    
     protected SimpleNode root;
     protected SymbolTable symbolTable;
 
@@ -31,18 +33,13 @@ public class TraverseAst{
 
         }
         else if(node.toString().equals("StaticImport")){
-            
+
             //TODO: do we really need this?
 
             ImportDescriptor descriptor = new ImportDescriptor();
             System.out.println("STATIC IS: " + node.toString()); //StaticImport
             symbolTable.add(node.toString(), descriptor);
 
-        }
-        else if(node.toString().equals("Assignment")){
-
-          System.out.println("---- THIS IS AN ASSIGNMENT ----");
-          //TODO: lookup variable @ SymbolTable - if exists very nice! if not do something else :'(
         }
         else{
 
@@ -86,5 +83,10 @@ public class TraverseAst{
 
         return id;
     }
+
+   
 }
+
+
+
 

@@ -14,7 +14,6 @@ public class Main {
             System.out.println(args[0] + " file not found");
             return;
         }
-        SymbolTable symbolTable = new SymbolTable();
         Parser parser = new Parser(in);
 
         // parser.Program();
@@ -26,7 +25,7 @@ public class Main {
 
         root.dump("");
 
-        symbolTable.enterScope();
+        SymbolTable symbolTable = new SymbolTable();
         TraverseAst traverseAst= new TraverseAst(root, symbolTable);
         traverseAst.execute(root);
     }
