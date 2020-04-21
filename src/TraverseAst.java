@@ -20,25 +20,42 @@ public class TraverseAst{
         //TODO: check if the variable already exists at stack
         if(node.toString().equals("VarDeclaration")){
 
-            System.out.println("Node ID: "+ node.getId() + " | " + " TYPE: " + node.toString() + " | "+" VARTYPE: " +node.jjtGetChild(0) + " | " +" Identifier: "+ node.jjtGetChild(1));
+            //System.out.println("Node ID: "+ node.getId() + " | " + " TYPE: " + node.toString() + " | "+" VARTYPE: " +node.jjtGetChild(0) + " | " +" Identifier: "+ node.jjtGetChild(1));
 
-            VarDescriptor var_descriptor = new VarDescriptor(node.toString());
-            String identifier = parse_varID(node.jjtGetChild(1).toString());
+            String identifier = parseName(node.jjtGetChild(1).toString());
+            VarDescriptor var_descriptor = new VarDescriptor(node.toString(), identifier);
 
-            var_descriptor.setValue(identifier);
-
-            System.out.println("AFTER PARSE: " + identifier);
             symbolTable.add(identifier, var_descriptor);
-            System.out.println("table: "+ symbolTable.toString());
 
         }
         else if(node.toString().equals("StaticImport")){
 
             //TODO: do we really need this?
-
             ImportDescriptor descriptor = new ImportDescriptor();
             System.out.println("STATIC IS: " + node.toString()); //StaticImport
             symbolTable.add(node.toString(), descriptor);
+
+        }
+        else if(node.toString().equals("Class")){
+            symbolTable.enterScope();
+        }
+        else if(node.toString().contains("Method")){
+            symbolTable.enterScope();
+            ArrayList<VarDescriptor> params = new ArrayList<>();
+            Node paramList= node.jjtGetChild(1);
+            Node currentNode;
+
+            for(int i=0; i<paramList.jjtGetNumChildren(); i++){
+                currentNode= paramList.jjtGetChild(i); //VarDeclaration
+                VarDescriptor varDescriptor =new VarDescriptor(parseName(currentNode.jjtGetChild(0).toString()), parseName(currentNode.jjtGetChild(1).toString()));
+                params.add(varDescriptor);
+                symbolTable.add(node.toString(), varDescriptor);
+            }
+
+            MethodDescriptor methodDescriptor = new MethodDescriptor(parseName(node.toString()), parseName(node.jjtGetChild(0).toString()), params);
+            symbolTable.add(node.toString(), methodDescriptor);
+            // TODO: process body
+            symbolTable.exitScope();
 
         }
         else{
@@ -54,7 +71,7 @@ public class TraverseAst{
         return this.symbolTable;
     }
 
-    public String parse_varID(String name){
+    public String parseName(String name){
 
         String id ="";
         int state = 0;

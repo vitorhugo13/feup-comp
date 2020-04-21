@@ -2,6 +2,7 @@ package descriptors;
 
 abstract public class Descriptor {
     protected Type type;
+    protected String identifier;
 
     enum Type{
         CLASS,
@@ -10,7 +11,7 @@ abstract public class Descriptor {
         IMPORT
     }
 
-    public Type get_type(){
+    public Type getType(){
         return this.type;
     }
 

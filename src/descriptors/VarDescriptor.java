@@ -3,29 +3,29 @@ package descriptors;
 public class VarDescriptor extends Descriptor {
 
     protected String dataType;
-    protected String value;
 
-    public VarDescriptor(String dataType){
+    public VarDescriptor(String dataType, String identifier){
         this.type=Type.VAR;
 
+        this.identifier=identifier;
         this.dataType=dataType;
 
     }
 
-    public String get_dataType(){
+    public String getDataType(){
         return this.dataType;
     }
 
-    public String getValue(){
-        return this.value;
+    public String getIdentifier(){
+        return this.identifier;
     }
 
-    public void set_dataType(String data){
+    public void setDataType(String data){
         this.dataType = data;
     }
 
-    public void setValue(String value){
-        this.value = value;
+    public void setIdentifier(String value){
+        this.identifier = identifier;
     }
 
 }
