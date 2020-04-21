@@ -19,14 +19,7 @@ public class TraverseAst{
         //TODO: what is value(?) Shouldn't we keep a variable for name of var and one to keep value when there is an assignment??
         //TODO: check if the variable already exists at stack
         if(node.toString().equals("VarDeclaration")){
-
-            //System.out.println("Node ID: "+ node.getId() + " | " + " TYPE: " + node.toString() + " | "+" VARTYPE: " +node.jjtGetChild(0) + " | " +" Identifier: "+ node.jjtGetChild(1));
-
-            String identifier = parseName(node.jjtGetChild(1).toString());
-            VarDescriptor var_descriptor = new VarDescriptor(node.toString(), identifier);
-
-            symbolTable.add(identifier, var_descriptor);
-
+            processVarDeclaration(node);
         }
         else if(node.toString().equals("StaticImport")){
             processStaticImport(node);
@@ -45,6 +38,15 @@ public class TraverseAst{
                 execute(node.jjtGetChild(i));
             }
         }
+    }
+
+    private void processVarDeclaration(Node node) {
+        //System.out.println("Node ID: "+ node.getId() + " | " + " TYPE: " + node.toString() + " | "+" VARTYPE: " +node.jjtGetChild(0) + " | " +" Identifier: "+ node.jjtGetChild(1));
+
+        String identifier = parseName(node.jjtGetChild(1).toString());
+        VarDescriptor var_descriptor = new VarDescriptor(node.toString(), identifier);
+
+        symbolTable.add(identifier, var_descriptor);
     }
 
     private void processStaticImport(Node node) {
