@@ -19,7 +19,7 @@ public class SymbolTable{
 
     // Enters a new scope. 
     // A scope must be entered before anything can be added to the table.
-    
+
     public void enterScope() {
         stack.push(new HashMap<String, Descriptor>());
     }
@@ -61,7 +61,7 @@ public class SymbolTable{
         if (stack.empty()) {
             System.err.println("LOOKUP: no scope in symbol table.");
         }
-       
+
         for (int i = stack.size() - 1; i >= 0; i--) {
 
             Object info = ((HashMap)stack.elementAt(i)).get(sym);
@@ -96,8 +96,8 @@ public class SymbolTable{
      * */
     public String toString() {
 
-        String result = ""; 
-        
+        String result = "";
+
         for (int i = stack.size() - 1, j = 0; i >= 0; i--, j++) {
             result += "Scope " + j + ": " + stack.elementAt(i) + "\n";
         }

@@ -3,13 +3,12 @@ package descriptors;
 public class VarDescriptor extends Descriptor {
 
     protected String dataType;
-    protected String initialValue;
+    protected String value;
 
-    public VarDescriptor(String dataType, String initialValue){
+    public VarDescriptor(String dataType){
         this.type=Type.VAR;
 
         this.dataType=dataType;
-        this.initialValue=initialValue;
 
     }
 
@@ -17,16 +16,16 @@ public class VarDescriptor extends Descriptor {
         return this.dataType;
     }
 
-    public String get_initialValue(){
-        return this.initialValue;
+    public String getValue(){
+        return this.value;
     }
 
     public void set_dataType(String data){
         this.dataType = data;
     }
 
-    public void set_initialValue(String value){
-        this.initialValue = value;
+    public void setValue(String value){
+        this.value = value;
     }
 
 }
