@@ -35,11 +35,24 @@ public class TraverseAst{
             System.out.println("STATIC IS: " + node.toString()); //StaticImport
             symbolTable.add(node.toString(), descriptor);
 
+         /*
+            for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+                execute(node.jjtGetChild(i));
+            }
+            symbolTable.exitScope();
+            */
+
+
         }
         else if(node.toString().equals("Class")){
             symbolTable.enterScope();
+            for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+                execute(node.jjtGetChild(i));
+            }
+            symbolTable.exitScope();
         }
         else if(node.toString().equals("Method[main]")){
+
             symbolTable.enterScope();
             ArrayList<VarDescriptor> params = new ArrayList<>();
             Node paramList= node.jjtGetChild(0);

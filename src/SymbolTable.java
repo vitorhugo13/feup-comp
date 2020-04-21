@@ -23,14 +23,16 @@ public class SymbolTable{
 
     
     public void enterScope() {
-        
+
         MyHashMap myHash = new MyHashMap(stack.peek());
         stack.push(myHash);
         all_hashes.add(myHash);
+        System.out.println("Entered scope: " + stack.peek());
 
     }
 
     public void exitScope() {
+        System.out.println("Exit scope: " + stack.peek());
 
         if (stack.empty()) {
             System.err.println("existScope: can't remove scope from an empty symbol table.");
@@ -51,7 +53,7 @@ public class SymbolTable{
         do{
 
             if(my_hash.exists(id)){
-                System.err.println("Duplicated variable.");
+                System.err.println("Duplicated variable: " + id + " in: " + my_hash);
                 return;
             }
 
