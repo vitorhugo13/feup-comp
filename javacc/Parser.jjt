@@ -59,7 +59,7 @@ TOKEN: {
     | < MUL: "*" >
     | < DIV: "/" >
     | < NOT: "!" >
-    | < MINOR: "<" >
+    | < LESS: "<" >
     | < AND: "&&" >
     | < LENGTH: "length" >
     | < STRINGARRAY: "String[]" >
@@ -202,32 +202,22 @@ void WhileCondition() #Condition: {}
     }
 }
 
-void BinaryOperator() #void: {}
-{
-    <MINOR> #LessThan
-    | <AND> #And
-    | <ADD> #Add
-    | <SUB> #Sub
-    | <MUL> #Mul
-    | <DIV> #Div
-}
-
 void Statement() #void: {}
 {
     WhileLoop()
     | IfStatement()
     | Scope()
-    | TerminalId() (
-            DotExpression() DetachedExpansion()
-            | Assignment()
-            | SquareBracketExpression() ( Assignment() | DetachedExpansion() )
-            | BinaryOperator() Expression() #DetachedBinaryOp(3)
-        )? <SEMICOLON>
-    | TerminalNonId() DetachedExpansion() <SEMICOLON>
-
+    | TerminalId() IdStatement() <SEMICOLON>
+    | NonIdentifierExpression() <SEMICOLON>
 }
 
-void Assignment() #Assignment(2) : {}
+void IdStatement() #void : {} {
+    Assignment() 
+    | ArrayExpression() (Assignment() | NonTerminalExpression0())
+    | NonArrayExpression0()
+}
+
+void Assignment() #Assign(2) : {}
 {
     <EQUAL> Expression()
 }
@@ -247,88 +237,14 @@ void Scope(): {}
     <LBRACKET> (Statement())* <RBRACKET>
 }
 
-void DetachedExpansion() #void: {}
-{
-    (UnaryExpression2())? (BinaryOperator() Expression() #DetachedBinaryOp(3))?
-}
-
-void Expression() #void: {}
-{
-    LessThanExpression() (<AND> Expression() #And(2))?
-}
-
-void LessThanExpression() #void: {}
-{
-    SumExpression() (<MINOR> SumExpression() #LessThan(2))?
-}
-
-void SumExpression() #void: {}
-{
-    ProductExpression() (
-        <ADD> SumExpression() #Add(2)
-        | <SUB> SumExpression() #Sub(2)
-    )?
-}
-
-void ProductExpression() #void: {}
-{
-    NegationExpression() (
-        <MUL> ProductExpression() #Mul(2)
-        | <DIV> ProductExpression() #Div(2)
-    )?
-}
-
-void NegationExpression() #void : {}
-{
-    <NOT> UnaryExpression1() #Not(1)
-    | UnaryExpression1()
-}
-
-void UnaryExpression1() #void: {}
-{
-    Terminal() (UnaryExpression2())?
-}
-
-void UnaryExpression2() #void: {}
-{
-    (
-        DotExpression()
-        | SquareBracketExpression()
-    ) (UnaryExpression2())?
-}
-
 void DotExpression() #void: {}
 {
     <DOT> (<LENGTH> #Length(1) | MethodInvocation())
 }
 
-void SquareBracketExpression() #void: {}
+void ArrayExpression() #Array(2): {}
 {
-    <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> #Arr(2)
-}
-
-void Terminal() #void: {}
-{
-    TerminalId()
-    | TerminalNonId()
-}
-
-void TerminalNonId() #void: {Token t;}
-{
-    t = <TRUE> {jjtThis.value = Boolean.valueOf(t.image);} #Boolean
-    | t = <FALSE> {jjtThis.value = Boolean.valueOf(t.image);} #Boolean
-    | <THIS> #This
-    | <NEW> (
-        <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> #NewIntArray(1)
-        | TerminalId() <LPAR> <RPAR> #NewObject(1)
-    )
-    | t = <INTEGER> {jjtThis.value = Integer.valueOf(t.image);} #Integer
-    | <LPAR> Expression() <RPAR>
-}
-
-void TerminalId() #Identifier: {Token t;}
-{
-    t = <IDENTIFIER> {jjtThis.value = t.image;}
+    <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> 
 }
 
 void MethodInvocation() #MethodInvocation(3) : {}
@@ -339,4 +255,160 @@ void MethodInvocation() #MethodInvocation(3) : {}
 void ArgList(): {}
 {
     (Expression() (<COMMA> Expression())*)?
+}
+
+
+/* -----===== Level 0 Expressions =====----- */
+
+void Expression() #void : {}
+{
+    Expression1() AndExpression()
+}
+
+void NonIdentifierExpression() #void : {}
+{
+    NonIdentifierExpression1() AndExpression()
+}
+
+void NonArrayExpression0() #void : {}
+{
+    NonArrayExpression1() AndExpression()
+}
+
+void NonTerminalExpression0() #void : {}
+{
+    NonTerminalExpression1() AndExpression()
+}
+
+void AndExpression() #void : {} {
+    <AND> Expression1() #And(2) AndExpression()
+    | {}
+}
+
+/* -----===== Level 1 Expressions =====----- */
+
+void Expression1() #void : {}
+{
+    Expression2() LessExpression()
+}
+
+void NonIdentifierExpression1() #void : {}
+{
+    NonIdentifierExpression2() LessExpression()
+}
+
+void NonArrayExpression1() #void : {}
+{
+    NonArrayExpression2() LessExpression()
+}
+
+void NonTerminalExpression1() #void : {}
+{
+    NonTerminalExpression2() LessExpression()
+}
+
+void LessExpression() #void : {} {
+    <LESS> Expression2() #Less(2) LessExpression()
+    | {}
+}
+
+/* -----===== Level 2 Expressions =====----- */
+
+void Expression2() #void : {}
+{
+    Expression3() SumExpression()
+}
+
+void NonIdentifierExpression2() #void : {}
+{
+    NonIdentifierExpression3() SumExpression()
+}
+
+void NonArrayExpression2() #void : {}
+{
+    NonArrayExpression3() SumExpression()
+}
+
+void NonTerminalExpression2() #void : {}
+{
+    NonTerminalExpression3() SumExpression()
+}
+
+void SumExpression() #void : {} {
+    <ADD> Expression3() #Add(2) SumExpression()
+    | <SUB> Expression3() #Sub(2) SumExpression()
+    | {}
+}
+
+/* -----===== Level 3 Expressions =====----- */
+
+void Expression3() #void : {}
+{
+    Expression4() MulExpression()
+}
+
+void NonIdentifierExpression3() #void : {}
+{
+    NonIdentifierExpression4() MulExpression()
+}
+
+void NonArrayExpression3() #void : {}
+{
+    NonArrayExpression4() MulExpression()
+}
+
+void NonTerminalExpression3() #void : {}
+{
+    NonTerminalExpression4() MulExpression()
+}
+
+void MulExpression() #void : {} {
+    <MUL> Expression4() #Mul(2) MulExpression()
+    | <DIV> Expression4() #Div(2) MulExpression()
+    | {}
+}
+
+/* -----===== Level 4 Expressions =====----- */
+
+void Expression4() #void : {}
+{
+    (TerminalId() | TerminalNonId()) NonTerminalExpression4()
+}
+
+void NonIdentifierExpression4() #void : {}
+{
+    (TerminalNonId() | {}) NonTerminalExpression4()
+}
+
+void NonArrayExpression4() #void : {}
+{
+    DotExpression() NonTerminalExpression4()
+    | {}
+}
+
+void NonTerminalExpression4() #void : {}
+{
+    ArrayExpression() NonTerminalExpression4()
+    | NonArrayExpression4()
+}
+
+/* -----===== Terminal Expressions =====----- */
+
+void TerminalNonId() #void: {Token t;}
+{
+    t = <INTEGER> {jjtThis.value = Integer.valueOf(t.image);} #Integer
+    | t = <TRUE> {jjtThis.value = Boolean.valueOf(t.image);} #Boolean
+    | t = <FALSE> {jjtThis.value = Boolean.valueOf(t.image);} #Boolean
+    | <THIS> #This
+    | <NEW> (
+        <INT> <LSQUAREBRACKET> Expression() <RSQUAREBRACKET> #NewIntArray(1)
+        | TerminalId() <LPAR> <RPAR> #NewObject(1)
+    )
+    | <NOT> Expression4() #Not(1)
+    | <LPAR> Expression() <RPAR>
+}
+
+void TerminalId() #Identifier: {Token t;}
+{
+    t = <IDENTIFIER> {jjtThis.value = t.image;}
 }
