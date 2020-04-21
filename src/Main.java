@@ -2,6 +2,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
+
 public class Main {
 
     public static void main(String[] args) throws ParseException {
@@ -13,7 +14,6 @@ public class Main {
             System.out.println(args[0] + " file not found");
             return;
         }
-
         Parser parser = new Parser(in);
 
         // parser.Program();
@@ -24,6 +24,10 @@ public class Main {
         }
 
         root.dump("");
+
+        SymbolTable symbolTable = new SymbolTable();
+        TraverseAst traverseAst= new TraverseAst(root, symbolTable);
+        traverseAst.execute(root);
     }
 
 }

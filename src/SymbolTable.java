@@ -1,90 +1,102 @@
+import descriptors.*;
+
 import java.util.Stack;
-import java.util.Hashtable;
+import java.util.ArrayList;
+
 
 public class SymbolTable{
 
-    private Stack tbl;
-
-    /** Creates an empty symbol table. */
+    private Stack<MyHashMap> stack;
+    private ArrayList<MyHashMap> all_hashes;
+ 
     public SymbolTable() {
-        tbl = new Stack();
+
+        MyHashMap firstHash = new MyHashMap(null);
+
+        stack = new Stack<MyHashMap>();
+        all_hashes = new ArrayList<MyHashMap>();
+
+        all_hashes.add(firstHash);
+        stack.push(firstHash);
+
     }
 
-    /** Enters a new scope. A scope must be entered before anything
-     * can be added to the table.
-     * */
+    
     public void enterScope() {
-        tbl.push(new Hashtable());
+
+        MyHashMap myHash = new MyHashMap(stack.peek());
+        stack.push(myHash);
+        all_hashes.add(myHash);
+        System.out.println("Entered scope: " + stack.peek());
+
     }
 
-    /** Exits the most recently entered scope. */
     public void exitScope() {
-        if (tbl.empty()) {
+        System.out.println("Exit scope: " + stack.peek());
+
+        if (stack.empty()) {
             System.err.println("existScope: can't remove scope from an empty symbol table.");
         }
-        tbl.pop();
+
+        stack.pop();
     }
 
-    /** Adds a new entry to the symbol table.
-     *
-     * @param id the symbol
-     * @param info the data asosciated with id
-     * */
-    public void addId(String id, Object info) {
-        if (tbl.empty()) {
-            System.err.println("addId: can't add a symbol without a scope.");
+ 
+    public void add(String id, Descriptor info) {
+
+        if (stack.empty()) {
+            System.err.println("ADD: can't add a symbol without a scope.");
         }
-        ((Hashtable)tbl.peek()).put(id, info);
+
+        MyHashMap my_hash = stack.peek();
+
+        do{
+
+            if(my_hash.exists(id)){
+                System.err.println("Duplicated variable: " + id + " in: " + my_hash);
+                return;
+            }
+
+            my_hash = my_hash.getFather();
+
+        }while(my_hash != null);
+
+
+        (stack.peek()).add(id, info);
+
     }
 
-    /**
-     * Looks up an item through all scopes of the symbol table.  If
-     * found it returns the associated information field, if not it
-     * returns <code>null</code>.
-     *
-     * @param sym the symbol
-     * @return the info associated with sym, or null if not found
-     * */
-    public Object lookup(String sym) {
-        if (tbl.empty()) {
-            System.err.println("lookup: no scope in symbol table.");
+  
+    public Descriptor lookup(String sym) {
+
+        if (stack.empty()) {
+            System.err.println("LOOKUP: no scope in symbol table.");
         }
-        // I break the abstraction here a bit by knowing that stack is
-        // really a vector...
-        for (int i = tbl.size() - 1; i >= 0; i--) {
-            Object info = ((Hashtable)tbl.elementAt(i)).get(sym);
-            if (info != null) return info;
+
+        for(int i = 0; i < all_hashes.size(); i++){
+            if(all_hashes.get(i).getDescriptor(sym) != null){
+                return all_hashes.get(i).getDescriptor(sym);
+            }
         }
+        
+
         return null;
     }
 
-    /**
-     * Probes the symbol table.  Check the top scope (only) for the
-     * symbol <code>sym</code>.  If found, return the information field.
-     * If not return <code>null</code>.
-     *
-     * @param sym the symbol
-     * @return the info associated with sym, or null if not found
-     * */
-    public Object probe(String sym) {
-        if (tbl.empty()) {
-            System.err.println("lookup: no scope in symbol table.");
-        }
-        return ((Hashtable)tbl.peek()).get(sym);
-    }
-
-    /** Gets the string representation of the symbol table.
-     *
-     * @return the string rep
-     * */
     public String toString() {
-        String res = "";
-        // I break the abstraction here a bit by knowing that stack is
-        // really a vector...
-        for (int i = tbl.size() - 1, j = 0; i >= 0; i--, j++) {
-            res += "Scope " + j + ": " + tbl.elementAt(i) + "\n";
+
+        String result = "";
+
+        for (int i = stack.size() - 1, j = 0; i >= 0; i--, j++) {
+            result += "Scope " + j + ": " + stack.elementAt(i) + "\n";
         }
-        return res;
+
+        return result;
     }
 
 }
+
+
+
+
+       
