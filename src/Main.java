@@ -29,10 +29,5 @@ public class Main {
         symbolTable.enterScope();
         TraverseAst traverseAst= new TraverseAst(root, symbolTable);
         traverseAst.execute(root);
-
-
-
     }
-
-
 }
