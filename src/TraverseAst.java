@@ -14,6 +14,8 @@ public class TraverseAst{
 
     public void execute(Node node){
 
+        //TODO: what is value(?) Shouldn't we keep a variable for name of var and one to keep value when there is an assignment??
+        //TODO: check if the variable already exists at stack
         if(node.toString().equals("VarDeclaration")){
 
             System.out.println("Node ID: "+ node.getId() + " | " + " TYPE: " + node.toString() + " | "+" VARTYPE: " +node.jjtGetChild(0) + " | " +" Identifier: "+ node.jjtGetChild(1));
@@ -29,11 +31,18 @@ public class TraverseAst{
 
         }
         else if(node.toString().equals("StaticImport")){
+            
+            //TODO: do we really need this?
 
             ImportDescriptor descriptor = new ImportDescriptor();
             System.out.println("STATIC IS: " + node.toString()); //StaticImport
             symbolTable.add(node.toString(), descriptor);
 
+        }
+        else if(node.toString().equals("Assignment")){
+
+          System.out.println("---- THIS IS AN ASSIGNMENT ----");
+          //TODO: lookup variable @ SymbolTable - if exists very nice! if not do something else :'(
         }
         else{
 
