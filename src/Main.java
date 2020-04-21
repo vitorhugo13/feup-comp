@@ -25,6 +25,7 @@ public class Main {
 
         root.dump("");
 
+        
         SymbolTable symbolTable = new SymbolTable();
         TraverseAst traverseAst= new TraverseAst(root, symbolTable);
         traverseAst.execute(root);

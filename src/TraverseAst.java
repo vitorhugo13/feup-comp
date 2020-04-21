@@ -14,6 +14,7 @@ public class TraverseAst{
         this.symbolTable = symbolTable;
     }
 
+    //TODO: handle String[] args at method void main
     public void execute(Node node){
 
         //TODO: what is value(?) Shouldn't we keep a variable for name of var and one to keep value when there is an assignment??
@@ -28,6 +29,10 @@ public class TraverseAst{
             symbolTable.add(identifier, var_descriptor);
 
         }
+        else if(node.toString().equals("NonStaticImport")){
+            //TODO: handle this
+            //TODO: whats the difference between NonStatic and Static import?
+        }
         else if(node.toString().equals("StaticImport")){
 
             //TODO: do we really need this?
@@ -41,8 +46,6 @@ public class TraverseAst{
             }
             symbolTable.exitScope();
             */
-
-
         }
         else if(node.toString().equals("Class")){
             symbolTable.enterScope();

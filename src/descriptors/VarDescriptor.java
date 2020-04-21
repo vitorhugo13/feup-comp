@@ -25,7 +25,7 @@ public class VarDescriptor extends Descriptor {
     }
 
     public void setIdentifier(String value){
-        this.identifier = identifier;
+        this.identifier = value;
     }
 
 }
