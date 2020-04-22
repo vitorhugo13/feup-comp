@@ -24,6 +24,9 @@ public class TraverseAst{
         else if(node.toString().equals("StaticImport")){
             processStaticImport(node);
         }
+        else if(node.toString().equals("NonStaticImport")){
+            processNonStaticImport(node);
+        }
         else if(node.toString().equals("Class")){
             processClass(node);
         }
@@ -49,6 +52,9 @@ public class TraverseAst{
         symbolTable.add(identifier, var_descriptor);
     }
 
+    private void processNonStaticImport(Node node){
+
+    }
     private void processStaticImport(Node node) {
         //TODO: do we really need this?
         ImportDescriptor descriptor = new ImportDescriptor();

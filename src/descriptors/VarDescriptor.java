@@ -7,7 +7,7 @@ public class VarDescriptor extends Descriptor {
     public VarDescriptor(String dataType, String identifier){
         this.type=Type.VAR;
 
-        this.identifier=identifier;
+        //this.identifier=identifier;
         this.dataType=dataType;
 
     }
@@ -15,17 +15,18 @@ public class VarDescriptor extends Descriptor {
     public String getDataType(){
         return this.dataType;
     }
-
-    public String getIdentifier(){
-        return this.identifier;
-    }
-
+    
     public void setDataType(String data){
         this.dataType = data;
     }
 
-    public void setIdentifier(String value){
-        this.identifier = identifier;
-    }
+    // public String getIdentifier(){
+    //     return this.identifier;
+    // }
+
+
+    // public void setIdentifier(String value){
+    //     this.identifier = value;
+    // }
 
 }
