@@ -4,6 +4,11 @@ import java.util.Stack;
 import java.util.ArrayList;
 
 
+MyHashTab-> Father
+
+HashMap<a, int>
+
+
 public class SymbolTable{
 
     private Stack<MyHashMap> stack;
@@ -41,7 +46,7 @@ public class SymbolTable{
         stack.pop();
     }
 
- 
+
     public void add(String id, Descriptor info) {
 
         if (stack.empty()) {
@@ -50,16 +55,21 @@ public class SymbolTable{
 
         MyHashMap my_hash = stack.peek();
 
-        do{
+        // do{
 
-            if(my_hash.exists(id)){
-                System.err.println("Duplicated variable: " + id + " in: " + my_hash);
-                return;
-            }
+        //     if(my_hash.exists(id)){
+        //         System.err.println("Duplicated variable: " + id + " in: " + my_hash);
+        //         return;
+        //     }
 
-            my_hash = my_hash.getFather();
+        //     my_hash = my_hash.getFather();
 
-        }while(my_hash != null);
+        // }while(my_hash != null);
+        
+        if(stack.peek().exists(id)){
+            System.err.println("Duplicated variable: " + id + " in: " + my_hash);
+            return;
+        }
 
         //System.out.println("Added var: " + id + " to table: " + stack.peek());
         (stack.peek()).add(id, info);
