@@ -1,11 +1,17 @@
 package descriptors;
 
-public class ImportDescriptor extends Descriptor{
+import java.util.ArrayList;
 
-    public ImportDescriptor(){
+public class ImportDescriptor extends Descriptor{
+    ArrayList<String> paramsList;
+    String returnType;
+
+    public ImportDescriptor(String identifier, ArrayList<String> paramsList, String returnType){
 
         this.type=Type.IMPORT;
-        this.identifier=null;
+        this.identifier=identifier;
+        this.paramsList=paramsList;
+        this.returnType=returnType;
     }
 
 }

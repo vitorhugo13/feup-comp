@@ -17,8 +17,6 @@ public class TraverseAst{
     //TODO: handle String[] args at method void main
     public void execute(Node node){
 
-        //TODO: what is value(?) Shouldn't we keep a variable for name of var and one to keep value when there is an assignment??
-        //TODO: check if the variable already exists at stack
         if(node.toString().equals("VarDeclaration")){
             processVarDeclaration(node);
         }
@@ -57,18 +55,52 @@ public class TraverseAst{
 
     }
     private void processStaticImport(Node node) {
-        //TODO: do we really need this?
-        ImportDescriptor descriptor = new ImportDescriptor();
-        System.out.println("STATIC IS: " + node.toString()); //StaticImport
-        symbolTable.add(node.toString(), descriptor);
+        symbolTable.enterScope();
 
-            /*
-            for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-                System.out.println("Cycle: " + i);
-                execute(node.jjtGetChild(i));
-            }
-            symbolTable.exitScope();
-            */
+        /*
+        StaticImport = node
+            Identifier[io]
+            Method[println]
+                ParamList
+                    Type[int]
+                    Type[String]
+                Return 
+                    Type[int]
+        */
+        //TODO: what to do if we have 'import static Map;'
+
+        // METHOD
+        Node paramList= node.jjtGetChild(1).jjtGetChild(0); //StaticImport->Method->ParamList
+        ArrayList<String> params = new ArrayList<>();
+
+        for(int i=0; i < paramList.jjtGetNumChildren(); i++){
+            params.add(parseName(paramList.jjtGetChild(i).toString())); 
+        }
+
+
+        //RETURN TYPE
+        String returnType;
+        if(node.jjtGetChild(1).jjtGetNumChildren() == 2){ 
+            
+            if(node.jjtGetChild(1).jjtGetChild(1).jjtGetNumChildren()>0)
+                returnType = parseName(node.jjtGetChild(1).jjtGetChild(1).jjtGetChild(0).toString()); //StaticImport->Method->Return->Type
+            else
+                returnType = "void"; 
+        }
+        else{
+            returnType = "void"; 
+        }
+
+
+
+        String name = parseName(node.jjtGetChild(0).toString())+ "." + parseName(node.jjtGetChild(1).toString()); 
+        ImportDescriptor descriptor = new ImportDescriptor(name, params, returnType);
+        symbolTable.add(name, descriptor);
+        //System.out.println("STATIC IMPORT ID: " + name + "  --- RETURN TYPE: " + returnType + "--- FIRST PARAM: " + params.size());
+    
+        
+        symbolTable.exitScope();
+            
     }
 
     private void processMethod(Node node) {
