@@ -61,7 +61,7 @@ public class SymbolTable{
 
         }while(my_hash != null);
 
-
+        //System.out.println("Added var: " + id + " to table: " + stack.peek());
         (stack.peek()).add(id, info);
 
     }

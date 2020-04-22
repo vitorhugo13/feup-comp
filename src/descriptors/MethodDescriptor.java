@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class MethodDescriptor extends Descriptor {
 
+    protected String identifier;
     protected String returnType;
     protected ArrayList<VarDescriptor> parameters;
 
@@ -22,6 +23,10 @@ public class MethodDescriptor extends Descriptor {
 
     public ArrayList<VarDescriptor> getParameters(){
         return this.parameters;
+    }
+
+    public String getIdentifier(){
+        return this.identifier;
     }
     
 }

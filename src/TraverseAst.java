@@ -20,94 +20,111 @@ public class TraverseAst{
         //TODO: what is value(?) Shouldn't we keep a variable for name of var and one to keep value when there is an assignment??
         //TODO: check if the variable already exists at stack
         if(node.toString().equals("VarDeclaration")){
-
-            //System.out.println("Node ID: "+ node.getId() + " | " + " TYPE: " + node.toString() + " | "+" VARTYPE: " +node.jjtGetChild(0) + " | " +" Identifier: "+ node.jjtGetChild(1));
-
-            String identifier = parseName(node.jjtGetChild(1).toString());
-            VarDescriptor var_descriptor = new VarDescriptor(node.toString(), identifier);
-
-            symbolTable.add(identifier, var_descriptor);
-
-        }
-        else if(node.toString().equals("NonStaticImport")){
-            //TODO: handle this
-            //TODO: whats the difference between NonStatic and Static import?
+            processVarDeclaration(node);
         }
         else if(node.toString().equals("StaticImport")){
-
-            //TODO: do we really need this?
-            ImportDescriptor descriptor = new ImportDescriptor();
-            System.out.println("STATIC IS: " + node.toString()); //StaticImport
-            symbolTable.add(node.toString(), descriptor);
-
-         /*
+            processStaticImport(node);
+        }
+        else if(node.toString().equals("NonStaticImport")){
+            processNonStaticImport(node);
+        }
+        else if(node.toString().equals("Class")){
+            processClass(node);
+        }
+        else if(node.toString().equals("Method[main]")){
+            processMain(node);
+        }
+        else if(node.toString().contains("Method")){
+            processMethod(node);
+        }
+        else{
             for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+                execute(node.jjtGetChild(i));
+            }
+        }
+    }
+
+    private void processVarDeclaration(Node node) {
+        //System.out.println("Node ID: "+ node.getId() + " | " + " TYPE: " + node.toString() + " | "+" VARTYPE: " +node.jjtGetChild(0) + " | " +" Identifier: "+ node.jjtGetChild(1));
+
+        String identifier = parseName(node.jjtGetChild(1).toString());
+        VarDescriptor var_descriptor = new VarDescriptor(node.toString(), identifier);
+
+        symbolTable.add(identifier, var_descriptor);
+    }
+
+    private void processNonStaticImport(Node node){
+
+    }
+    private void processStaticImport(Node node) {
+        //TODO: do we really need this?
+        ImportDescriptor descriptor = new ImportDescriptor();
+        System.out.println("STATIC IS: " + node.toString()); //StaticImport
+        symbolTable.add(node.toString(), descriptor);
+
+            /*
+            for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+                System.out.println("Cycle: " + i);
                 execute(node.jjtGetChild(i));
             }
             symbolTable.exitScope();
             */
+    }
+
+    private void processMethod(Node node) {
+        symbolTable.enterScope();
+        ArrayList<VarDescriptor> params = new ArrayList<>();
+        Node paramList= node.jjtGetChild(1);
+        Node currentNode;
+
+        for(int i=0; i<paramList.jjtGetNumChildren(); i++){
+            currentNode= paramList.jjtGetChild(i); //VarDeclaration
+            VarDescriptor varDescriptor =new VarDescriptor(parseName(currentNode.jjtGetChild(0).toString()), parseName(currentNode.jjtGetChild(1).toString()));
+            params.add(varDescriptor);
+            symbolTable.add(parseName(currentNode.jjtGetChild(1).toString()), varDescriptor);
         }
-        else if(node.toString().equals("Class")){
-            symbolTable.enterScope();
-            for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-                execute(node.jjtGetChild(i));
-            }
-            symbolTable.exitScope();
+
+        MethodDescriptor methodDescriptor = new MethodDescriptor(parseName(node.toString()), parseName(node.jjtGetChild(0).toString()), params);
+        symbolTable.add(node.toString(), methodDescriptor);
+
+        for(int i=0; i<node.jjtGetChild(2).jjtGetNumChildren(); i++){
+            execute(node.jjtGetChild(2).jjtGetChild(i));
         }
-        else if(node.toString().equals("Method[main]")){
 
-            symbolTable.enterScope();
-            ArrayList<VarDescriptor> params = new ArrayList<>();
-            Node paramList= node.jjtGetChild(0);
-            Node currentNode;
+        symbolTable.exitScope();
+    }
 
-            for(int i=0; i<paramList.jjtGetNumChildren(); i++){
-                currentNode= paramList.jjtGetChild(i); //VarDeclaration
-                VarDescriptor varDescriptor =new VarDescriptor(parseName(currentNode.jjtGetChild(0).toString()), parseName(currentNode.jjtGetChild(1).toString()));
-                params.add(varDescriptor);
-                symbolTable.add(node.toString(), varDescriptor);
-            }
+    private void processMain(Node node) {
+        symbolTable.enterScope();
+        ArrayList<VarDescriptor> params = new ArrayList<>();
+        Node paramList= node.jjtGetChild(0);
+        Node currentNode;
 
-            MethodDescriptor methodDescriptor = new MethodDescriptor(parseName(node.toString()), null, params);
-            symbolTable.add(node.toString(), methodDescriptor);
-
-            for(int i=0; i<node.jjtGetChild(1).jjtGetNumChildren(); i++){
-                execute(node.jjtGetChild(1).jjtGetChild(i));
-            }
-
-            symbolTable.exitScope();
-
+        for(int i=0; i<paramList.jjtGetNumChildren(); i++){
+            currentNode= paramList.jjtGetChild(i); //VarDeclaration
+            VarDescriptor varDescriptor =new VarDescriptor(parseName(currentNode.jjtGetChild(0).toString()), parseName(currentNode.jjtGetChild(1).toString()));
+            params.add(varDescriptor);
+            symbolTable.add(node.toString(), varDescriptor);
         }
-        else if(node.toString().contains("Method")){
-            symbolTable.enterScope();
-            ArrayList<VarDescriptor> params = new ArrayList<>();
-            Node paramList= node.jjtGetChild(1);
-            Node currentNode;
 
-            for(int i=0; i<paramList.jjtGetNumChildren(); i++){
-                currentNode= paramList.jjtGetChild(i); //VarDeclaration
-                VarDescriptor varDescriptor =new VarDescriptor(parseName(currentNode.jjtGetChild(0).toString()), parseName(currentNode.jjtGetChild(1).toString()));
-                params.add(varDescriptor);
-                symbolTable.add(node.toString(), varDescriptor);
-            }
+        MethodDescriptor methodDescriptor = new MethodDescriptor(parseName(node.toString()), null, params);
+        symbolTable.add(node.toString(), methodDescriptor);
 
-            MethodDescriptor methodDescriptor = new MethodDescriptor(parseName(node.toString()), parseName(node.jjtGetChild(0).toString()), params);
-            symbolTable.add(node.toString(), methodDescriptor);
-
-            for(int i=0; i<node.jjtGetChild(2).jjtGetNumChildren(); i++){
-                execute(node.jjtGetChild(2).jjtGetChild(i));
-            }
-
-            symbolTable.exitScope();
-
+        for(int i=0; i<node.jjtGetChild(1).jjtGetNumChildren(); i++){
+            execute(node.jjtGetChild(1).jjtGetChild(i));
         }
-        else{
 
-            for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-                execute(node.jjtGetChild(i));
-            }
+        symbolTable.exitScope();
+    }
 
+    private void processClass(Node node) {
+        symbolTable.enterScope();
+
+        for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+
+            execute(node.jjtGetChild(i));
         }
+        symbolTable.exitScope();
     }
 
     public SymbolTable getSymbolTable() {
