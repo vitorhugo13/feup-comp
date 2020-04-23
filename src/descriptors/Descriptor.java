@@ -4,7 +4,7 @@ abstract public class Descriptor {
     protected Type type;
     protected String identifier;
 
-    enum Type{
+    public static enum Type{
         CLASS,
         METHOD,
         VAR,

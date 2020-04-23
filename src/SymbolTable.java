@@ -4,11 +4,6 @@ import java.util.Stack;
 import java.util.ArrayList;
 
 
-MyHashTab-> Father
-
-HashMap<a, int>
-
-
 public class SymbolTable{
 
     private Stack<MyHashMap> stack;
@@ -65,10 +60,11 @@ public class SymbolTable{
         //     my_hash = my_hash.getFather();
 
         // }while(my_hash != null);
-        
-        if(stack.peek().exists(id)){
-            System.err.println("Duplicated variable: " + id + " in: " + my_hash);
-            return;
+        if(!info.getType().equals(Descriptor.Type.IMPORT)) { // We allow repeated imports for method overloads as they are all in the same scope
+            if (stack.peek().exists(id)) {
+                System.err.println("Duplicated variable: " + id + " in: " + my_hash);
+                return;
+            }
         }
 
         //System.out.println("Added var: " + id + " to table: " + stack.peek());
@@ -76,8 +72,8 @@ public class SymbolTable{
 
     }
 
-  
-    public Descriptor lookup(String sym) {
+
+    public ArrayList<Descriptor> lookup(String sym) {
 
         if (stack.empty()) {
             System.err.println("LOOKUP: no scope in symbol table.");

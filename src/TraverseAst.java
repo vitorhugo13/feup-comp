@@ -17,6 +17,7 @@ public class TraverseAst{
 
     //TODO: handle String[] args at method void main
     public void execute(Node node){
+        //System.out.println("EXECUTE: " + node.toString());
         if(node.toString().equals("Program")){
             processProgram(node);
         }
@@ -29,13 +30,13 @@ public class TraverseAst{
         else if(node.toString().equals("NonStaticImport")){
             processNonStaticImport(node);
         }
-        else if(node.toString().equals("Class")){
+        else if(node.toString().contains("Class")){
             processClass(node);
         }
         else if(node.toString().equals("Method[main]")){
             processMain(node);
         }
-        else if(node.toString().contains("Method")){
+        else if(!node.toString().equals("MethodInvocation") && node.toString().contains("Method")){
             processMethod(node);
         }
         else{
@@ -46,12 +47,12 @@ public class TraverseAst{
     }
 
     private void processProgram(Node node){
-        symbolTable.enterScope(); // Import Scope
-        for (int i = 0; i < node.jjtGetNumChildren(); i++) { //Imports
+        symbolTable.enterScope(); // Enter Import Scope
+        for (int i = 0; i < node.jjtGetNumChildren()-1; i++) { // Imports
             execute(node.jjtGetChild(i));
         }
-        symbolTable.exitScope();
-        execute(node.jjtGetChild(node.jjtGetNumChildren()-1)); //Class
+        symbolTable.exitScope(); // Leave Import Scope
+        execute(node.jjtGetChild(node.jjtGetNumChildren()-1)); // Class
 
     }
 
@@ -113,7 +114,6 @@ public class TraverseAst{
                 Return 
                     Type[int]
         */
-        //TODO: what to do if we have 'import static Map;'
 
         ArrayList<String> params = getMethodParams(node.jjtGetChild(1).jjtGetChild(0));
         String returnType = getMethodReturnType(node.jjtGetChild(1));
