@@ -17,8 +17,10 @@ public class TraverseAst{
 
     //TODO: handle String[] args at method void main
     public void execute(Node node){
-
-        if(node.toString().equals("VarDeclaration")){
+        if(node.toString().equals("Program")){
+            processProgram(node);
+        }
+        else if(node.toString().equals("VarDeclaration")){
             processVarDeclaration(node);
         }
         else if(node.toString().equals("StaticImport")){
@@ -43,6 +45,16 @@ public class TraverseAst{
         }
     }
 
+    private void processProgram(Node node){
+        symbolTable.enterScope(); // Import Scope
+        for (int i = 0; i < node.jjtGetNumChildren(); i++) { //Imports
+            execute(node.jjtGetChild(i));
+        }
+        symbolTable.exitScope();
+        execute(node.jjtGetChild(node.jjtGetNumChildren()-1)); //Class
+
+    }
+
     private void processVarDeclaration(Node node) {
         //System.out.println("Node ID: "+ node.getId() + " | " + " TYPE: " + node.toString() + " | "+" VARTYPE: " +node.jjtGetChild(0) + " | " +" Identifier: "+ node.jjtGetChild(1));
 
@@ -53,14 +65,12 @@ public class TraverseAst{
     }
 
     private void processNonStaticImport(Node node){
-        symbolTable.enterScope();
         ImportDescriptor descriptor;
         switch(node.jjtGetNumChildren()){
             case 1: // Ex.: import List;
                 descriptor= new ImportDescriptor(parseName(node.jjtGetChild(0).toString()), new ArrayList<>(), VOID);
                 symbolTable.add(parseName(node.jjtGetChild(0).toString()), descriptor);
                 //System.out.println("1 IMPORT ID: " + parseName(node.jjtGetChild(0).toString()));
-                symbolTable.exitScope();
                 return;
             case 2:
                 if(node.jjtGetChild(1).toString().contains("Method")){ // Ex: import List.add(int);
@@ -70,7 +80,6 @@ public class TraverseAst{
                     descriptor= new ImportDescriptor(parseName(name), params, returnType);
                     symbolTable.add(name, descriptor);
                     //System.out.println("2 IMPORT ID: " + name + "  --- RETURN TYPE: " + returnType + "--- FIRST PARAM: " + params.size());
-                    symbolTable.exitScope();
                     return;
                 }
                 else{ // Contructor with params - Ex: import List(int);
@@ -78,7 +87,6 @@ public class TraverseAst{
                     descriptor= new ImportDescriptor(parseName(node.jjtGetChild(0).toString()), params, VOID);
                     symbolTable.add(parseName(node.jjtGetChild(0).toString()), descriptor);
                     //System.out.println("3 IMPORT ID: " + parseName(node.jjtGetChild(0).toString())  + "--- FIRST PARAM: " + params.size());
-                    symbolTable.exitScope();
                     return;
                 }
         }
@@ -95,8 +103,6 @@ public class TraverseAst{
     }
 
     private void processStaticImport(Node node) {
-        symbolTable.enterScope();
-
         /*
         StaticImport = node
             Identifier[io]
@@ -117,10 +123,6 @@ public class TraverseAst{
         ImportDescriptor descriptor = new ImportDescriptor(name, params, returnType);
         symbolTable.add(name, descriptor);
         //System.out.println("STATIC IMPORT ID: " + name + "  --- RETURN TYPE: " + returnType + "--- FIRST PARAM: " + params.size());
-    
-        
-        symbolTable.exitScope();
-            
     }
 
     private String getMethodReturnType(Node method) {
