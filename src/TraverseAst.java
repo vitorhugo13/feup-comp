@@ -15,7 +15,9 @@ public class TraverseAst{
         this.symbolTable = symbolTable;
     }
 
+    
     //TODO: handle String[] args at method void main
+
     public void execute(Node node){
         //System.out.println("EXECUTE: " + node.toString());
         if(node.toString().equals("Program")){

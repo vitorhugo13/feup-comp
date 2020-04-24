@@ -1,0 +1,17 @@
+class ArrayTest{
+
+    public static void main(String[] args){
+
+        int a;
+        int[] b;
+        int[] c;
+        int d;
+
+        b = new int[1];
+        
+        b[0] = 2;
+        a = b[1];
+        c[a] = b[0];
+    }
+
+}

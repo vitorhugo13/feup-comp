@@ -2,6 +2,9 @@ import java.util.ArrayList;
 import descriptors.*;
 import java.io.IOException;
 
+//TODO: string[] args do method main
+//TODO: get data type
+//TODO: arrays(ESQ, DIREITA, AMBOS)
 
 class SemanticAnalysis{
     static private String VOID = "void";
@@ -45,14 +48,47 @@ class SemanticAnalysis{
 
     private void processAssign(Node node) throws IOException{
         // TODO: Arrays (also need to update symbol table with those), Class types and constructor invocations, sums (a= b+c)
-        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString()), Descriptor.Type.VAR).get(0);
-        String dataType= Utils.getFirstPartOfName(node.jjtGetChild(1).toString());
-        if(dataType.equals(varDescriptor.getDataType())){
-            //System.out.println("MATCH - VAR: " + varDescriptor.getIdentifier() + " data "+ dataType);
+        if(node.jjtGetChild(0).equals("Array")){
+            processArray(node);
         }
         else{
-            throw new IOException("Variable " + varDescriptor.getIdentifier() + " of type " + dataType + " does not match declaration type " + varDescriptor.getDataType());
+
+            VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString()), Descriptor.Type.VAR).get(0);
+            String dataType= Utils.getFirstPartOfName(node.jjtGetChild(1).toString());
+
+            if(dataType.equals(varDescriptor.getDataType())){
+                varDescriptor.setInitialized();
+                varDescriptor.setCurrValue(Utils.parseName(node.jjtGetChild(1).toString()));
+            }
+            else{
+                throw new IOException("Variable " + varDescriptor.getIdentifier() + " of type " + dataType + " does not match declaration type " + varDescriptor.getDataType());
+            }
         }
+    }
+
+    private void processArray(Node node) throws IOException{
+
+        String id = Utils.parseName(node.jjtGetChild(0).jjtGetChild(0).toString()); //nome do array
+        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id, Descriptor.Type.VAR).get(0); //retorna array (1º elemento do array)
+        if(!varDescriptor.getDataType().equals("Array")){
+            throw new IOException("Variable " + varDescriptor.getIdentifier() + " of type Array does not match declaration type " + varDescriptor.getDataType());
+        }
+
+        String index_dataType = Utils.getFirstPartOfName(node.jjtGetChild(0).jjtGetChild(1).toString()); //index of array data type
+
+        if(index_dataType.equals("Identifier")){
+            VarDescriptor index_varDescriptor = (VarDescriptor) symbolTable.lookup(index_dataType, Descriptor.Type.VAR).get(0); 
+            if(!index_varDescriptor.getDataType().equals("Integer")){
+                throw new IOException("Index of array " + id + " is not Integer!");
+            }
+        }
+        else if(index_dataType.equals("Identifier")){
+
+        }
+        else{
+            throw new IOException("Index of array " + id + " is not Integer!");
+        }
+
     }
 
     private void processProgram(Node node){
