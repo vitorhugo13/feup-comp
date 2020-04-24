@@ -19,7 +19,7 @@ public class ClassDescriptor extends Descriptor {
         return false;
     }
 
-    public ArrayList<MethodDescriptor> getMethods(String id){
+    public ArrayList<MethodDescriptor> getMethodsMatchingId(String id){
         ArrayList<MethodDescriptor> methodsMatchingId = new ArrayList<>();
         if(existsMethod(id)){
             for(int i=0; i<methods.size();i++){
@@ -33,6 +33,10 @@ public class ClassDescriptor extends Descriptor {
 
     public void addMethod(MethodDescriptor method){
         methods.add(method);
+    }
+
+    public ArrayList<MethodDescriptor> getMethods(){
+        return this.methods;
     }
 
 }

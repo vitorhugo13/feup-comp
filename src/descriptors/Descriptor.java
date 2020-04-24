@@ -5,9 +5,6 @@ abstract public class Descriptor {
 
     protected Type type;
     protected String identifier;
-    
-
-
 
     public static enum Type{
         CLASS,

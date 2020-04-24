@@ -1,5 +1,7 @@
 import static io.println(int) void;
-class Simple {
+
+
+class Simple{
 
     public int add(int a, int b){
         int c;

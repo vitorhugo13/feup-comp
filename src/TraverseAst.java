@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import descriptors.*;
 
+//TODO: verificar tabela de simbolos, acrescentar method != method import
 
 @SuppressWarnings({"unchecked"})
 public class TraverseAst{

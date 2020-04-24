@@ -81,7 +81,8 @@ public class SymbolTable{
             (stack.peek()).add(id, classDescriptor);
         }
         else{
-            //stack.peek().getDescriptor(id).addMethod(info);
+            ((ClassDescriptor) stack.peek().getDescriptor(id)).addMethod(info);
+            System.out.println("Get descriptor: " + ((ClassDescriptor) stack.peek().getDescriptor(id)).getMethods());
         }
 
     }
