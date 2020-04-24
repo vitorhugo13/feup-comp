@@ -15,7 +15,7 @@ public class TraverseAst{
         this.symbolTable = symbolTable;
     }
 
-    
+
     //TODO: handle String[] args at method void main
 
     public void execute(Node node){
@@ -172,10 +172,13 @@ public class TraverseAst{
         Node currentNode;
 
         for(int i=0; i<paramList.jjtGetNumChildren(); i++){
-            currentNode= paramList.jjtGetChild(i); //VarDeclaration
-            VarDescriptor varDescriptor =new VarDescriptor(Utils.parseName(currentNode.jjtGetChild(0).toString()), Utils.parseName(currentNode.jjtGetChild(1).toString()));
-            params.add(varDescriptor);
-            symbolTable.add(node.toString(), varDescriptor);
+            if(paramList.jjtGetChild(i).toString().equals("VarDeclaration")){
+                currentNode= paramList.jjtGetChild(i);
+                VarDescriptor varDescriptor =new VarDescriptor(Utils.parseName(currentNode.jjtGetChild(0).toString()), Utils.parseName(currentNode.jjtGetChild(1).toString())); //tyoe, identifier
+                params.add(varDescriptor);
+                symbolTable.add(node.toString(), varDescriptor);
+            }
+           
         }
 
         MethodDescriptor methodDescriptor = new MethodDescriptor(Utils.parseName(node.toString()), null, params);
