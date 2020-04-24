@@ -10,7 +10,7 @@ public class SymbolTable{
     private Stack<MyHashMap> stack;
     private ArrayList<MyHashMap> all_hashes;
     private int posArrayForAnalysis;
- 
+
     public SymbolTable() {
 
         MyHashMap firstHash = new MyHashMap(null);
@@ -28,7 +28,7 @@ public class SymbolTable{
         MyHashMap myHash = new MyHashMap(stack.peek());
         stack.push(myHash);
         all_hashes.add(myHash);
-        //System.out.println("[SCOPE] Entered scope: " + stack.peek());
+        System.out.println("[SCOPE] Entered scope: " + stack.peek());
 
     }
 
@@ -67,14 +67,28 @@ public class SymbolTable{
                 return;
             }
         }
-
         //System.out.println("Added var: " + id + " to table: " + stack.peek());
         (stack.peek()).add(id, info);
+    }
+
+    public void add(String id, MethodDescriptor info, Boolean isImport) {
+        if (stack.empty()) {
+            System.err.println("[ADD]: can't add a symbol without a scope.");
+        }
+        if (!stack.peek().exists(id)) {
+            ClassDescriptor classDescriptor = new ClassDescriptor(id);
+            classDescriptor.addMethod(info);
+            (stack.peek()).add(id, classDescriptor);
+        }
+        else{
+            //stack.peek().getDescriptor(id).addMethod(info);
+        }
 
     }
 
 
-    public ArrayList<Descriptor> lookup(String id, Descriptor.Type type) throws IOException {
+
+    public Descriptor lookup(String id, Descriptor.Type type) throws IOException {
 
         if (stack.empty()) {
             System.err.println("[ERROR] [LOOKUP]: symbol table is empty.");
@@ -82,16 +96,16 @@ public class SymbolTable{
 
         if (type.equals(Descriptor.Type.METHOD)) { // Method can be declared anywhere
             for (int i = 0; i < all_hashes.size(); i++) {
-                if (all_hashes.get(i).getArrayDescriptor(id) != null) {
-                    return all_hashes.get(i).getArrayDescriptor(id);
+                if (all_hashes.get(i).getDescriptor(id) != null) {
+                    return all_hashes.get(i).getDescriptor(id);
                 }
             }
             throw new IOException("Method " + id + " was not declared");
-        } else { // Var needs to be declared either in current scope or in the parent's scope
+        } else { // Var needs to be declared either in current scope or in the parent's scope (Class)
             MyHashMap my_hash = stack.peek();
             do {
                 if (my_hash.exists(id)) {
-                    return my_hash.getArrayDescriptor(id);
+                    return my_hash.getDescriptor(id);
                 }
                 my_hash = my_hash.getFather();
             } while (my_hash != null);
