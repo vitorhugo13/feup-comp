@@ -95,7 +95,7 @@ public class SymbolTable{
                 }
                 my_hash = my_hash.getFather();
             } while (my_hash != null);
-            throw new IOException("Var " + id + " was not declared");
+            throw new IOException("Variable " + id + " was not declared");
         }
     }
 

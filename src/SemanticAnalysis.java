@@ -44,8 +44,10 @@ class SemanticAnalysis{
     }
 
     private void processAssign(Node node) throws IOException{
-        symbolTable.lookup(parseName(node.jjtGetChild(0).toString()), Descriptor.Type.VAR);
+        ArrayList<Descriptor> varDescriptor = symbolTable.lookup(parseName(node.jjtGetChild(0).toString()), Descriptor.Type.VAR);
+
     }
+
     private void processProgram(Node node){
         symbolTable.enterScopeForAnalysis(); // Enter Import Scope
         for (int i = 0; i < node.jjtGetNumChildren()-1; i++) { // Imports
