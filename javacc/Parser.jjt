@@ -152,9 +152,14 @@ void MethodReturn() #Return: {}
 
 void MainParamList() #ParamList: {}
 {
-    (<STRINGARRAY> <IDENTIFIER>)?
+    [StringVarDeclaration()]
 }
- 
+
+void StringVarDeclaration() #VarDeclaration : {Token t, s;}
+{
+    s = <STRINGARRAY> {jjtThis.value = "stringarray";} #Type t = <IDENTIFIER> {jjtThis.value = t.image;} #Identifier
+}
+
 void Type() : {Token t;}
 {
     t = <INT> {jjtThis.value = t.image;} (<LSQUAREBRACKET> <RSQUAREBRACKET> {jjtThis.value = "array";})?
