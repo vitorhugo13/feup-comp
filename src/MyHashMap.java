@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 public class MyHashMap{
 
+    //TODO: deal with overload of functions (aka, change descriptor to ArrayList<Descriptor>);
+    
     private HashMap<String, Descriptor> myHash;
     private MyHashMap fatherHash;
     private MyHashMap childHash;
@@ -48,5 +50,9 @@ public class MyHashMap{
             return myHash.get(s);
 
         return null;
+    }
+
+    public HashMap<String, Descriptor> getHash(){
+        return this.myHash;
     }
 }

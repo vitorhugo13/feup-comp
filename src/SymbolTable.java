@@ -55,6 +55,8 @@ public class SymbolTable{
 
     public void add(String id, Descriptor info) {
 
+        System.out.println("OLA: " + id);
+        
         if (stack.empty()) {
             System.err.println("[ADD]: can't add a symbol without a scope.");
         }
@@ -124,6 +126,14 @@ public class SymbolTable{
         }
 
         return result;
+    }
+
+    public void print_all(){
+
+        for(int i = 0; i < all_hashes.size(); i++){
+            System.out.println("======= just printing stuff ========");
+            System.out.println(all_hashes.get(i).getHash().keySet());
+        }
     }
 
 }

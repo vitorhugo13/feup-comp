@@ -9,6 +9,12 @@ class Simple{
         return c;
     }
 
+    public int add(int a, int b,int c){
+        int c;
+        c = a+b;
+        return c;
+    }
+
     public static void main(String[] args){
         int a;
         int b;

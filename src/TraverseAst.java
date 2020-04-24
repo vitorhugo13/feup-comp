@@ -50,10 +50,13 @@ public class TraverseAst{
     }
 
     private void processProgram(Node node){
+
         symbolTable.enterScope(); // Enter Import Scope
+
         for (int i = 0; i < node.jjtGetNumChildren()-1; i++) { // Imports
             execute(node.jjtGetChild(i));
         }
+
         symbolTable.exitScope(); // Leave Import Scope
         execute(node.jjtGetChild(node.jjtGetNumChildren()-1)); // Class
 
@@ -69,62 +72,57 @@ public class TraverseAst{
     }
 
     private void processNonStaticImport(Node node){
-        ImportDescriptor descriptor;
+
+        MethodDescriptor descriptor;
+
         switch(node.jjtGetNumChildren()){
             case 1: // Ex.: import List;
-                descriptor= new ImportDescriptor(Utils.parseName(node.jjtGetChild(0).toString()), new ArrayList<>(), VOID);
-                symbolTable.add(Utils.parseName(node.jjtGetChild(0).toString()), descriptor);
-                //System.out.println("1 IMPORT ID: " + parseName(node.jjtGetChild(0).toString()));
+                descriptor= new MethodDescriptor(Utils.parseName(node.jjtGetChild(0).toString()), VOID, new ArrayList<>());
+                symbolTable.add(Utils.parseName(node.jjtGetChild(0).toString()), descriptor, true);
                 return;
             case 2:
                 if(node.jjtGetChild(1).toString().contains("Method")){ // Ex: import List.add(int);
-                    ArrayList<String> params = getMethodParams(node.jjtGetChild(1).jjtGetChild(0));
+
+                    ArrayList<VarDescriptor> params = getMethodParams(node.jjtGetChild(1).jjtGetChild(0));
                     String returnType = getMethodReturnType(node.jjtGetChild(1));
-                    String name = Utils.parseName(node.jjtGetChild(0).toString())+ "." + Utils.parseName(node.jjtGetChild(1).toString());
-                    descriptor= new ImportDescriptor(Utils.parseName(name), params, returnType);
-                    symbolTable.add(name, descriptor);
-                    //System.out.println("2 IMPORT ID: " + name + "  --- RETURN TYPE: " + returnType + "--- FIRST PARAM: " + params.size());
+                    String name = Utils.parseName(node.jjtGetChild(0).toString());
+
+                    descriptor= new MethodDescriptor(name, returnType,  params);
+                    symbolTable.add(name, descriptor, true);
+
                     return;
                 }
                 else{ // Contructor with params - Ex: import List(int);
-                    ArrayList<String> params = getMethodParams(node.jjtGetChild(1));
-                    descriptor= new ImportDescriptor(Utils.parseName(node.jjtGetChild(0).toString()), params, VOID);
-                    symbolTable.add(Utils.parseName(node.jjtGetChild(0).toString()), descriptor);
-                    //System.out.println("3 IMPORT ID: " + parseName(node.jjtGetChild(0).toString())  + "--- FIRST PARAM: " + params.size());
+                    ArrayList<VarDescriptor> params = getMethodParams(node.jjtGetChild(1));
+
+                    descriptor= new MethodDescriptor(Utils.parseName(node.jjtGetChild(0).toString()), VOID, params);
+                    symbolTable.add(Utils.parseName(node.jjtGetChild(0).toString()), descriptor, true);
+
                     return;
                 }
         }
 
     }
 
-    private ArrayList<String> getMethodParams(Node paramList) {
-        ArrayList<String> params = new ArrayList<>();
+    private ArrayList<VarDescriptor> getMethodParams(Node paramList) {
+        ArrayList<VarDescriptor> params = new ArrayList<>();
 
         for (int i = 0; i < paramList.jjtGetNumChildren(); i++) {
-            params.add(Utils.parseName(paramList.jjtGetChild(i).toString()));
+            VarDescriptor vd = new VarDescriptor(Utils.parseName(paramList.jjtGetChild(i).toString()), null);
+            params.add(vd);
         }
         return params;
     }
 
     private void processStaticImport(Node node) {
-        /*
-        StaticImport = node
-            Identifier[io]
-            Method[println]
-                ParamList
-                    Type[int]
-                    Type[String]
-                Return 
-                    Type[int]
-        */
 
-        ArrayList<String> params = getMethodParams(node.jjtGetChild(1).jjtGetChild(0));
+        ArrayList<VarDescriptor> params = getMethodParams(node.jjtGetChild(1).jjtGetChild(0));
         String returnType = getMethodReturnType(node.jjtGetChild(1));
 
 
-        String name = Utils.parseName(node.jjtGetChild(0).toString())+ "." + Utils.parseName(node.jjtGetChild(1).toString());
-        ImportDescriptor descriptor = new ImportDescriptor(name, params, returnType);
-        symbolTable.add(name, descriptor);
+        String name = Utils.parseName(node.jjtGetChild(0).toString());
+        MethodDescriptor descriptor = new MethodDescriptor(name, returnType, params);
+        symbolTable.add(name, descriptor, true);
         //System.out.println("STATIC IMPORT ID: " + name + "  --- RETURN TYPE: " + returnType + "--- FIRST PARAM: " + params.size());
     }
 
@@ -144,20 +142,32 @@ public class TraverseAst{
     }
 
     private void processMethod(Node node) {
-        symbolTable.enterScope();
+
+
         ArrayList<VarDescriptor> params = new ArrayList<>();
         Node paramList= node.jjtGetChild(1);
         Node currentNode;
 
+
         for(int i=0; i<paramList.jjtGetNumChildren(); i++){
+
             currentNode= paramList.jjtGetChild(i); //VarDeclaration
             VarDescriptor varDescriptor =new VarDescriptor(Utils.parseName(currentNode.jjtGetChild(0).toString()), Utils.parseName(currentNode.jjtGetChild(1).toString()));
             params.add(varDescriptor);
-            symbolTable.add(Utils.parseName(currentNode.jjtGetChild(1).toString()), varDescriptor);
+
         }
 
         MethodDescriptor methodDescriptor = new MethodDescriptor(Utils.parseName(node.toString()), Utils.parseName(node.jjtGetChild(0).toString()), params);
-        symbolTable.add(node.toString(), methodDescriptor);
+        System.out.println("ok: " + Utils.parseName(node.toString()));
+        symbolTable.add(Utils.parseName(node.toString()), methodDescriptor);
+
+        symbolTable.enterScope();
+
+        for(int i=0; i<params.size(); i++){
+  
+            symbolTable.add(params.get(i).getIdentifier(), params.get(i));
+
+        }
 
         for(int i=0; i<node.jjtGetChild(2).jjtGetNumChildren(); i++){
             execute(node.jjtGetChild(2).jjtGetChild(i));
@@ -167,8 +177,7 @@ public class TraverseAst{
     }
 
     private void processMain(Node node) {
-        System.out.flush();
-        symbolTable.enterScope();
+
         ArrayList<VarDescriptor> params = new ArrayList<>();
         Node paramList= node.jjtGetChild(0);
         Node currentNode;
@@ -178,13 +187,20 @@ public class TraverseAst{
                 currentNode= paramList.jjtGetChild(i);
                 VarDescriptor varDescriptor =new VarDescriptor(Utils.parseName(currentNode.jjtGetChild(0).toString()), Utils.parseName(currentNode.jjtGetChild(1).toString())); //tyoe, identifier
                 params.add(varDescriptor);
-                symbolTable.add(Utils.parseName(currentNode.jjtGetChild(1).toString()), varDescriptor);
             }
            
         }
 
         MethodDescriptor methodDescriptor = new MethodDescriptor(Utils.parseName(node.toString()), null, params);
-        symbolTable.add(node.toString(), methodDescriptor);
+        symbolTable.add(Utils.parseName(node.toString()), methodDescriptor);
+
+        symbolTable.enterScope();
+
+        for(int i=0; i<params.size(); i++){
+            
+            symbolTable.add(params.get(i).getIdentifier(), params.get(i));
+           
+        }
 
         for(int i=0; i<node.jjtGetChild(1).jjtGetNumChildren(); i++){
             execute(node.jjtGetChild(1).jjtGetChild(i));
