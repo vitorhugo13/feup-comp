@@ -29,6 +29,9 @@ public class Main {
         SymbolTable symbolTable = new SymbolTable();
         TraverseAst traverseAst= new TraverseAst(root, symbolTable);
         traverseAst.execute(root);
+        SemanticAnalysis semanticAnalysis = new SemanticAnalysis(symbolTable);
+        System.out.println("SEMANTIC ANALYSIS");
+        semanticAnalysis.execute(root);
     }
 
 }

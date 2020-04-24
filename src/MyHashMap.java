@@ -44,7 +44,7 @@ public class MyHashMap{
         return myHash.containsKey(s);
     }
 
-    public ArrayList<Descriptor> getDescriptor(String s){
+    public ArrayList<Descriptor> getArrayDescriptor(String s){
 
         if(exists(s))
             return myHash.get(s);

@@ -2,12 +2,14 @@ import descriptors.*;
 
 import java.util.Stack;
 import java.util.ArrayList;
+import java.io.IOException;
 
 
 public class SymbolTable{
 
     private Stack<MyHashMap> stack;
     private ArrayList<MyHashMap> all_hashes;
+    private int posArrayForAnalysis;
  
     public SymbolTable() {
 
@@ -15,9 +17,8 @@ public class SymbolTable{
 
         stack = new Stack<MyHashMap>();
         all_hashes = new ArrayList<MyHashMap>();
-
-        all_hashes.add(firstHash);
         stack.push(firstHash);
+        posArrayForAnalysis=0;
 
     }
 
@@ -31,13 +32,23 @@ public class SymbolTable{
 
     }
 
+    public void enterScopeForAnalysis() {
+        stack.push(all_hashes.get(posArrayForAnalysis));
+        posArrayForAnalysis++;
+        System.out.println("Entered scope for analysis: " + stack.peek());
+    }
+
     public void exitScope() {
         System.out.println("Exit scope: " + stack.peek());
-
         if (stack.empty()) {
-            System.err.println("existScope: can't remove scope from an empty symbol table.");
+            System.err.println("existScope: symbol table is empty.");
         }
 
+        stack.pop();
+    }
+
+    public void exitScopeForAnalysis() {
+        System.out.println("Exit scope for analysis: " + stack.peek());
         stack.pop();
     }
 
@@ -50,16 +61,6 @@ public class SymbolTable{
 
         MyHashMap my_hash = stack.peek();
 
-        // do{
-
-        //     if(my_hash.exists(id)){
-        //         System.err.println("Duplicated variable: " + id + " in: " + my_hash);
-        //         return;
-        //     }
-
-        //     my_hash = my_hash.getFather();
-
-        // }while(my_hash != null);
         if(!info.getType().equals(Descriptor.Type.IMPORT)) { // We allow repeated imports for method overloads as they are all in the same scope
             if (stack.peek().exists(id)) {
                 System.err.println("Duplicated variable: " + id + " in: " + my_hash);
@@ -73,21 +74,31 @@ public class SymbolTable{
     }
 
 
-    public ArrayList<Descriptor> lookup(String sym) {
+    public ArrayList<Descriptor> lookup(String id, Descriptor.Type type) throws IOException {
 
         if (stack.empty()) {
-            System.err.println("LOOKUP: no scope in symbol table.");
+            System.err.println("LOOKUP: symbol table is empty.");
         }
 
-        for(int i = 0; i < all_hashes.size(); i++){
-            if(all_hashes.get(i).getDescriptor(sym) != null){
-                return all_hashes.get(i).getDescriptor(sym);
+        if (type.equals(Descriptor.Type.METHOD)) { // Method can be declared anywhere
+            for (int i = 0; i < all_hashes.size(); i++) {
+                if (all_hashes.get(i).getArrayDescriptor(id) != null) {
+                    return all_hashes.get(i).getArrayDescriptor(id);
+                }
             }
+            throw new IOException("Method " + id + " was not declared");
+        } else { // Var needs to be declared either in current scope or in the parent's scope
+            MyHashMap my_hash = stack.peek();
+            do {
+                if (my_hash.exists(id)) {
+                    return my_hash.getArrayDescriptor(id);
+                }
+                my_hash = my_hash.getFather();
+            } while (my_hash != null);
+            throw new IOException("Var " + id + " was not declared");
         }
-        
-
-        return null;
     }
+
 
     public String toString() {
 
