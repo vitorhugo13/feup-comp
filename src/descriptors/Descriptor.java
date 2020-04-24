@@ -2,8 +2,11 @@ package descriptors;
 import java.util.HashMap;
 
 abstract public class Descriptor {
+
     protected Type type;
     protected String identifier;
+    
+
 
 
     public static enum Type{
@@ -16,6 +19,8 @@ abstract public class Descriptor {
     protected String getParsedDataType(String dataType){
         if(dataType.equals("int"))
             return "Integer";
+        else if(dataType.equals("array"))
+            return "Array";
         else
             return dataType;
 
