@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class MyHashMap{
 
-    private HashMap<String, ArrayList<Descriptor>> myHash;
+    private HashMap<String, Descriptor> myHash;
     private MyHashMap fatherHash;
     private MyHashMap childHash;
 
@@ -28,15 +28,13 @@ public class MyHashMap{
     }
 
     public void add(String s, Descriptor d){
+        //TODO
         if(exists(s)) {
-            ArrayList descriptors = myHash.get(s);
-            descriptors.add(d);
-            this.myHash.put(s, descriptors);
+            this.myHash.put(s, d);
         }
         else{
-            ArrayList descriptors = new ArrayList<>();
-            descriptors.add(d);
-            this.myHash.put(s, descriptors);
+
+            this.myHash.put(s, d);
         }
     }
 
@@ -44,7 +42,7 @@ public class MyHashMap{
         return myHash.containsKey(s);
     }
 
-    public ArrayList<Descriptor> getArrayDescriptor(String s){
+    public Descriptor getDescriptor(String s){
 
         if(exists(s))
             return myHash.get(s);

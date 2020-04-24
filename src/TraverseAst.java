@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import descriptors.*;
 
+//TODO: verificar tabela de simbolos, acrescentar method != method import
 
 @SuppressWarnings({"unchecked"})
 public class TraverseAst{
@@ -166,6 +167,7 @@ public class TraverseAst{
     }
 
     private void processMain(Node node) {
+        System.out.flush();
         symbolTable.enterScope();
         ArrayList<VarDescriptor> params = new ArrayList<>();
         Node paramList= node.jjtGetChild(0);
@@ -176,7 +178,7 @@ public class TraverseAst{
                 currentNode= paramList.jjtGetChild(i);
                 VarDescriptor varDescriptor =new VarDescriptor(Utils.parseName(currentNode.jjtGetChild(0).toString()), Utils.parseName(currentNode.jjtGetChild(1).toString())); //tyoe, identifier
                 params.add(varDescriptor);
-                symbolTable.add(node.toString(), varDescriptor);
+                symbolTable.add(Utils.parseName(currentNode.jjtGetChild(1).toString()), varDescriptor);
             }
            
         }

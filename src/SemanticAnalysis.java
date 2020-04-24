@@ -55,7 +55,7 @@ class SemanticAnalysis{
         }
         else{
 
-            VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString()), Descriptor.Type.VAR).get(0);
+            VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString()), Descriptor.Type.VAR);
             String dataType= Utils.getFirstPartOfName(node.jjtGetChild(1).toString());
 
             if(dataType.equals(varDescriptor.getDataType())){
@@ -70,8 +70,8 @@ class SemanticAnalysis{
 
     private void processArray(Node node) throws IOException{
 
-        String id = Utils.parseName(node.jjtGetChild(0).jjtGetChild(0).toString()); //nome do array
-        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id, Descriptor.Type.VAR).get(0); //retorna array (1º elemento do array)
+        String id = Utils.parseName(node.jjtGetChild(0).jjtGetChild(0).toString());
+        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id, Descriptor.Type.VAR);
         if(!varDescriptor.getDataType().equals("Array")){
             throw new IOException("Variable " + varDescriptor.getIdentifier() + " of type Array does not match declaration type " + varDescriptor.getDataType());
         }
@@ -79,7 +79,7 @@ class SemanticAnalysis{
         String index_dataType = Utils.getFirstPartOfName(node.jjtGetChild(0).jjtGetChild(1).toString()); //index of array data type
 
         if(index_dataType.equals("Identifier")){
-            VarDescriptor index_varDescriptor = (VarDescriptor) symbolTable.lookup(index_dataType, Descriptor.Type.VAR).get(0); 
+            VarDescriptor index_varDescriptor = (VarDescriptor) symbolTable.lookup(index_dataType, Descriptor.Type.VAR);
             if(!index_varDescriptor.getDataType().equals("Integer")){
                 throw new IOException("Index of array " + id + " is not Integer!");
             }
