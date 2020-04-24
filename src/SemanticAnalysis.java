@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import descriptors.*;
 import java.io.IOException;
 
-//TODO: string[] args do method main
+//TODO: string[] args do method main DONE, I GUESS
 //TODO: get data type
 //TODO: arrays(ESQ, DIREITA, AMBOS)
 
@@ -11,6 +11,8 @@ class SemanticAnalysis{
     static private int MAX_EXCEPTIONS = 10;
     private SymbolTable symbolTable;
     private int exceptionCounter;
+
+
 
 
     public SemanticAnalysis(SymbolTable symbolTable){
