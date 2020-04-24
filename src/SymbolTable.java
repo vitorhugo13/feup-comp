@@ -28,27 +28,27 @@ public class SymbolTable{
         MyHashMap myHash = new MyHashMap(stack.peek());
         stack.push(myHash);
         all_hashes.add(myHash);
-        System.out.println("Entered scope: " + stack.peek());
+        //System.out.println("[SCOPE] Entered scope: " + stack.peek());
 
     }
 
     public void enterScopeForAnalysis() {
         stack.push(all_hashes.get(posArrayForAnalysis));
         posArrayForAnalysis++;
-        System.out.println("Entered scope for analysis: " + stack.peek());
+        //System.out.println("[SCOPE] Entered scope for analysis: " + stack.peek());
     }
 
     public void exitScope() {
-        System.out.println("Exit scope: " + stack.peek());
+        //System.out.println("[SCOPE] Exit scope: " + stack.peek());
         if (stack.empty()) {
-            System.err.println("existScope: symbol table is empty.");
+            System.err.println("[ERROR] [SCOPE] existScope: symbol table is empty.");
         }
 
         stack.pop();
     }
 
     public void exitScopeForAnalysis() {
-        System.out.println("Exit scope for analysis: " + stack.peek());
+        //System.out.println("[SCOPE] Exit scope for analysis: " + stack.peek());
         stack.pop();
     }
 
@@ -56,14 +56,14 @@ public class SymbolTable{
     public void add(String id, Descriptor info) {
 
         if (stack.empty()) {
-            System.err.println("ADD: can't add a symbol without a scope.");
+            System.err.println("[ADD]: can't add a symbol without a scope.");
         }
 
         MyHashMap my_hash = stack.peek();
 
         if(!info.getType().equals(Descriptor.Type.IMPORT)) { // We allow repeated imports for method overloads as they are all in the same scope
             if (stack.peek().exists(id)) {
-                System.err.println("Duplicated variable: " + id + " in: " + my_hash);
+                System.err.println("[ERROR] [ADD] Duplicated variable: " + id + " in: " + my_hash);
                 return;
             }
         }
@@ -77,7 +77,7 @@ public class SymbolTable{
     public ArrayList<Descriptor> lookup(String id, Descriptor.Type type) throws IOException {
 
         if (stack.empty()) {
-            System.err.println("LOOKUP: symbol table is empty.");
+            System.err.println("[ERROR] [LOOKUP]: symbol table is empty.");
         }
 
         if (type.equals(Descriptor.Type.METHOD)) { // Method can be declared anywhere

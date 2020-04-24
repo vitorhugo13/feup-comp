@@ -37,15 +37,22 @@ class SemanticAnalysis{
             System.err.println("[SEMANTIC ERROR]: " + e.getMessage());
             exceptionCounter++;
             if (exceptionCounter >= MAX_EXCEPTIONS) {
-                System.err.println("THERE ARE MORE THAN " + MAX_EXCEPTIONS + " SEMANTIC ERRORS. PROGRAM TERMINATING...");
+                System.err.println("[PROGRAM TERMINATING] THERE ARE MORE THAN " + MAX_EXCEPTIONS + " SEMANTIC ERRORS.");
                 System.exit(0);
             }
         }
     }
 
     private void processAssign(Node node) throws IOException{
-        ArrayList<Descriptor> varDescriptor = symbolTable.lookup(parseName(node.jjtGetChild(0).toString()), Descriptor.Type.VAR);
-
+        // TODO: Arrays (also need to update symbol table with those), Class types and constructor invocations, sums (a= b+c)
+        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString()), Descriptor.Type.VAR).get(0);
+        String dataType= Utils.getFirstPartOfName(node.jjtGetChild(1).toString());
+        if(dataType.equals(varDescriptor.getDataType())){
+            //System.out.println("MATCH - VAR: " + varDescriptor.getIdentifier() + " data "+ dataType);
+        }
+        else{
+            throw new IOException("Variable " + varDescriptor.getIdentifier() + " of type " + dataType + " does not match declaration type " + varDescriptor.getDataType());
+        }
     }
 
     private void processProgram(Node node){
@@ -77,35 +84,7 @@ class SemanticAnalysis{
     }
 
 
-    public String parseName(String name){
 
-        String id ="";
-        int state = 0;
-
-        for(int i = 0; i < name.length(); i++){
-
-            switch(state){
-                case 0:
-                    if(name.charAt(i) == '['){
-                        state = 1;
-                    }
-                    break;
-                case 1:
-
-                    if(name.charAt(i) == ']'){
-                        state = 2;
-                    }
-                    else{
-                        id = id + name.charAt(i);
-                    }
-                    break;
-                case 2:
-                    break;
-            }
-        }
-
-        return id;
-    }
 
 
 }
