@@ -27,34 +27,8 @@ public class Utils {
         return name.substring(0, finalChar);
     }
 
-    public static String parseName(String name){
-
-        String id ="";
-        int state = 0;
-
-        for(int i = 0; i < name.length(); i++){
-
-            switch(state){
-                case 0:
-                    if(name.charAt(i) == '['){
-                        state = 1;
-                    }
-                    break;
-                case 1:
-
-                    if(name.charAt(i) == ']'){
-                        state = 2;
-                    }
-                    else{
-                        id = id + name.charAt(i);
-                    }
-                    break;
-                case 2:
-                    break;
-            }
-        }
-
-        return id;
+    public static String parseName(String name) {
+        return name.substring(name.indexOf("[") + 1, name.indexOf("]"));
     }
 	
 }

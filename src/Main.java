@@ -27,11 +27,16 @@ public class Main {
 
         
         SymbolTable symbolTable = new SymbolTable();
-        TraverseAst traverseAst= new TraverseAst(root, symbolTable);
+        TraverseAst traverseAst = new TraverseAst(root, symbolTable);
         traverseAst.execute(root);
-        SemanticAnalysis semanticAnalysis = new SemanticAnalysis(symbolTable);
-        System.out.println("SEMANTIC ANALYSIS");
-        semanticAnalysis.execute(root);
+        // SemanticAnalysis semanticAnalysis = new SemanticAnalysis(symbolTable);
+        // System.out.println("SEMANTIC ANALYSIS");
+        // semanticAnalysis.execute(root);
+
+        Generator codeGenerator = new Generator(symbolTable);
+        // TODO: get the name of the file from the args
+        codeGenerator.generate(root, "test");
+        System.out.println("CODE GENERATION COMPLETE");
     }
 
 }

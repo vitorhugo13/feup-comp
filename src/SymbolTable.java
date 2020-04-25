@@ -22,6 +22,10 @@ public class SymbolTable{
 
     }
 
+    public boolean inClassScope() {
+        return posArrayForAnalysis <= 2;
+    }
+
     
     public void enterScope() {
 

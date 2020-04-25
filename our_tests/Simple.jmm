@@ -1,8 +1,9 @@
-import io.println(int);
-
 class Simple {
+
+	int d;
+	String v;
 	
-	public static void main(String args[]) {
+	public static void main(String[] args) {
 		int a;
 		int b;
 		Simple simple;
@@ -11,10 +12,9 @@ class Simple {
 		b = 0-10;		
 		simple = new Simple();
 		c = simple.add(a,b);		
-		io.println(c);
 	}
 
-	int add(int a, int b){
+	public int add(int a, int b){
 		return a+b;
 	}
 }
