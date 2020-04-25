@@ -39,7 +39,7 @@ public class SymbolTable{
     }
 
     public void exitScope() {
-        //System.out.println("[SCOPE] Exit scope: " + stack.peek());
+        System.out.println("[SCOPE] Exit scope: " + stack.peek());
         if (stack.empty()) {
             System.err.println("[ERROR] [SCOPE] existScope: symbol table is empty.");
         }
@@ -54,8 +54,6 @@ public class SymbolTable{
 
 
     public void add(String id, Descriptor info) {
-
-        System.out.println("OLA: " + id);
         
         if (stack.empty()) {
             System.err.println("[ADD]: can't add a symbol without a scope.");
@@ -63,9 +61,9 @@ public class SymbolTable{
 
         MyHashMap my_hash = stack.peek();
 
-        if(!info.getType().equals(Descriptor.Type.IMPORT)) { // We allow repeated imports for method overloads as they are all in the same scope
+        if(!info.getType().equals(Descriptor.Type.METHOD)) { // We allow repeated imports for method overloads as they are all in the same scope
             if (stack.peek().exists(id)) {
-                System.err.println("[ERROR] [ADD] Duplicated variable: " + id + " in: " + my_hash);
+                System.err.println("[SEMANTIC ERROR] Duplicated variable: " + id + " in: " + my_hash);
                 return;
             }
         }
@@ -83,15 +81,15 @@ public class SymbolTable{
             (stack.peek()).add(id, classDescriptor);
         }
         else{
-            ((ClassDescriptor) stack.peek().getDescriptor(id)).addMethod(info);
-            System.out.println("Get descriptor: " + ((ClassDescriptor) stack.peek().getDescriptor(id)).getMethods());
+            ((ClassDescriptor) stack.peek().getDescriptor(id).get(0)).addMethod(info);
+            System.out.println("Get descriptor: " + ((ClassDescriptor) stack.peek().getDescriptor(id).get(0)).getMethods());
         }
 
     }
 
 
 
-    public Descriptor lookup(String id, Descriptor.Type type) throws IOException {
+    public ArrayList<Descriptor>  lookup(String id, Descriptor.Type type) throws IOException {
 
         if (stack.empty()) {
             System.err.println("[ERROR] [LOOKUP]: symbol table is empty.");
@@ -132,9 +130,14 @@ public class SymbolTable{
 
         for(int i = 0; i < all_hashes.size(); i++){
             System.out.println("======= just printing stuff ========");
-            System.out.println(all_hashes.get(i).getHash().keySet());
+            //System.out.println(all_hashes.get(i).getHash().keySet());
+            all_hashes.get(i).getHash().entrySet().forEach(entry->{
+                System.out.println(entry.getKey() + " " + entry.getValue());  
+             });
         }
     }
+
+        
 
 }
 

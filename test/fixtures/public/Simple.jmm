@@ -10,7 +10,7 @@ class Simple{
     }
 
     public int add(int a, int b,int c){
-        int c;
+        int d;
         c = a+b;
         return c;
     }

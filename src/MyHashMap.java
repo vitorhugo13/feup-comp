@@ -6,7 +6,7 @@ public class MyHashMap{
 
     //TODO: deal with overload of functions (aka, change descriptor to ArrayList<Descriptor>);
     
-    private HashMap<String, Descriptor> myHash;
+    private HashMap<String, ArrayList<Descriptor>> myHash;
     private MyHashMap fatherHash;
     private MyHashMap childHash;
 
@@ -30,13 +30,15 @@ public class MyHashMap{
     }
 
     public void add(String s, Descriptor d){
-        //TODO
         if(exists(s)) {
-            this.myHash.put(s, d);
+            ArrayList descriptors = myHash.get(s);
+            descriptors.add(d);
+            this.myHash.put(s, descriptors);
         }
         else{
-
-            this.myHash.put(s, d);
+            ArrayList descriptors = new ArrayList<>();
+            descriptors.add(d);
+            this.myHash.put(s, descriptors);
         }
     }
 
@@ -44,7 +46,7 @@ public class MyHashMap{
         return myHash.containsKey(s);
     }
 
-    public Descriptor getDescriptor(String s){
+    public ArrayList<Descriptor> getDescriptor(String s){
 
         if(exists(s))
             return myHash.get(s);
@@ -52,7 +54,7 @@ public class MyHashMap{
         return null;
     }
 
-    public HashMap<String, Descriptor> getHash(){
+    public HashMap<String, ArrayList<Descriptor>> getHash(){
         return this.myHash;
     }
 }
