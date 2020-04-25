@@ -91,6 +91,7 @@ public class SymbolTable{
 
     //TODO: search methods in import
     public ArrayList<Descriptor>  lookup(String id) throws IOException {
+
         if (stack.empty()) {
             System.err.println("[ERROR] [LOOKUP]: symbol table is empty.");
         }
@@ -102,6 +103,7 @@ public class SymbolTable{
             }
             my_hash = my_hash.getFather();
         } while (my_hash != null);
+        
         throw new IOException("Variable " + id + " was not declared");
             
     }

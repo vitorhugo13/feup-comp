@@ -57,9 +57,6 @@ class SemanticAnalysis{
 
         // TODO: Arrays (also need to update symbol table with those), Class types and constructor invocations, sums (a= b+c)
 
-        // if(node.jjtGetChild(0).equals("Array") && !node.jjtGetChild(1).equals("Array")){
-        //     processArrayLeft(node);
-        // }
         if(node.jjtGetChild(0).toString().equals("Array") && !node.jjtGetChild(1).toString().contains("Array")){
             processArrayLeft(node);
         }
