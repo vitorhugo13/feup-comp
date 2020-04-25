@@ -121,6 +121,7 @@ class SemanticAnalysis{
     }
 
     private void processArrayLeft(Node node) throws IOException{
+
         System.out.println("ARRAY LEFT");
 
         String id = Utils.parseName(node.jjtGetChild(0).jjtGetChild(0).toString());
@@ -143,14 +144,60 @@ class SemanticAnalysis{
 
     private void processArrayRight(Node node) throws IOException{
 
-       System.out.println("ARRAY RIGHT");
+        System.out.println("ARRAY RIGHT");
+
+        String id = Utils.parseName(node.jjtGetChild(0).toString());
+        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0);
+
+        if(!getNodeDataType(node.jjtGetChild(0)).equals("Integer")){
+            throw new IOException( id + " is not Integer!");
+        }
+
+     //   ==============
+
+        String id2 = Utils.parseName(node.jjtGetChild(1).jjtGetChild(0).toString());
+        VarDescriptor varDescriptor2 = (VarDescriptor) symbolTable.lookup(id2).get(0);
+
+        if(!varDescriptor2.getDataType().equals("Array")){
+            throw new IOException("Variable " + varDescriptor2.getIdentifier() + " of type Array does not match declaration type " + varDescriptor2.getDataType());
+        }
+
+        String type = getNodeDataType(node.jjtGetChild(1).jjtGetChild(1));
+        if(!type.equals("Integer")){
+            throw new IOException("Index of array " + id2 + " is not Integer!");
+        }
 
     }
 
     private void processArrayBoth(Node node) throws IOException{
 
         System.out.println("ARRAY BOTH");
-       
+    
+
+        String id = Utils.parseName(node.jjtGetChild(0).jjtGetChild(0).toString());
+        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0);
+
+        if(!varDescriptor.getDataType().equals("Array")){
+            throw new IOException("Variable " + varDescriptor.getIdentifier() + " of type Array does not match declaration type " + varDescriptor.getDataType());
+        }
+
+        String type = getNodeDataType(node.jjtGetChild(0).jjtGetChild(1));
+        if(!type.equals("Integer")){
+            throw new IOException("Index of array " + id + " is not Integer!");
+        }
+        //   ==============
+
+        String id2 = Utils.parseName(node.jjtGetChild(1).jjtGetChild(0).toString());
+        VarDescriptor varDescriptor2 = (VarDescriptor) symbolTable.lookup(id2).get(0);
+
+        if(!varDescriptor2.getDataType().equals("Array")){
+            throw new IOException("Variable " + varDescriptor2.getIdentifier() + " of type Array does not match declaration type " + varDescriptor2.getDataType());
+        }
+
+        String type2 = getNodeDataType(node.jjtGetChild(1).jjtGetChild(1));
+        if(!type2.equals("Integer")){
+            throw new IOException("Index of array " + id2 + " is not Integer!");
+        }
 
     }
 
