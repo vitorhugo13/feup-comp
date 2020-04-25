@@ -60,7 +60,6 @@ public class TraverseAst{
     }
 
     private void processVarDeclaration(Node node) {
-        //System.out.println("Node ID: "+ node.getId() + " | " + " TYPE: " + node.toString() + " | "+" VARTYPE: " +node.jjtGetChild(0) + " | " +" Identifier: "+ node.jjtGetChild(1));
 
         String identifier = Utils.parseName(node.jjtGetChild(1).toString());
         VarDescriptor var_descriptor = new VarDescriptor(Utils.parseName(node.jjtGetChild(0).toString()), identifier);
@@ -120,7 +119,6 @@ public class TraverseAst{
         String name = Utils.parseName(node.jjtGetChild(0).toString());
         MethodDescriptor descriptor = new MethodDescriptor(name, returnType, params);
         symbolTable.add(name, descriptor, true);
-        //System.out.println("STATIC IMPORT ID: " + name + "  --- RETURN TYPE: " + returnType + "--- FIRST PARAM: " + params.size());
     }
 
     private String getMethodReturnType(Node method) {
@@ -218,8 +216,6 @@ public class TraverseAst{
     public SymbolTable getSymbolTable() {
         return this.symbolTable;
     }
-
-   
 }
 
 

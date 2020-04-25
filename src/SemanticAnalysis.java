@@ -21,10 +21,11 @@ class SemanticAnalysis{
     }
 
     public void execute(Node node){
-        //System.out.println("EXECUTE: " + node.toString());
+
         try {
+
             if (node.toString().equals("StaticImport")
-                    || node.toString().equals("NonStaticImport")) {
+                    || node.toString().equals("NonStaticImport")) { //TODO: é suposto este 1º if nao ter nenhum condição?
             } else if (node.toString().contains("Class")
                     || node.toString().equals("Method[main]")
                     || (!node.toString().equals("MethodInvocation")
@@ -37,10 +38,12 @@ class SemanticAnalysis{
             } else {
                 processChildren(node);
             }
-        }
-        catch (Exception e) {
+
+        }catch (Exception e) {
+
             System.err.println("[SEMANTIC ERROR]: " + e.getMessage());
             exceptionCounter++;
+
             if (exceptionCounter >= MAX_EXCEPTIONS) {
                 System.err.println("[PROGRAM TERMINATING] THERE ARE MORE THAN " + MAX_EXCEPTIONS + " SEMANTIC ERRORS.");
                 System.exit(0);
@@ -49,10 +52,17 @@ class SemanticAnalysis{
     }
 
     private void processAssign(Node node) throws IOException{
-        // TODO: Arrays (also need to update symbol table with those), Class types and constructor invocations, sums (a= b+c)
-        if(node.jjtGetChild(0).equals("Array")){
 
-            processArray(node);
+        // TODO: Arrays (also need to update symbol table with those), Class types and constructor invocations, sums (a= b+c)
+
+        if(node.jjtGetChild(0).equals("Array") && !node.jjtGetChild(1).equals("Array")){
+            processArrayLeft(node);
+        }
+        else if(!node.jjtGetChild(0).equals("Array") && node.jjtGetChild(1).equals("Array")){
+            processArrayRight(node);
+        }
+        else if(node.jjtGetChild(0).equals("Array") && node.jjtGetChild(1).equals("Array")){
+            processArrayBoth(node);
         }
         else if(node.jjtGetChild(1).toString().equals("NewIntArray")){
            processInitializeArray(node);
@@ -61,7 +71,6 @@ class SemanticAnalysis{
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
             String dataType = getNodeDataType(node.jjtGetChild(1));
             if(dataType.equals(varDescriptor.getDataType())){
-                //System.out.println("MATCH: " + varDescriptor.getIdentifier());
                 varDescriptor.setInitialized();
                 varDescriptor.setCurrValue(Utils.parseName(node.jjtGetChild(1).toString()));
             }
@@ -104,7 +113,6 @@ class SemanticAnalysis{
             }
             return "Integer";
         }
-
         else{ // INTEGER[2]
             return Utils.getFirstPartOfName(node.toString());
         }
@@ -112,28 +120,37 @@ class SemanticAnalysis{
         
     }
 
-    private void processArray(Node node) throws IOException{
+    private void processArrayLeft(Node node) throws IOException{
+        System.out.println("ARRAY LEFT");
 
         String id = Utils.parseName(node.jjtGetChild(0).jjtGetChild(0).toString());
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0);
+
         if(!varDescriptor.getDataType().equals("Array")){
             throw new IOException("Variable " + varDescriptor.getIdentifier() + " of type Array does not match declaration type " + varDescriptor.getDataType());
         }
 
-        String index_dataType = Utils.getFirstPartOfName(node.jjtGetChild(0).jjtGetChild(1).toString()); //index of array data type
-
-        if(index_dataType.equals("Identifier")){
-            VarDescriptor index_varDescriptor = (VarDescriptor) symbolTable.lookup(index_dataType).get(0);
-            if(!index_varDescriptor.getDataType().equals("Integer")){
-                throw new IOException("Index of array " + id + " is not Integer!");
-            }
-        }
-        else if(index_dataType.equals("Identifier")){
-
-        }
-        else{
+        String type = getNodeDataType(node.jjtGetChild(0).jjtGetChild(1));
+        if(!type.equals("Integer")){
             throw new IOException("Index of array " + id + " is not Integer!");
         }
+
+        if(!getNodeDataType(node.jjtGetChild(1)).equals("Integer")){
+            throw new IOException("Index of array " + id + " is not Integer!");
+        }
+
+    }
+
+    private void processArrayRight(Node node) throws IOException{
+
+       System.out.println("ARRAY RIGHT");
+
+    }
+
+    private void processArrayBoth(Node node) throws IOException{
+
+        System.out.println("ARRAY BOTH");
+       
 
     }
 
@@ -164,9 +181,4 @@ class SemanticAnalysis{
     public SymbolTable getSymbolTable() {
         return this.symbolTable;
     }
-
-
-
-
-
 }

@@ -35,7 +35,6 @@ public class SymbolTable{
     public void enterScopeForAnalysis() {
         stack.push(all_hashes.get(posArrayForAnalysis));
         posArrayForAnalysis++;
-        //System.out.println("[SCOPE] Entered scope for analysis: " + stack.peek());
     }
 
     public void exitScope() {
@@ -48,7 +47,6 @@ public class SymbolTable{
     }
 
     public void exitScopeForAnalysis() {
-        //System.out.println("[SCOPE] Exit scope for analysis: " + stack.peek());
         stack.pop();
     }
 
@@ -67,7 +65,6 @@ public class SymbolTable{
                 return;
             }
         }
-        //System.out.println("Added var: " + id + " to table: " + stack.peek());
         (stack.peek()).add(id, info);
     }
 
@@ -89,8 +86,8 @@ public class SymbolTable{
 
 
 
+    //TODO: search methods in import
     public ArrayList<Descriptor>  lookup(String id) throws IOException {
-        //TODO: search methods in import
         if (stack.empty()) {
             System.err.println("[ERROR] [LOOKUP]: symbol table is empty.");
         }
@@ -122,7 +119,6 @@ public class SymbolTable{
 
         for(int i = 0; i < all_hashes.size(); i++){
             System.out.println("======= just printing stuff ========");
-            //System.out.println(all_hashes.get(i).getHash().keySet());
             all_hashes.get(i).getHash().entrySet().forEach(entry->{
                 System.out.println(entry.getKey() + " " + entry.getValue());  
              });
