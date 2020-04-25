@@ -130,9 +130,14 @@ public class SymbolTable{
 
         for(int i = 0; i < all_hashes.size(); i++){
             System.out.println("======= just printing stuff ========");
-            System.out.println(all_hashes.get(i).getHash().keySet());
+            //System.out.println(all_hashes.get(i).getHash().keySet());
+            all_hashes.get(i).getHash().entrySet().forEach(entry->{
+                System.out.println(entry.getKey() + " " + entry.getValue());  
+             });
         }
     }
+
+        
 
 }
 
