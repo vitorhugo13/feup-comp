@@ -3,8 +3,6 @@ import java.util.HashMap;
 import java.util.ArrayList;
 
 public class MyHashMap{
-
-    //TODO: deal with overload of functions (aka, change descriptor to ArrayList<Descriptor>);
     
     private HashMap<String, ArrayList<Descriptor>> myHash;
     private MyHashMap fatherHash;
