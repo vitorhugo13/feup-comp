@@ -158,7 +158,6 @@ public class TraverseAst{
         }
 
         MethodDescriptor methodDescriptor = new MethodDescriptor(Utils.parseName(node.toString()), Utils.parseName(node.jjtGetChild(0).toString()), params);
-        System.out.println("ok: " + Utils.parseName(node.toString()));
         symbolTable.add(Utils.parseName(node.toString()), methodDescriptor);
 
         symbolTable.enterScope();
