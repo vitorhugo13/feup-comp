@@ -8,10 +8,10 @@ import java.io.IOException;
 
 class SemanticAnalysis{
     static private String VOID = "void";
+    static String INTEGER = "Integer";
     static private int MAX_EXCEPTIONS = 10;
     private SymbolTable symbolTable;
     private int exceptionCounter;
-
 
 
 
@@ -51,14 +51,17 @@ class SemanticAnalysis{
     private void processAssign(Node node) throws IOException{
         // TODO: Arrays (also need to update symbol table with those), Class types and constructor invocations, sums (a= b+c)
         if(node.jjtGetChild(0).equals("Array")){
+
             processArray(node);
         }
+        else if(node.jjtGetChild(1).toString().equals("NewIntArray")){
+           processInitializeArray(node);
+        }
         else{
-
-            VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString()), Descriptor.Type.VAR).get(0);
-            String dataType= Utils.getFirstPartOfName(node.jjtGetChild(1).toString());
-
+            VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
+            String dataType = getNodeDataType(node.jjtGetChild(1));
             if(dataType.equals(varDescriptor.getDataType())){
+                //System.out.println("MATCH: " + varDescriptor.getIdentifier());
                 varDescriptor.setInitialized();
                 varDescriptor.setCurrValue(Utils.parseName(node.jjtGetChild(1).toString()));
             }
@@ -68,10 +71,52 @@ class SemanticAnalysis{
         }
     }
 
+    private void processInitializeArray(Node node) throws IOException{
+        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
+        if(!varDescriptor.getDataType().equals("Array")){
+            throw new IOException("Variable " + varDescriptor.getIdentifier() + " is not an array. Previously declared as a " + varDescriptor.getDataType());
+        }
+        if(!getNodeDataType(node.jjtGetChild(1).jjtGetChild(0)).equals(INTEGER)){
+            throw new IOException("When initializing array, array size must be an integer");
+        }
+        
+        
+
+    }
+    private String getNodeDataType(Node node) throws IOException{ 
+        /*
+        Identifier[a]
+        INTEGER[2]
+        ADD
+            IDENTIFIER
+            INTEGER
+            */
+        // String dataType;
+        if(node.toString().contains("Identifier")){ //IDENTIFIER[a]
+            VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.toString())).get(0);
+            if(varDescriptor.getInitialized()==false)
+                throw new IOException("Variable " + varDescriptor.getIdentifier() + " is not initialized");
+            return varDescriptor.getDataType();
+        }
+        else if(node.toString().equals("Add") || node.toString().equals("Sub") || node.toString().equals("Div") || node.toString().equals("Mul")){
+            for(int i= 0; i<node.jjtGetNumChildren();i++){
+                if(!getNodeDataType(node.jjtGetChild(i)).equals(INTEGER))
+                    throw new IOException("Arithmetic operation must be done with Integer values");
+            }
+            return "Integer";
+        }
+
+        else{ // INTEGER[2]
+            return Utils.getFirstPartOfName(node.toString());
+        }
+      
+        
+    }
+
     private void processArray(Node node) throws IOException{
 
         String id = Utils.parseName(node.jjtGetChild(0).jjtGetChild(0).toString());
-        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id, Descriptor.Type.VAR).get(0);
+        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0);
         if(!varDescriptor.getDataType().equals("Array")){
             throw new IOException("Variable " + varDescriptor.getIdentifier() + " of type Array does not match declaration type " + varDescriptor.getDataType());
         }
@@ -79,7 +124,7 @@ class SemanticAnalysis{
         String index_dataType = Utils.getFirstPartOfName(node.jjtGetChild(0).jjtGetChild(1).toString()); //index of array data type
 
         if(index_dataType.equals("Identifier")){
-            VarDescriptor index_varDescriptor = (VarDescriptor) symbolTable.lookup(index_dataType, Descriptor.Type.VAR).get(0);
+            VarDescriptor index_varDescriptor = (VarDescriptor) symbolTable.lookup(index_dataType).get(0);
             if(!index_varDescriptor.getDataType().equals("Integer")){
                 throw new IOException("Index of array " + id + " is not Integer!");
             }

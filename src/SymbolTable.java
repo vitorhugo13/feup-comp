@@ -89,29 +89,21 @@ public class SymbolTable{
 
 
 
-    public ArrayList<Descriptor>  lookup(String id, Descriptor.Type type) throws IOException {
+    public ArrayList<Descriptor>  lookup(String id) throws IOException {
 
         if (stack.empty()) {
             System.err.println("[ERROR] [LOOKUP]: symbol table is empty.");
         }
 
-        if (type.equals(Descriptor.Type.METHOD)) { // Method can be declared anywhere
-            for (int i = 0; i < all_hashes.size(); i++) {
-                if (all_hashes.get(i).getDescriptor(id) != null) {
-                    return all_hashes.get(i).getDescriptor(id);
-                }
+        MyHashMap my_hash = stack.peek();
+        do {
+            if (my_hash.exists(id)) {
+                return my_hash.getDescriptor(id);
             }
-            throw new IOException("Method " + id + " was not declared");
-        } else { // Var needs to be declared either in current scope or in the parent's scope (Class)
-            MyHashMap my_hash = stack.peek();
-            do {
-                if (my_hash.exists(id)) {
-                    return my_hash.getDescriptor(id);
-                }
-                my_hash = my_hash.getFather();
-            } while (my_hash != null);
-            throw new IOException("Variable " + id + " was not declared");
-        }
+            my_hash = my_hash.getFather();
+        } while (my_hash != null);
+        throw new IOException("Variable " + id + " was not declared");
+            
     }
 
 

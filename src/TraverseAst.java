@@ -163,7 +163,7 @@ public class TraverseAst{
         symbolTable.enterScope();
 
         for(int i=0; i<params.size(); i++){
-  
+            params.get(i).setInitialized();
             symbolTable.add(params.get(i).getIdentifier(), params.get(i));
 
         }
@@ -196,7 +196,7 @@ public class TraverseAst{
         symbolTable.enterScope();
 
         for(int i=0; i<params.size(); i++){
-            
+            params.get(i).setInitialized();
             symbolTable.add(params.get(i).getIdentifier(), params.get(i));
            
         }
