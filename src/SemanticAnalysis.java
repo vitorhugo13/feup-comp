@@ -3,8 +3,8 @@ import descriptors.*;
 import java.io.IOException;
 
 //TODO: string[] args do method main DONE, I GUESS
-//TODO: get data type
 //TODO: arrays(ESQ, DIREITA, AMBOS)
+
 
 class SemanticAnalysis{
     static private String VOID = "void";
@@ -91,10 +91,9 @@ class SemanticAnalysis{
             IDENTIFIER
             INTEGER
             */
-        // String dataType;
         if(node.toString().contains("Identifier")){ //IDENTIFIER[a]
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.toString())).get(0);
-            if(varDescriptor.getInitialized()==false)
+            if(!varDescriptor.getInitialized())
                 throw new IOException("Variable " + varDescriptor.getIdentifier() + " is not initialized");
             return varDescriptor.getDataType();
         }

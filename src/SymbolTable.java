@@ -90,7 +90,7 @@ public class SymbolTable{
 
 
     public ArrayList<Descriptor>  lookup(String id) throws IOException {
-
+        //TODO: search methods in import
         if (stack.empty()) {
             System.err.println("[ERROR] [LOOKUP]: symbol table is empty.");
         }
