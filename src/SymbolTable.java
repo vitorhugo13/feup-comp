@@ -28,17 +28,19 @@ public class SymbolTable{
         MyHashMap myHash = new MyHashMap(stack.peek());
         stack.push(myHash);
         all_hashes.add(myHash);
-        System.out.println("[SCOPE] Entered scope: " + stack.peek());
+       // System.out.println("[SCOPE] Entered scope: " + stack.peek());
 
     }
 
     public void enterScopeForAnalysis() {
+        
         stack.push(all_hashes.get(posArrayForAnalysis));
         posArrayForAnalysis++;
+        System.out.println("[SCOPE] Enter scope for analysis: " + stack.peek());
     }
 
     public void exitScope() {
-        System.out.println("[SCOPE] Exit scope: " + stack.peek());
+        //System.out.println("[SCOPE] Exit scope: " + stack.peek());
         if (stack.empty()) {
             System.err.println("[ERROR] [SCOPE] existScope: symbol table is empty.");
         }
@@ -47,6 +49,7 @@ public class SymbolTable{
     }
 
     public void exitScopeForAnalysis() {
+        System.out.println("[SCOPE] Exit scope for analysis: " + stack.peek());
         stack.pop();
     }
 
@@ -118,9 +121,11 @@ public class SymbolTable{
     public void print_all(){
 
         for(int i = 0; i < all_hashes.size(); i++){
-            System.out.println("======= just printing stuff ========");
+            System.out.println("\n======= SCOPE ========");
             all_hashes.get(i).getHash().entrySet().forEach(entry->{
-                System.out.println(entry.getKey() + " " + entry.getValue());  
+                System.out.println(entry.getKey());
+                if(entry.getValue().get(0).getType().equals(Descriptor.Type.VAR))
+                    System.out.println(" " + ((VarDescriptor)entry.getValue().get(0)).getDataType());  
              });
         }
     }

@@ -4,6 +4,8 @@ import java.io.IOException;
 
 //TODO: string[] args do method main DONE, I GUESS
 //TODO: arrays(ESQ, DIREITA, AMBOS)
+//TODO: Method invocation
+//TODO: Check
 
 
 class SemanticAnalysis{
@@ -55,13 +57,13 @@ class SemanticAnalysis{
 
         // TODO: Arrays (also need to update symbol table with those), Class types and constructor invocations, sums (a= b+c)
 
-        if(node.jjtGetChild(0).equals("Array") && !node.jjtGetChild(1).equals("Array")){
+        // if(node.jjtGetChild(0).equals("Array") && !node.jjtGetChild(1).equals("Array")){
+        //     processArrayLeft(node);
+        // }
+        if(node.jjtGetChild(0).toString().equals("Array") && !node.jjtGetChild(1).toString().contains("Array")){
             processArrayLeft(node);
         }
-        else if(!node.jjtGetChild(0).equals("Array") && node.jjtGetChild(1).equals("Array")){
-            processArrayRight(node);
-        }
-        else if(node.jjtGetChild(0).equals("Array") && node.jjtGetChild(1).equals("Array")){
+        else if(node.jjtGetChild(0).toString().equals("Array") && node.jjtGetChild(1).toString().contains("Array")){
             processArrayBoth(node);
         }
         else if(node.jjtGetChild(1).toString().equals("NewIntArray")){
@@ -88,10 +90,9 @@ class SemanticAnalysis{
         if(!getNodeDataType(node.jjtGetChild(1).jjtGetChild(0)).equals(INTEGER)){
             throw new IOException("When initializing array, array size must be an integer");
         }
-        
-        
 
     }
+
     private String getNodeDataType(Node node) throws IOException{ 
         /*
         Identifier[a]
@@ -99,6 +100,7 @@ class SemanticAnalysis{
         ADD
             IDENTIFIER
             INTEGER
+        ARRAY
             */
         if(node.toString().contains("Identifier")){ //IDENTIFIER[a]
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.toString())).get(0);
@@ -109,9 +111,12 @@ class SemanticAnalysis{
         else if(node.toString().equals("Add") || node.toString().equals("Sub") || node.toString().equals("Div") || node.toString().equals("Mul")){
             for(int i= 0; i<node.jjtGetNumChildren();i++){
                 if(!getNodeDataType(node.jjtGetChild(i)).equals(INTEGER))
-                    throw new IOException("Arithmetic operation must be done with Integer values");
+                    throw new IOException("Arithmetic operation must be done with Integer values: variable " + Utils.parseName(node.jjtGetChild(i).toString()) + " is not an Integer");
             }
             return "Integer";
+        }
+        else if(node.toString().equals("Array")){
+            return processArrayRight(node);
         }
         else{ // INTEGER[2]
             return Utils.getFirstPartOfName(node.toString());
@@ -120,9 +125,29 @@ class SemanticAnalysis{
         
     }
 
-    private void processArrayLeft(Node node) throws IOException{
+    private String processArrayRight(Node node) throws IOException{
 
-        System.out.println("ARRAY LEFT");
+        String id = Utils.parseName(node.jjtGetChild(0).toString());
+        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0);
+
+        if(!varDescriptor.getDataType().equals("Array")){
+            throw new IOException("Variable " + varDescriptor.getIdentifier() + " of type Array does not match declaration type " + varDescriptor.getDataType());
+        }
+
+        String type = getNodeDataType(node.jjtGetChild(1));
+        if(!type.equals("Integer")){
+            throw new IOException("Index of array " + id + " is not Integer!");
+        }
+
+        if(!getNodeDataType(node.jjtGetChild(1)).equals("Integer")){
+            throw new IOException("Index of array " + id + " is not Integer!");
+        }
+
+        return INTEGER;
+
+    }
+
+    private void processArrayLeft(Node node) throws IOException{
 
         String id = Utils.parseName(node.jjtGetChild(0).jjtGetChild(0).toString());
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0);
@@ -142,37 +167,7 @@ class SemanticAnalysis{
 
     }
 
-    private void processArrayRight(Node node) throws IOException{
-
-        System.out.println("ARRAY RIGHT");
-
-        String id = Utils.parseName(node.jjtGetChild(0).toString());
-        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0);
-
-        if(!getNodeDataType(node.jjtGetChild(0)).equals("Integer")){
-            throw new IOException( id + " is not Integer!");
-        }
-
-     //   ==============
-
-        String id2 = Utils.parseName(node.jjtGetChild(1).jjtGetChild(0).toString());
-        VarDescriptor varDescriptor2 = (VarDescriptor) symbolTable.lookup(id2).get(0);
-
-        if(!varDescriptor2.getDataType().equals("Array")){
-            throw new IOException("Variable " + varDescriptor2.getIdentifier() + " of type Array does not match declaration type " + varDescriptor2.getDataType());
-        }
-
-        String type = getNodeDataType(node.jjtGetChild(1).jjtGetChild(1));
-        if(!type.equals("Integer")){
-            throw new IOException("Index of array " + id2 + " is not Integer!");
-        }
-
-    }
-
     private void processArrayBoth(Node node) throws IOException{
-
-        System.out.println("ARRAY BOTH");
-    
 
         String id = Utils.parseName(node.jjtGetChild(0).jjtGetChild(0).toString());
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0);

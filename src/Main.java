@@ -32,7 +32,7 @@ public class Main {
         symbolTable.print_all();
         
         SemanticAnalysis semanticAnalysis = new SemanticAnalysis(symbolTable);
-        System.out.println("SEMANTIC ANALYSIS");
+        System.out.println("\nSEMANTIC ANALYSIS\n");
         semanticAnalysis.execute(root);
     }
 
