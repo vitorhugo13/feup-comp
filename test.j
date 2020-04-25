@@ -1,6 +1,12 @@
-limit_stack 99
-limit_locals 99
 .class public Simple
 .super java/lang/Object
 .field public d I
 .field public v 
+.method public static main(TODO)TODO
+.limit_stack 99
+.limit_locals 99
+.end method
+.method public add(TODO)TODO
+.limit_stack 99
+.limit_locals 99
+.end method

@@ -42,28 +42,32 @@ class Generator {
             processMethod(node, out);
         }
 
+        else if (nodeName.equals("Assign")) {
+            processAssignment(node, out);
+        }
+
         // OPERATORS
-        else if (nodeName.equals("And")) {
-            processAnd(node, out);
-        }
-        else if (nodeName.equals("Less")) {
-            processLess(node, out);
-        }
-        else if (nodeName.equals("Add")) {
-            processAdd(node, out);
-        }
-        else if (nodeName.equals("Sub")) {
-            processSub(node, out);
-        }
-        else if (nodeName.equals("Mul")) {
-            processMul(node, out);
-        }
-        else if (nodeName.equals("Div")) {
-            processDiv(node, out);
-        }
-        else if (nodeName.equals("Not")) {
-            processNot(node, out);
-        }
+        // else if (nodeName.equals("And")) {
+        //     processAnd(node, out);
+        // }
+        // else if (nodeName.equals("Less")) {
+        //     processLess(node, out);
+        // }
+        // else if (nodeName.equals("Add")) {
+        //     processAdd(node, out);
+        // }
+        // else if (nodeName.equals("Sub")) {
+        //     processSub(node, out);
+        // }
+        // else if (nodeName.equals("Mul")) {
+        //     processMul(node, out);
+        // }
+        // else if (nodeName.equals("Div")) {
+        //     processDiv(node, out);
+        // }
+        // else if (nodeName.equals("Not")) {
+        //     processNot(node, out);
+        // }
     }
 
     private void processProgram(Node node, PrintWriter out) {
@@ -128,11 +132,14 @@ class Generator {
 
     private void processMethodInvocation(Node node, PrintWriter out) {
         // TODO:
+
+        // get the information about the method from the table
+        // if the method is static
+            // out.println(String.format("invokestatic %s(%s)%s"), name, paramlist, returntype);
     }
 
 
     private String getDescriptor(String type) {
-        String type = Utils.parseName(node.toString());
 
         if (type.equals("int"))
             return "I";
@@ -150,4 +157,9 @@ class Generator {
         
         return "";
     }
+
+    public void processAssignment(Node node, PrintWriter out) {
+
+    }
+
 }

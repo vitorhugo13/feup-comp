@@ -7,7 +7,6 @@ import Map.print();
 import Map.contains(int) boolean;
 import Map.remove(int) boolean;
 
- 
 
 //content can be changed to other Types (e.g. boolean, int[], MyClass)
 import List;

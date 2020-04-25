@@ -10,7 +10,7 @@ public class SymbolTable{
     private Stack<MyHashMap> stack;
     private ArrayList<MyHashMap> all_hashes;
     private int posArrayForAnalysis;
- 
+
     public SymbolTable() {
 
         MyHashMap firstHash = new MyHashMap(null);
@@ -32,7 +32,7 @@ public class SymbolTable{
         MyHashMap myHash = new MyHashMap(stack.peek());
         stack.push(myHash);
         all_hashes.add(myHash);
-        //System.out.println("[SCOPE] Entered scope: " + stack.peek());
+        System.out.println("[SCOPE] Entered scope: " + stack.peek());
 
     }
 
@@ -43,7 +43,7 @@ public class SymbolTable{
     }
 
     public void exitScope() {
-        //System.out.println("[SCOPE] Exit scope: " + stack.peek());
+        System.out.println("[SCOPE] Exit scope: " + stack.peek());
         if (stack.empty()) {
             System.err.println("[ERROR] [SCOPE] existScope: symbol table is empty.");
         }
@@ -58,24 +58,39 @@ public class SymbolTable{
 
 
     public void add(String id, Descriptor info) {
-
+        
         if (stack.empty()) {
             System.err.println("[ADD]: can't add a symbol without a scope.");
         }
 
         MyHashMap my_hash = stack.peek();
 
-        if(!info.getType().equals(Descriptor.Type.IMPORT)) { // We allow repeated imports for method overloads as they are all in the same scope
+        if(!info.getType().equals(Descriptor.Type.METHOD)) { // We allow repeated imports for method overloads as they are all in the same scope
             if (stack.peek().exists(id)) {
-                System.err.println("[ERROR] [ADD] Duplicated variable: " + id + " in: " + my_hash);
+                System.err.println("[SEMANTIC ERROR] Duplicated variable: " + id + " in: " + my_hash);
                 return;
             }
         }
-
         //System.out.println("Added var: " + id + " to table: " + stack.peek());
         (stack.peek()).add(id, info);
+    }
+
+    public void add(String id, MethodDescriptor info, Boolean isImport) {
+        if (stack.empty()) {
+            System.err.println("[ADD]: can't add a symbol without a scope.");
+        }
+        if (!stack.peek().exists(id)) {
+            ClassDescriptor classDescriptor = new ClassDescriptor(id);
+            classDescriptor.addMethod(info);
+            (stack.peek()).add(id, classDescriptor);
+        }
+        else{
+            ((ClassDescriptor) stack.peek().getDescriptor(id).get(0)).addMethod(info);
+            System.out.println("Get descriptor: " + ((ClassDescriptor) stack.peek().getDescriptor(id).get(0)).getMethods());
+        }
 
     }
+
 
 
     public ArrayList<Descriptor> lookup(String id, Descriptor.Type type) throws IOException {
@@ -86,16 +101,16 @@ public class SymbolTable{
 
         if (type.equals(Descriptor.Type.METHOD)) { // Method can be declared anywhere
             for (int i = 0; i < all_hashes.size(); i++) {
-                if (all_hashes.get(i).getArrayDescriptor(id) != null) {
-                    return all_hashes.get(i).getArrayDescriptor(id);
+                if (all_hashes.get(i).getDescriptor(id) != null) {
+                    return all_hashes.get(i).getDescriptor(id);
                 }
             }
             throw new IOException("Method " + id + " was not declared");
-        } else { // Var needs to be declared either in current scope or in the parent's scope
+        } else { // Var needs to be declared either in current scope or in the parent's scope (Class)
             MyHashMap my_hash = stack.peek();
             do {
                 if (my_hash.exists(id)) {
-                    return my_hash.getArrayDescriptor(id);
+                    return my_hash.getDescriptor(id);
                 }
                 my_hash = my_hash.getFather();
             } while (my_hash != null);
@@ -114,6 +129,19 @@ public class SymbolTable{
 
         return result;
     }
+
+    public void print_all(){
+
+        for(int i = 0; i < all_hashes.size(); i++){
+            System.out.println("======= just printing stuff ========");
+            //System.out.println(all_hashes.get(i).getHash().keySet());
+            all_hashes.get(i).getHash().entrySet().forEach(entry->{
+                System.out.println(entry.getKey() + " " + entry.getValue());  
+             });
+        }
+    }
+
+        
 
 }
 

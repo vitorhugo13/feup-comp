@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 public class MyHashMap{
 
+    //TODO: deal with overload of functions (aka, change descriptor to ArrayList<Descriptor>);
+    
     private HashMap<String, ArrayList<Descriptor>> myHash;
     private MyHashMap fatherHash;
     private MyHashMap childHash;
@@ -44,11 +46,15 @@ public class MyHashMap{
         return myHash.containsKey(s);
     }
 
-    public ArrayList<Descriptor> getArrayDescriptor(String s){
+    public ArrayList<Descriptor> getDescriptor(String s){
 
         if(exists(s))
             return myHash.get(s);
 
         return null;
+    }
+
+    public HashMap<String, ArrayList<Descriptor>> getHash(){
+        return this.myHash;
     }
 }
