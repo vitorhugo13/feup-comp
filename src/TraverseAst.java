@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import descriptors.*;
 
-//TODO: verificar tabela de simbolos, acrescentar method != method import
 
 @SuppressWarnings({"unchecked"})
 public class TraverseAst{
@@ -16,8 +15,6 @@ public class TraverseAst{
         this.symbolTable = symbolTable;
     }
 
-
-    //TODO: handle String[] args at method void main
 
     public void execute(Node node){
         //System.out.println("EXECUTE: " + node.toString());
