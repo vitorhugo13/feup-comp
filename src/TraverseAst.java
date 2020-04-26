@@ -19,29 +19,49 @@ public class TraverseAst{
     public void execute(Node node){
         //System.out.println("EXECUTE: " + node.toString());
         if(node.toString().equals("Program")){
+            System.out.println("PASSOU 1");
             processProgram(node);
         }
+        else if(node.toString().equals("Assign")){
+            //nao queremos assign
+        }
         else if(node.toString().equals("VarDeclaration")){
+            System.out.println("PASSOU 2");
+
             processVarDeclaration(node);
         }
         else if(node.toString().equals("StaticImport")){
+            System.out.println("PASSOU 3");
+
             processStaticImport(node);
         }
         else if(node.toString().equals("NonStaticImport")){
+            System.out.println("PASSOU 4");
+
             processNonStaticImport(node);
         }
         else if(node.toString().contains("Class")){
+            System.out.println("PASSOU 5");
+
             processClass(node);
         }
         else if(node.toString().equals("Method[main]")){
+            System.out.println("PASSOU 6");
+
             processMain(node);
         }
         else if(!node.toString().equals("MethodInvocation") && node.toString().contains("Method")){
+            System.out.println("PASSOU 7");
+            System.out.println(node.toString());
+
+
             processMethod(node);
         }
         else{
             for (int i = 0; i < node.jjtGetNumChildren(); i++) {
                 execute(node.jjtGetChild(i));
+            System.out.println("PASSOU 8");
+
             }
         }
     }
