@@ -103,6 +103,10 @@ public class SymbolTable{
             }
             my_hash = my_hash.getFather();
         } while (my_hash != null);
+
+        if(all_hashes.get(0).exists(id)){ //Search imports
+            return all_hashes.get(0).getDescriptor(id);
+        }
         
         throw new IOException("Variable " + id + " was not declared");
             
