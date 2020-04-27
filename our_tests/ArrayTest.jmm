@@ -8,10 +8,13 @@ class ArrayTest{
         int d;
 
         b = new int[1];
+        a = 2;
+        c = new int[a];
+        d = a;
         
         b[0] = 2;
         a = b[1];
-        c[a] = b[0];
+        c[a] = b[a+d];
     }
 
 }

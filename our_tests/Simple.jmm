@@ -1,6 +1,6 @@
 class Simple {
 
-	int d;
+	int b;
 	String v;
 	
 	public static void main(String[] args) {
@@ -9,12 +9,15 @@ class Simple {
 		Simple simple;
 		int c;		
 		a = 30;
-		b = 0-10;		
+		b = 0-10;
 		simple = new Simple();
-		c = simple.add(a,b);		
+		c = simple.add(a,b);
+		c = simple.add(d,a);
 	}
-
+	
 	public int add(int a, int b){
+		this.add(a, b);
+		pi_estimate_times_100 = new MonteCarloPi().cona().estimatePi100(num_samples);
 		return a+b;
 	}
 }

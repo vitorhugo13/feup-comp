@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import descriptors.*;
 
-//TODO: verificar tabela de simbolos, acrescentar method != method import
 
 @SuppressWarnings({"unchecked"})
 public class TraverseAst{
@@ -17,34 +16,52 @@ public class TraverseAst{
     }
 
 
-    //TODO: handle String[] args at method void main
-
     public void execute(Node node){
         //System.out.println("EXECUTE: " + node.toString());
         if(node.toString().equals("Program")){
+            System.out.println("PASSOU 1");
             processProgram(node);
         }
+        else if(node.toString().equals("Assign")){
+            //nao queremos assign
+        }
         else if(node.toString().equals("VarDeclaration")){
+            System.out.println("PASSOU 2");
+
             processVarDeclaration(node);
         }
         else if(node.toString().equals("StaticImport")){
+            System.out.println("PASSOU 3");
+
             processStaticImport(node);
         }
         else if(node.toString().equals("NonStaticImport")){
+            System.out.println("PASSOU 4");
+
             processNonStaticImport(node);
         }
         else if(node.toString().contains("Class")){
+            System.out.println("PASSOU 5");
+
             processClass(node);
         }
         else if(node.toString().equals("Method[main]")){
+            System.out.println("PASSOU 6");
+
             processMain(node);
         }
         else if(!node.toString().equals("MethodInvocation") && node.toString().contains("Method")){
+            System.out.println("PASSOU 7");
+            System.out.println(node.toString());
+
+
             processMethod(node);
         }
         else{
             for (int i = 0; i < node.jjtGetNumChildren(); i++) {
                 execute(node.jjtGetChild(i));
+            System.out.println("PASSOU 8");
+
             }
         }
     }
@@ -63,7 +80,6 @@ public class TraverseAst{
     }
 
     private void processVarDeclaration(Node node) {
-        //System.out.println("Node ID: "+ node.getId() + " | " + " TYPE: " + node.toString() + " | "+" VARTYPE: " +node.jjtGetChild(0) + " | " +" Identifier: "+ node.jjtGetChild(1));
 
         String identifier = Utils.parseName(node.jjtGetChild(1).toString());
         VarDescriptor var_descriptor = new VarDescriptor(Utils.parseName(node.jjtGetChild(0).toString()), identifier);
@@ -123,7 +139,6 @@ public class TraverseAst{
         String name = Utils.parseName(node.jjtGetChild(0).toString());
         MethodDescriptor descriptor = new MethodDescriptor(name, returnType, params);
         symbolTable.add(name, descriptor, true);
-        //System.out.println("STATIC IMPORT ID: " + name + "  --- RETURN TYPE: " + returnType + "--- FIRST PARAM: " + params.size());
     }
 
     private String getMethodReturnType(Node method) {
@@ -163,7 +178,7 @@ public class TraverseAst{
         symbolTable.enterScope();
 
         for(int i=0; i<params.size(); i++){
-  
+            params.get(i).setInitialized();
             symbolTable.add(params.get(i).getIdentifier(), params.get(i));
 
         }
@@ -196,7 +211,7 @@ public class TraverseAst{
         symbolTable.enterScope();
 
         for(int i=0; i<params.size(); i++){
-            
+            params.get(i).setInitialized();
             symbolTable.add(params.get(i).getIdentifier(), params.get(i));
            
         }
@@ -221,8 +236,6 @@ public class TraverseAst{
     public SymbolTable getSymbolTable() {
         return this.symbolTable;
     }
-
-   
 }
 
 

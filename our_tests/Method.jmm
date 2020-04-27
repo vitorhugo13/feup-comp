@@ -1,0 +1,19 @@
+class Method{
+
+    public static void main(String[] args){
+        int a;
+        int b;
+        int c;
+        Method meth;
+
+        b = 2;
+        a = 2;
+        meth = new Method();
+        c = b + meth.add(a,b);
+    }
+
+    public int add(int a, int b){
+        return a + b;
+    }
+
+}

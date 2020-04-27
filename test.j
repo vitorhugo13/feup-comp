@@ -1,6 +1,6 @@
 .class public Simple
 .super java/lang/Object
-.field public d I
+.field public b I
 .field public v 
 .method public static main(TODO)TODO
 .limit_stack 99

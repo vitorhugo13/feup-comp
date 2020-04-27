@@ -32,18 +32,19 @@ public class SymbolTable{
         MyHashMap myHash = new MyHashMap(stack.peek());
         stack.push(myHash);
         all_hashes.add(myHash);
-        System.out.println("[SCOPE] Entered scope: " + stack.peek());
+       // System.out.println("[SCOPE] Entered scope: " + stack.peek());
 
     }
 
     public void enterScopeForAnalysis() {
+        
         stack.push(all_hashes.get(posArrayForAnalysis));
         posArrayForAnalysis++;
-        //System.out.println("[SCOPE] Entered scope for analysis: " + stack.peek());
+        System.out.println("[SCOPE] Enter scope for analysis: " + stack.peek());
     }
 
     public void exitScope() {
-        System.out.println("[SCOPE] Exit scope: " + stack.peek());
+        //System.out.println("[SCOPE] Exit scope: " + stack.peek());
         if (stack.empty()) {
             System.err.println("[ERROR] [SCOPE] existScope: symbol table is empty.");
         }
@@ -52,7 +53,7 @@ public class SymbolTable{
     }
 
     public void exitScopeForAnalysis() {
-        //System.out.println("[SCOPE] Exit scope for analysis: " + stack.peek());
+        System.out.println("[SCOPE] Exit scope for analysis: " + stack.peek());
         stack.pop();
     }
 
@@ -71,7 +72,6 @@ public class SymbolTable{
                 return;
             }
         }
-        //System.out.println("Added var: " + id + " to table: " + stack.peek());
         (stack.peek()).add(id, info);
     }
 
@@ -93,29 +93,23 @@ public class SymbolTable{
 
 
 
-    public ArrayList<Descriptor> lookup(String id, Descriptor.Type type) throws IOException {
+    //TODO: search methods in import
+    public ArrayList<Descriptor>  lookup(String id) throws IOException {
 
         if (stack.empty()) {
             System.err.println("[ERROR] [LOOKUP]: symbol table is empty.");
         }
 
-        if (type.equals(Descriptor.Type.METHOD)) { // Method can be declared anywhere
-            for (int i = 0; i < all_hashes.size(); i++) {
-                if (all_hashes.get(i).getDescriptor(id) != null) {
-                    return all_hashes.get(i).getDescriptor(id);
-                }
+        MyHashMap my_hash = stack.peek();
+        do {
+            if (my_hash.exists(id)) {
+                return my_hash.getDescriptor(id);
             }
-            throw new IOException("Method " + id + " was not declared");
-        } else { // Var needs to be declared either in current scope or in the parent's scope (Class)
-            MyHashMap my_hash = stack.peek();
-            do {
-                if (my_hash.exists(id)) {
-                    return my_hash.getDescriptor(id);
-                }
-                my_hash = my_hash.getFather();
-            } while (my_hash != null);
-            throw new IOException("Variable " + id + " was not declared");
-        }
+            my_hash = my_hash.getFather();
+        } while (my_hash != null);
+        
+        throw new IOException("Variable " + id + " was not declared");
+            
     }
 
 
@@ -133,10 +127,11 @@ public class SymbolTable{
     public void print_all(){
 
         for(int i = 0; i < all_hashes.size(); i++){
-            System.out.println("======= just printing stuff ========");
-            //System.out.println(all_hashes.get(i).getHash().keySet());
+            System.out.println("\n======= SCOPE ========");
             all_hashes.get(i).getHash().entrySet().forEach(entry->{
-                System.out.println(entry.getKey() + " " + entry.getValue());  
+                System.out.println(entry.getKey());
+                if(entry.getValue().get(0).getType().equals(Descriptor.Type.VAR))
+                    System.out.println(" " + ((VarDescriptor)entry.getValue().get(0)).getDataType());  
              });
         }
     }
@@ -144,8 +139,5 @@ public class SymbolTable{
         
 
 }
-
-
-
 
        
