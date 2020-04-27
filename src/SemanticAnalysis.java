@@ -24,25 +24,28 @@ class SemanticAnalysis{
 
     public void execute(Node node){
 
+        System.out.println(node.toString());
+        
         try {
-
-            if (node.toString().equals("StaticImport")
-                    || node.toString().equals("NonStaticImport")) { //TODO: é suposto este 1º if nao ter nenhum condição?
-            } else if (node.toString().contains("Class")
-                    || node.toString().equals("Method[main]")
-                    || (!node.toString().equals("MethodInvocation")
-                    && node.toString().contains("Method"))) {
+            if (node.toString().equals("StaticImport") || node.toString().equals("NonStaticImport")) { 
+                //TODO: é suposto este 1º if nao ter nenhum condição?
+            } 
+            else if (node.toString().contains("Class") || node.toString().equals("Method[main]") || (!node.toString().equals("MethodInvocation") && node.toString().contains("Method"))) {
                 processNewScope(node);
-            } else if (node.toString().equals("Program")) {
+            }
+            else if(node.toString().equals("MethodInvocation")){
+                processInvocation(node);
+            }
+            else if (node.toString().equals("Program")) {
                 processProgram(node);
-            } else if (node.toString().equals("Assign")) {
+            } 
+            else if (node.toString().equals("Assign")) {
                 processAssign(node);
-            } else {
+            } 
+            else {
                 processChildren(node);
             }
-
         }catch (Exception e) {
-
             System.err.println("[SEMANTIC ERROR]: " + e.getMessage());
             exceptionCounter++;
 
@@ -51,6 +54,22 @@ class SemanticAnalysis{
                 System.exit(0);
             }
         }
+    }
+
+    private String processInvocation(Node node) throws IOException{
+        //TODO: só para funções da class, para funções do import logo se vê
+        //TODO: ter em atenção o seguinte -> o objeto que está a ser acedido/chamado tem de ser do mesmo tipo da classe onde está inserido, ou da class a que faz extends ou de uma class qql dos imports
+        //provavelmente o ponto mencionado em cima basta ser verificado na inicializacão do objeto
+        //comparar o dataTYpe do filho 0 com o tipo das classes acima mencionadas 
+        //ver se essa class tem a função no filho 1
+        //ver arglist e return type
+
+        String classID = Utils.parseName(node.jjtGetChild(0).toString());
+        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(classID).get(0);
+        System.out.println("OLA: " + varDescriptor.getDataType());
+
+
+        return "ok";
     }
 
     private void processAssign(Node node) throws IOException{
@@ -66,9 +85,14 @@ class SemanticAnalysis{
         else if(node.jjtGetChild(1).toString().equals("NewIntArray")){
            processInitializeArray(node);
         }
+        else if(node.jjtGetChild(1).toString().equals("NewObject")){
+            processObject(node);
+        }
         else{
+
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
             String dataType = getNodeDataType(node.jjtGetChild(1));
+
             if(dataType.equals(varDescriptor.getDataType())){
                 varDescriptor.setInitialized();
                 varDescriptor.setCurrValue(Utils.parseName(node.jjtGetChild(1).toString()));
@@ -76,9 +100,23 @@ class SemanticAnalysis{
             else{
                 throw new IOException("Variable " + varDescriptor.getIdentifier() + " of type " + dataType + " does not match declaration type " + varDescriptor.getDataType());
             }
+
         }
     }
 
+    private void processObject(Node node) throws IOException {
+
+        //TODO: o objeto que está a ser criado tem de ser do mesmo tipo da classe onde está inserido, ou da class a que faz extends ou de uma class qql dos imports
+        String obj = Utils.parseName(node.jjtGetChild(1).jjtGetChild(0).toString());
+        String id = Utils.parseName(node.jjtGetChild(0).toString());
+
+        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0);
+        if(!varDescriptor.getDataType().equals(obj)){
+            throw new IOException("Variable " + id + " does not match " + varDescriptor.getDataType());
+        }
+
+        varDescriptor.setInitialized();
+    }
     private void processInitializeArray(Node node) throws IOException{
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
         if(!varDescriptor.getDataType().equals("Array")){
@@ -91,14 +129,18 @@ class SemanticAnalysis{
     }
 
     private String getNodeDataType(Node node) throws IOException{ 
+
         /*
+
         Identifier[a]
         INTEGER[2]
         ADD
             IDENTIFIER
             INTEGER
         ARRAY
-            */
+            
+        */
+
         if(node.toString().contains("Identifier")){ //IDENTIFIER[a]
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.toString())).get(0);
             if(!varDescriptor.getInitialized())
@@ -115,11 +157,13 @@ class SemanticAnalysis{
         else if(node.toString().equals("Array")){
             return processArrayRight(node);
         }
+        else if(node.toString().equals("MethodInvocation")){
+            return processInvocation(node);
+        }
         else{ // INTEGER[2]
             return Utils.getFirstPartOfName(node.toString());
         }
-      
-        
+       
     }
 
     private String processArrayRight(Node node) throws IOException{
