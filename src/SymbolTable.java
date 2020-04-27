@@ -4,7 +4,6 @@ import java.util.Stack;
 import java.util.ArrayList;
 import java.io.IOException;
 
-//TODO: getVars
 public class SymbolTable{
 
     private Stack<MyHashMap> stack;
@@ -103,7 +102,6 @@ public class SymbolTable{
 
 
 
-    //TODO: search methods in import
     public ArrayList<Descriptor>  lookup(String id) throws IOException {
 
         if (stack.empty()) {

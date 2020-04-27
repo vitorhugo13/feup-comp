@@ -1,10 +1,10 @@
 import java.util.ArrayList;
 import descriptors.*;
 import java.io.IOException;
-
-
-//TODO: method invocation without assignment
-
+//TODO: import io
+//TODO: import methods
+//TODO: extends
+//TODO: ifs and whiles
 
 class SemanticAnalysis{
     static private String VOID = "void";
@@ -24,7 +24,6 @@ class SemanticAnalysis{
         
         try {
             if (node.toString().equals("StaticImport") || node.toString().equals("NonStaticImport")) { 
-                //TODO: é suposto este 1º if nao ter nenhum condição?
             } 
             else if (node.toString().contains("Class") || node.toString().equals("Method[main]") || (!node.toString().equals("MethodInvocation") && node.toString().contains("Method"))) {
                 processNewScope(node);
@@ -54,12 +53,7 @@ class SemanticAnalysis{
     }
 
     private String processInvocation(Node node) throws IOException{
-        //TODO: ter em atenção o seguinte -> o objeto que está a ser acedido/chamado tem de ser do mesmo tipo da classe onde está inserido, ou da class a que faz extends ou de uma class qql dos imports
-        //provavelmente o ponto mencionado em cima basta ser verificado na inicializacão do objeto
-        //comparar o dataTYpe do filho 0 com o tipo das classes acima mencionadas 
-        //ver se essa class tem a função no filho 1
-        //ver arglist e return type
- 
+        
 
         String id = Utils.parseName(node.jjtGetChild(0).toString());  //
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0); //verifica se a class existe, está importada/extend
@@ -86,7 +80,6 @@ class SemanticAnalysis{
                     System.out.println("TYPE OF ARGUMENT: " + typeArg);
                     String expectedType = md.getParameters().get(param).getDataType(); //tipo de argumento esperado
 
-                    //TODO: temos de garantir que dá o erro e nao faz mais nada a seguir
                     if(!typeArg.equals(expectedType)){
                         correct = false;
                         throw new IOException(Utils.parseName(node.jjtGetChild(2).jjtGetChild(param).toString())+ " does not match type " + expectedType + " in " + methodName);
@@ -100,7 +93,6 @@ class SemanticAnalysis{
             }
         }
 
-        //TODO: nao sei o que meter aqui..
         return "";
         
     }
