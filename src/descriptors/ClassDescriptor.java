@@ -1,5 +1,6 @@
 package descriptors;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class ClassDescriptor extends Descriptor {
@@ -19,7 +20,7 @@ public class ClassDescriptor extends Descriptor {
         return false;
     }
 
-    public ArrayList<MethodDescriptor> getMethodsMatchingId(String id){
+    public ArrayList<MethodDescriptor> getMethodsMatchingId(String id) throws IOException{
         ArrayList<MethodDescriptor> methodsMatchingId = new ArrayList<>();
         if(existsMethod(id)){
             for(int i=0; i<methods.size();i++){
@@ -28,7 +29,7 @@ public class ClassDescriptor extends Descriptor {
             }
             return methodsMatchingId;
         }
-        return null;
+        throw new IOException("No Method in class " + this.identifier + " matches method named " + id);
     }
 
     public void addMethod(MethodDescriptor method){

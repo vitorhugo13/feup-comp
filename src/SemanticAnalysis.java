@@ -2,10 +2,8 @@ import java.util.ArrayList;
 import descriptors.*;
 import java.io.IOException;
 
-//TODO: string[] args do method main DONE, I GUESS
-//TODO: arrays(ESQ, DIREITA, AMBOS)
-//TODO: Method invocation
-//TODO: Check
+
+//TODO: method invocation without assignment
 
 
 class SemanticAnalysis{
@@ -45,6 +43,7 @@ class SemanticAnalysis{
             }
         }catch (Exception e) {
             System.err.println("[SEMANTIC ERROR]: " + e.getMessage());
+            //e.printStackTrace();
             exceptionCounter++;
 
             if (exceptionCounter >= MAX_EXCEPTIONS) {
@@ -55,48 +54,42 @@ class SemanticAnalysis{
     }
 
     private String processInvocation(Node node) throws IOException{
-        //TODO: só para funções da class, para funções do import logo se vê
         //TODO: ter em atenção o seguinte -> o objeto que está a ser acedido/chamado tem de ser do mesmo tipo da classe onde está inserido, ou da class a que faz extends ou de uma class qql dos imports
         //provavelmente o ponto mencionado em cima basta ser verificado na inicializacão do objeto
         //comparar o dataTYpe do filho 0 com o tipo das classes acima mencionadas 
         //ver se essa class tem a função no filho 1
         //ver arglist e return type
+ 
 
-        String classID = Utils.parseName(node.jjtGetChild(0).toString());
-        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(classID).get(0); //verifica se a class existe, está importada/extend
+        String id = Utils.parseName(node.jjtGetChild(0).toString());  //
+        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0); //verifica se a class existe, está importada/extend
+        
         String className = varDescriptor.getDataType();
-        System.out.println("CLASS: " + className);
-        //TODO: se o método nao existir lançar uma mensagem personalizada, neste momento está [Variable "id" was not declared]
-        String method = Utils.parseName(node.jjtGetChild(1).toString());
-        ArrayList<Descriptor> methDescriptors = symbolTable.lookup(method); //verifica se o metódo existe
+        ClassDescriptor classDescriptor = (ClassDescriptor) symbolTable.lookup(className).get(0);
+
+        String methodName = Utils.parseName(node.jjtGetChild(1).toString()); 
+        ArrayList<MethodDescriptor> methodDescriptors = classDescriptor.getMethodsMatchingId(methodName);
 
         //dado que pode ocorrer method overload temos de percorrer a lista de descritores returnados
         //e saber se existe o certo, e se sim processar os args e o return type
         int numArgs = node.jjtGetChild(2).jjtGetNumChildren();
         Boolean correct = true;
 
-        for(int i = 0; i < methDescriptors.size();i++){
-            MethodDescriptor md = (MethodDescriptor) methDescriptors.get(i);
+        for(int method = 0; method < methodDescriptors.size(); method++){
+            MethodDescriptor md = methodDescriptors.get(method);
 
             if(md.getParameters().size() == numArgs){
 
-                for(int j = 0; j < md.getParameters().size(); j++){
+                for(int param = 0; param < md.getParameters().size(); param++){    
 
-                    String argID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(j).toString());
-                    VarDescriptor arg = (VarDescriptor) symbolTable.lookup(argID).get(0);
-
-                    if(!arg.getInitialized()){
-                        System.out.println("Nao foi inicializada");
-                        correct = false;
-                    }
-
-                    String typeArg = getNodeDataType(node.jjtGetChild(2).jjtGetChild(i)); //tipo de argumento passado
-                    String expectedType = md.getParameters().get(i).getDataType(); //tipo de argumento esperado
+                    String typeArg = getNodeDataType(node.jjtGetChild(2).jjtGetChild(param)); //tipo de argumento passado
+                    System.out.println("TYPE OF ARGUMENT: " + typeArg);
+                    String expectedType = md.getParameters().get(param).getDataType(); //tipo de argumento esperado
 
                     //TODO: temos de garantir que dá o erro e nao faz mais nada a seguir
                     if(!typeArg.equals(expectedType)){
                         correct = false;
-                        throw new IOException(Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString())+ " does not match type " + expectedType + " in " + method);
+                        throw new IOException(Utils.parseName(node.jjtGetChild(2).jjtGetChild(param).toString())+ " does not match type " + expectedType + " in " + methodName);
                     }
                 }
 
