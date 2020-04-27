@@ -5,18 +5,16 @@ public class VarDescriptor extends Descriptor {
     protected String dataType;
     protected Boolean isInitialized;
     protected String currValue;
-
+    protected Scope scope;
 
     public VarDescriptor(String dataType, String identifier){
         this.type=Type.VAR;
 
-        this.identifier=identifier;
-        this.dataType=getParsedDataType(dataType);
+        this.identifier = identifier;
+        this.dataType = getParsedDataType(dataType);
         this.isInitialized = false;
+        this.scope = null;
     }
-
-
-
 
     public String getDataType(){
         return this.dataType;
@@ -44,6 +42,14 @@ public class VarDescriptor extends Descriptor {
 
     public String getCurrValue(){
         return this.currValue;
+    }
+
+    public void setScope(Scope scope){
+        this.scope = scope;
+    }
+
+    public Scope getScope(){
+        return this.scope;
     }
 
 }

@@ -21,6 +21,13 @@ public class MethodDescriptor extends Descriptor {
         return this.returnType;
     }
 
+    public int getNumParameters(){
+        if(this.identifier.equals("main")){
+            return parameters.size();
+        }
+        return parameters.size()+1;
+    }
+
     public ArrayList<VarDescriptor> getParameters(){
         return this.parameters;
     }

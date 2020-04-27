@@ -4,7 +4,7 @@ import java.util.Stack;
 import java.util.ArrayList;
 import java.io.IOException;
 
-
+//TODO: getVars
 public class SymbolTable{
 
     private Stack<MyHashMap> stack;
@@ -39,12 +39,22 @@ public class SymbolTable{
         //System.out.println("[SCOPE] Enter scope for analysis: " + stack.peek());
     }
 
+    public ArrayList<VarDescriptor> getClassAtributes(){
+        ArrayList<VarDescriptor> variables = new ArrayList<>();
+        for(ArrayList<Descriptor> value : all_hashes.get(1).getHash().values()){
+            if(value.get(0).getType().equals(Descriptor.Type.VAR)){
+                variables.add((VarDescriptor)value.get(0));
+            }
+        }
+        return variables;
+    }
+
     public void exitScope() {
         //System.out.println("[SCOPE] Exit scope: " + stack.peek());
         if (stack.empty()) {
             System.err.println("[ERROR] [SCOPE] existScope: symbol table is empty.");
         }
-
+        
         stack.pop();
     }
 
@@ -61,6 +71,10 @@ public class SymbolTable{
         }
 
         MyHashMap my_hash = stack.peek();
+
+        if(info.getType().equals(Descriptor.Type.VAR)){
+            ((VarDescriptor)info).setScope(getCurrentScope());
+        }
 
         if(!info.getType().equals(Descriptor.Type.METHOD)) { // We allow repeated imports for method overloads as they are all in the same scope
             if (stack.peek().exists(id)) {
@@ -131,13 +145,35 @@ public class SymbolTable{
             all_hashes.get(i).getHash().entrySet().forEach(entry->{
                 System.out.println(entry.getKey());
                 if(entry.getValue().get(0).getType().equals(Descriptor.Type.VAR))
-                    System.out.println(" " + ((VarDescriptor)entry.getValue().get(0)).getDataType());  
+                    System.out.println(" " + ((VarDescriptor)entry.getValue().get(0)).getDataType() + " " + ((VarDescriptor)entry.getValue().get(0)).getScope());  
              });
+
+            //  all_hashes.get(i).getHash().entrySet().forEach(entry->{
+            //     System.out.println(entry.getKey() + entry.getValue());
+                 
+            //  });
+
+            // all_hashes.get(i).getHash().entrySet().forEach(entry->{
+            //     System.out.println(entry.getKey());
+            //     if(entry.getValue().get(0).getType().equals(Descriptor.Type.CLASS))
+            //         System.out.println(" " + ((ClassDescriptor)entry.getValue().get(0)).getMethods());  
+            //  });
         }
     }
 
-        
-
+    public Descriptor.Scope getCurrentScope(){
+        switch(stack.size()){
+            case 1:
+                return Descriptor.Scope.IMPORT;
+            case 2:
+                return Descriptor.Scope.GLOBAL;
+            default:
+                return Descriptor.Scope.LOCAL;
+    
+        }
+    }
+    
 }
+
 
        

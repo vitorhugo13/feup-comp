@@ -1,5 +1,4 @@
 package descriptors;
-import java.util.HashMap;
 
 abstract public class Descriptor {
 
@@ -28,6 +27,12 @@ abstract public class Descriptor {
 
     public Type getType(){
         return this.type;
+    }
+
+    public static enum Scope{
+        LOCAL,
+        GLOBAL,
+        IMPORT
     }
 
 }

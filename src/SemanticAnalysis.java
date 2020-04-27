@@ -23,8 +23,6 @@ class SemanticAnalysis{
     }
 
     public void execute(Node node){
-
-        System.out.println(node.toString());
         
         try {
             if (node.toString().equals("StaticImport") || node.toString().equals("NonStaticImport")) { 
@@ -66,7 +64,8 @@ class SemanticAnalysis{
 
         String classID = Utils.parseName(node.jjtGetChild(0).toString());
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(classID).get(0); //verifica se a class existe, está importada/extend
-
+        String className = varDescriptor.getDataType();
+        System.out.println("CLASS: " + className);
         //TODO: se o método nao existir lançar uma mensagem personalizada, neste momento está [Variable "id" was not declared]
         String method = Utils.parseName(node.jjtGetChild(1).toString());
         ArrayList<Descriptor> methDescriptors = symbolTable.lookup(method); //verifica se o metódo existe
@@ -130,8 +129,6 @@ class SemanticAnalysis{
             processObject(node);
         }
         else{
-
-            System.out.println("Node: " + node.toString());
 
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
             String dataType = getNodeDataType(node.jjtGetChild(1));

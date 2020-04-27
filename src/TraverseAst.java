@@ -8,6 +8,7 @@ public class TraverseAst{
     protected SimpleNode root;
     protected SymbolTable symbolTable;
     static private String VOID = "void";
+    protected String className;
 
 
     public TraverseAst(SimpleNode root, SymbolTable symbolTable){
@@ -155,8 +156,8 @@ public class TraverseAst{
         }
 
         MethodDescriptor methodDescriptor = new MethodDescriptor(Utils.parseName(node.toString()), Utils.parseName(node.jjtGetChild(0).toString()), params);
-        symbolTable.add(Utils.parseName(node.toString()), methodDescriptor);
-
+        
+        symbolTable.add(this.className, methodDescriptor, true);
         symbolTable.enterScope();
 
         for(int i=0; i<params.size(); i++){
@@ -188,8 +189,7 @@ public class TraverseAst{
         }
 
         MethodDescriptor methodDescriptor = new MethodDescriptor(Utils.parseName(node.toString()), null, params);
-        symbolTable.add(Utils.parseName(node.toString()), methodDescriptor);
-
+        symbolTable.add(this.className, methodDescriptor, true);
         symbolTable.enterScope();
 
         for(int i=0; i<params.size(); i++){
@@ -207,11 +207,11 @@ public class TraverseAst{
 
     private void processClass(Node node) {
         symbolTable.enterScope();
-
+        this.className=Utils.parseName(node.toString());
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-
             execute(node.jjtGetChild(i));
         }
+
         symbolTable.exitScope();
     }
 
