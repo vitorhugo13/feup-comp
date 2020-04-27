@@ -102,7 +102,6 @@ class SemanticAnalysis{
                 }
 
                 if(correct){
-                    System.out.println("tudo como era esperado");
                     return md.getReturnType();
                 }
 
@@ -111,6 +110,7 @@ class SemanticAnalysis{
 
         //TODO: nao sei o que meter aqui..
         return "";
+        
     }
 
     private void processAssign(Node node) throws IOException{
@@ -130,6 +130,8 @@ class SemanticAnalysis{
             processObject(node);
         }
         else{
+
+            System.out.println("Node: " + node.toString());
 
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
             String dataType = getNodeDataType(node.jjtGetChild(1));
@@ -199,7 +201,13 @@ class SemanticAnalysis{
             return processArrayRight(node);
         }
         else if(node.toString().equals("MethodInvocation")){
-            return processInvocation(node);
+            String tipo = processInvocation(node);
+            
+            if(tipo.equals("int")){
+                tipo = "Integer";
+            }
+
+            return tipo;
         }
         else{ // INTEGER[2]
             return Utils.getFirstPartOfName(node.toString());
