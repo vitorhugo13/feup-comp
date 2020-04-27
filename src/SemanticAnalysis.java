@@ -65,11 +65,52 @@ class SemanticAnalysis{
         //ver arglist e return type
 
         String classID = Utils.parseName(node.jjtGetChild(0).toString());
-        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(classID).get(0);
-        System.out.println("OLA: " + varDescriptor.getDataType());
+        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(classID).get(0); //verifica se a class existe, está importada/extend
 
+        //TODO: se o método nao existir lançar uma mensagem personalizada, neste momento está [Variable "id" was not declared]
+        String method = Utils.parseName(node.jjtGetChild(1).toString());
+        ArrayList<Descriptor> methDescriptors = symbolTable.lookup(method); //verifica se o metódo existe
 
-        return "ok";
+        //dado que pode ocorrer method overload temos de percorrer a lista de descritores returnados
+        //e saber se existe o certo, e se sim processar os args e o return type
+        int numArgs = node.jjtGetChild(2).jjtGetNumChildren();
+        Boolean correct = true;
+
+        for(int i = 0; i < methDescriptors.size();i++){
+            MethodDescriptor md = (MethodDescriptor) methDescriptors.get(i);
+
+            if(md.getParameters().size() == numArgs){
+
+                for(int j = 0; j < md.getParameters().size(); j++){
+
+                    String argID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(j).toString());
+                    VarDescriptor arg = (VarDescriptor) symbolTable.lookup(argID).get(0);
+
+                    if(!arg.getInitialized()){
+                        System.out.println("Nao foi inicializada");
+                        correct = false;
+                    }
+
+                    String typeArg = getNodeDataType(node.jjtGetChild(2).jjtGetChild(i)); //tipo de argumento passado
+                    String expectedType = md.getParameters().get(i).getDataType(); //tipo de argumento esperado
+
+                    //TODO: temos de garantir que dá o erro e nao faz mais nada a seguir
+                    if(!typeArg.equals(expectedType)){
+                        correct = false;
+                        throw new IOException(Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString())+ " does not match type " + expectedType + " in " + method);
+                    }
+                }
+
+                if(correct){
+                    System.out.println("tudo como era esperado");
+                    return md.getReturnType();
+                }
+
+            }
+        }
+
+        //TODO: nao sei o que meter aqui..
+        return "";
     }
 
     private void processAssign(Node node) throws IOException{
