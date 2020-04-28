@@ -33,13 +33,13 @@ public class TraverseAst{
         else if(node.toString().equals("NonStaticImport")){
             processNonStaticImport(node);
         }
-        else if(node.toString().contains("Class")){
+        else if(Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])")){
             processClass(node);
         }
         else if(node.toString().equals("Method[main]")){
             processMain(node);
         }
-        else if(!node.toString().equals("MethodInvocation") && node.toString().contains("Method[")){
+        else if(!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])")){
             processMethod(node);
         }
         else{
@@ -80,7 +80,7 @@ public class TraverseAst{
                 symbolTable.add(Utils.parseName(node.jjtGetChild(0).toString()), descriptor, true);
                 return;
             case 2:
-                if(node.jjtGetChild(1).toString().contains("Method")){ // Ex: import List.add(int);
+                if(Utils.analyzeRegex(node.jjtGetChild(1).toString(), "(Method\\[)(.)*(\\])")){ // Ex: import List.add(int); 
 
                     ArrayList<VarDescriptor> params = getMethodParams(node.jjtGetChild(1).jjtGetChild(0));
                     String returnType = getMethodReturnType(node.jjtGetChild(1));
