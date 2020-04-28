@@ -25,10 +25,18 @@ public class Main {
 
         root.dump("");
 
-        
+        System.out.println("\nCREATING SYMBOL TABLE\n");        
         SymbolTable symbolTable = new SymbolTable();
         TraverseAst traverseAst= new TraverseAst(root, symbolTable);
         traverseAst.execute(root);
+        symbolTable.print_all();
+        System.out.println("SYMBOL TABLE CREATED");        
+        
+        System.out.println("SEMANTIC ANALYSIS");
+        SemanticAnalysis semanticAnalysis = new SemanticAnalysis(symbolTable);
+        semanticAnalysis.execute(root);
+        System.out.println("FINISHED SEMANTIC ANALYSIS");
+
     }
 
 }

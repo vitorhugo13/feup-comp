@@ -76,7 +76,8 @@ SimpleNode Program() : { Parser.errors = 0; }
 
 void Imports() #void: {}
 {
-  	(<IMPORT> ( StaticImport() | NonStaticImport() ) <SEMICOLON>)*
+      (<IMPORT> ( StaticImport() | NonStaticImport() ) <SEMICOLON>)*
+    //   [<DOT> t=<Identifier> {jjtThis.methodName=t.image}] ([<LB> ParamList() <RB> [Type()|<VOID>#Void] ]
 }
 
 void StaticImport(): {}
@@ -151,9 +152,14 @@ void MethodReturn() #Return: {}
 
 void MainParamList() #ParamList: {}
 {
-    (<STRINGARRAY> <IDENTIFIER>)?
+    [StringVarDeclaration()]
 }
- 
+
+void StringVarDeclaration() #VarDeclaration : {Token t, s;}
+{
+    s = <STRINGARRAY> {jjtThis.value = "stringarray";} #Type t = <IDENTIFIER> {jjtThis.value = t.image;} #Identifier
+}
+
 void Type() : {Token t;}
 {
     t = <INT> {jjtThis.value = t.image;} (<LSQUAREBRACKET> <RSQUAREBRACKET> {jjtThis.value = "array";})?

@@ -1,0 +1,28 @@
+class Method{
+
+    public static void main(String[] args){
+        int a;
+        int b;
+        int c;
+        Method meth;
+        int d;
+
+        b = 2;
+        a = 2;
+        meth = new Method();
+        c = b + Method.add(a,b);
+    }
+
+    public int add(int a, int b){
+        return a + b;
+    }
+
+    public int add(int a, int b, int c){
+        return a + b + c;
+    }
+    
+    public int escreve(){
+        return 2;
+    }
+
+}
