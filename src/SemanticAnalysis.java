@@ -41,7 +41,13 @@ class SemanticAnalysis{
             } 
             else if (node.toString().equals("Assign")) {
                 processAssign(node);
-            } 
+            }
+            else if(node.toString().equals("IfStatement")){
+                processIfStatement(node);
+            }
+            else if(node.toString().equals("While")){
+                System.out.println("VI UM WHILE");
+            }
             else {
                 processChildren(node);
             }
@@ -57,6 +63,17 @@ class SemanticAnalysis{
 
             
         }
+    }
+
+    private void processIfStatement(Node node)throws IOException{
+        //TODO: verificar que a condição do if retorna um boolean (nao pode ter if(1))
+        Node condition = node.jjtGetChild(0);
+
+        if(!getNodeDataType(condition.jjtGetChild(0)).equals("Boolean")){
+            System.out.println("NÃO É BOOLEANO");
+        }
+
+
     }
 
     private String processInvocation(Node node) throws IOException{
@@ -174,17 +191,6 @@ class SemanticAnalysis{
 
     private String getNodeDataType(Node node) throws IOException{ 
 
-        /*
-
-        Identifier[a]
-        INTEGER[2]
-        ADD
-            IDENTIFIER
-            INTEGER
-        ARRAY
-            
-        */
-
         if(Utils.analyzeRegex(node.toString(), "(Identifier\\[)(.)*(\\])")){ //IDENTIFIER[a]
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.toString())).get(0);
             if(!varDescriptor.getInitialized())
@@ -192,11 +198,36 @@ class SemanticAnalysis{
             return varDescriptor.getDataType();
         }
         else if(node.toString().equals("Add") || node.toString().equals("Sub") || node.toString().equals("Div") || node.toString().equals("Mul")){
-            for(int i= 0; i<node.jjtGetNumChildren();i++){
+            for(int i = 0; i < node.jjtGetNumChildren(); i++){
                 if(!getNodeDataType(node.jjtGetChild(i)).equals(INTEGER))
                     throw new IOException("Arithmetic operation must be done with Integer values: variable " + Utils.parseName(node.jjtGetChild(i).toString()) + " is not an Integer");
             }
             return "Integer";
+        }
+        else if(node.toString().equals("Less")){
+            for(int i = 0; i < node.jjtGetNumChildren(); i++){
+                if(!getNodeDataType(node.jjtGetChild(i)).equals("Integer")){
+                    throw new IOException("<(LESS) operation must be done with Integer values");
+                }
+            }
+            return "Boolean";
+        }
+        else if(node.toString().equals("Not")){
+            for(int i = 0; i < node.jjtGetNumChildren(); i++){
+                if(!getNodeDataType(node.jjtGetChild(i)).equals("Boolean")){
+                    throw new IOException("!(NOT) operation must be done with Boolean values");
+                }
+            }
+            return "Boolean";
+
+        }
+        else if(node.toString().equals("And")){
+            for(int i = 0; i < node.jjtGetNumChildren(); i++){
+                if(!getNodeDataType(node.jjtGetChild(i)).equals("Boolean")){
+                    throw new IOException("&&(AND) operation must be done with Boolean values");
+                }
+            }
+            return "Boolean";
         }
         else if(node.toString().equals("Array")){
             return processArrayRight(node);
@@ -316,3 +347,11 @@ class SemanticAnalysis{
         return this.symbolTable;
     }
 }
+
+/* IF STATEMENT
+
+! NOT  (boolean)
+&& AND (boolean com boolean)
+< LESS (int com int)
+
+*/

@@ -5,23 +5,14 @@ class Stmt{
         int a;
         int b;
 
-        a = 3;
+        a = 2;
         b = 1;
 
-        if(a < b){
-            if( a < 1){
-                a = 209;
-            }
-            else {
-
-                while( b < 2){
-                    a = 4;
-                }
-
-            }
+        if(!(a < 4)){
+           
         }
         else{
-            a = 21;
+            
         }
     }
 }
