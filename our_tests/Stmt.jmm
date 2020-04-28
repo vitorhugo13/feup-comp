@@ -1,0 +1,27 @@
+class Stmt{
+
+    public static void main(String[] args){
+
+        int a;
+        int b;
+
+        a = 3;
+        b = 1;
+
+        if(a < b){
+            if( a < 1){
+                a = 209;
+            }
+            else {
+
+                while( b < 2){
+                    a = 4;
+                }
+
+            }
+        }
+        else{
+            a = 21;
+        }
+    }
+}
