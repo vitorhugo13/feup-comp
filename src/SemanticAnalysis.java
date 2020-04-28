@@ -2,11 +2,13 @@ import java.util.ArrayList;
 import descriptors.*;
 import java.io.IOException;
 
-//TODO: string[] args do method main DONE, I GUESS
-//TODO: arrays(ESQ, DIREITA, AMBOS)
-//TODO: Method invocation
-//TODO: Check
 
+
+//TODO: invoke.add(1,2).printIsto() -> joana
+//TODO: extends -> joana
+//TODO: ifs and whiles -> vitor 
+
+//TODO: negações
 
 class SemanticAnalysis{
     static private String VOID = "void";
@@ -26,9 +28,8 @@ class SemanticAnalysis{
         
         try {
             if (node.toString().equals("StaticImport") || node.toString().equals("NonStaticImport")) { 
-                //TODO: é suposto este 1º if nao ter nenhum condição?
             } 
-            else if (node.toString().contains("Class") || node.toString().equals("Method[main]") || (!node.toString().equals("MethodInvocation") && node.toString().contains("Method"))) {
+            else if (Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])") || node.toString().equals("Method[main]") || (!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])"))) {
                 processNewScope(node);
             }
             else if(node.toString().equals("MethodInvocation")){
@@ -45,58 +46,59 @@ class SemanticAnalysis{
             }
         }catch (Exception e) {
             System.err.println("[SEMANTIC ERROR]: " + e.getMessage());
+            // e.printStackTrace();
             exceptionCounter++;
-
             if (exceptionCounter >= MAX_EXCEPTIONS) {
                 System.err.println("[PROGRAM TERMINATING] THERE ARE MORE THAN " + MAX_EXCEPTIONS + " SEMANTIC ERRORS.");
                 System.exit(0);
             }
+            // throw new ParseException("Parse exception");
+
+            
         }
     }
 
     private String processInvocation(Node node) throws IOException{
-        //TODO: só para funções da class, para funções do import logo se vê
-        //TODO: ter em atenção o seguinte -> o objeto que está a ser acedido/chamado tem de ser do mesmo tipo da classe onde está inserido, ou da class a que faz extends ou de uma class qql dos imports
-        //provavelmente o ponto mencionado em cima basta ser verificado na inicializacão do objeto
-        //comparar o dataTYpe do filho 0 com o tipo das classes acima mencionadas 
-        //ver se essa class tem a função no filho 1
-        //ver arglist e return type
+        String id;
+        ClassDescriptor classDescriptor;
+ 
+        if(node.jjtGetChild(0).toString().equals("This")){
+            classDescriptor = (ClassDescriptor) symbolTable.lookup(symbolTable.getClassName()).get(0);
+        }
+        else{ //io.prinln() ou obj.add();
+            id=Utils.parseName(node.jjtGetChild(0).toString());  
+            Descriptor descriptor =symbolTable.lookup(id).get(0);
+            if(descriptor.getType().equals(Descriptor.Type.CLASS)){
+                classDescriptor = (ClassDescriptor) descriptor;
+            }
+            else{
+                String className = ((VarDescriptor) descriptor).getDataType();
+                classDescriptor = (ClassDescriptor) symbolTable.lookup(className).get(0);
+            }
+        }
+        
 
-        String classID = Utils.parseName(node.jjtGetChild(0).toString());
-        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(classID).get(0); //verifica se a class existe, está importada/extend
-        String className = varDescriptor.getDataType();
-        System.out.println("CLASS: " + className);
-        //TODO: se o método nao existir lançar uma mensagem personalizada, neste momento está [Variable "id" was not declared]
-        String method = Utils.parseName(node.jjtGetChild(1).toString());
-        ArrayList<Descriptor> methDescriptors = symbolTable.lookup(method); //verifica se o metódo existe
-
+        String methodName = Utils.parseName(node.jjtGetChild(1).toString()); 
+        ArrayList<MethodDescriptor> methodDescriptors = classDescriptor.getMethodsMatchingId(methodName);
         //dado que pode ocorrer method overload temos de percorrer a lista de descritores returnados
         //e saber se existe o certo, e se sim processar os args e o return type
         int numArgs = node.jjtGetChild(2).jjtGetNumChildren();
         Boolean correct = true;
 
-        for(int i = 0; i < methDescriptors.size();i++){
-            MethodDescriptor md = (MethodDescriptor) methDescriptors.get(i);
+        for(int method = 0; method < methodDescriptors.size(); method++){
+    
+            MethodDescriptor md = methodDescriptors.get(method);
 
             if(md.getParameters().size() == numArgs){
 
-                for(int j = 0; j < md.getParameters().size(); j++){
+                for(int param = 0; param < md.getParameters().size(); param++){    
 
-                    String argID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(j).toString());
-                    VarDescriptor arg = (VarDescriptor) symbolTable.lookup(argID).get(0);
+                    String typeArg = getNodeDataType(node.jjtGetChild(2).jjtGetChild(param)); //tipo de argumento passado
+                    String expectedType = md.getParameters().get(param).getDataType(); //tipo de argumento esperado
 
-                    if(!arg.getInitialized()){
-                        System.out.println("Nao foi inicializada");
-                        correct = false;
-                    }
-
-                    String typeArg = getNodeDataType(node.jjtGetChild(2).jjtGetChild(i)); //tipo de argumento passado
-                    String expectedType = md.getParameters().get(i).getDataType(); //tipo de argumento esperado
-
-                    //TODO: temos de garantir que dá o erro e nao faz mais nada a seguir
                     if(!typeArg.equals(expectedType)){
                         correct = false;
-                        throw new IOException(Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString())+ " does not match type " + expectedType + " in " + method);
+                        throw new IOException(Utils.parseName(node.jjtGetChild(2).jjtGetChild(param).toString())+ " does not match type " + expectedType + " in " + methodName);
                     }
                 }
 
@@ -107,8 +109,7 @@ class SemanticAnalysis{
             }
         }
 
-        //TODO: nao sei o que meter aqui..
-        return "";
+        throw new IOException("No signature of method " + methodName + " matches list of arguments given");
         
     }
 
@@ -116,10 +117,10 @@ class SemanticAnalysis{
 
         // TODO: Arrays (also need to update symbol table with those), Class types and constructor invocations, sums (a= b+c)
 
-        if(node.jjtGetChild(0).toString().equals("Array") && !node.jjtGetChild(1).toString().contains("Array")){
+        if(node.jjtGetChild(0).toString().equals("Array") && !Utils.analyzeRegex(node.jjtGetChild(1).toString(), "(Array\\[)(.)*(\\])")){ 
             processArrayLeft(node);
         }
-        else if(node.jjtGetChild(0).toString().equals("Array") && node.jjtGetChild(1).toString().contains("Array")){
+        else if(node.jjtGetChild(0).toString().equals("Array") && Utils.analyzeRegex(node.jjtGetChild(1).toString(), "(Array\\[)(.)*(\\])")){
             processArrayBoth(node);
         }
         else if(node.jjtGetChild(1).toString().equals("NewIntArray")){
@@ -157,6 +158,7 @@ class SemanticAnalysis{
 
         varDescriptor.setInitialized();
     }
+
     private void processInitializeArray(Node node) throws IOException{
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
         if(!varDescriptor.getDataType().equals("Array")){
@@ -166,6 +168,7 @@ class SemanticAnalysis{
             throw new IOException("When initializing array, array size must be an integer");
         }
 
+        varDescriptor.setInitialized();
     }
 
     private String getNodeDataType(Node node) throws IOException{ 
@@ -181,10 +184,10 @@ class SemanticAnalysis{
             
         */
 
-        if(node.toString().contains("Identifier")){ //IDENTIFIER[a]
+        if(Utils.analyzeRegex(node.toString(), "(Identifier\\[)(.)*(\\])")){ //IDENTIFIER[a]
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.toString())).get(0);
             if(!varDescriptor.getInitialized())
-                throw new IOException("Variable " + varDescriptor.getIdentifier() + " is not initialized");
+                throw new IOException("Variable " + varDescriptor.getIdentifier() + " was not initialized");
             return varDescriptor.getDataType();
         }
         else if(node.toString().equals("Add") || node.toString().equals("Sub") || node.toString().equals("Div") || node.toString().equals("Mul")){
@@ -198,6 +201,7 @@ class SemanticAnalysis{
             return processArrayRight(node);
         }
         else if(node.toString().equals("MethodInvocation")){
+
             String tipo = processInvocation(node);
             
             if(tipo.equals("int")){
@@ -294,13 +298,13 @@ class SemanticAnalysis{
     }
 
 
-    private void processNewScope(Node node) {
+    private void processNewScope(Node node){
         symbolTable.enterScopeForAnalysis();
         processChildren(node);
         symbolTable.exitScopeForAnalysis();
     }
 
-    private void processChildren(Node node) {
+    private void processChildren(Node node){
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             execute(node.jjtGetChild(i));
         }

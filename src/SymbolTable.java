@@ -9,6 +9,15 @@ public class SymbolTable{
     private Stack<MyHashMap> stack;
     private ArrayList<MyHashMap> all_hashes;
     private int posArrayForAnalysis;
+    private String className;
+
+    public void setClassName(String name){
+        this.className = name;
+    }
+
+    public String getClassName(){
+        return this.className;
+    }
 
     public SymbolTable() {
 
@@ -95,7 +104,7 @@ public class SymbolTable{
         }
         else{
             ((ClassDescriptor) stack.peek().getDescriptor(id).get(0)).addMethod(info);
-            System.out.println("Get descriptor: " + ((ClassDescriptor) stack.peek().getDescriptor(id).get(0)).getMethods());
+            //System.out.println("Get descriptor: " + ((ClassDescriptor) stack.peek().getDescriptor(id).get(0)).getMethods());
         }
 
     }
@@ -120,7 +129,7 @@ public class SymbolTable{
             return all_hashes.get(0).getDescriptor(id);
         }
         
-        throw new IOException("Variable " + id + " was not declared");
+        throw new IOException("Variable " + id + " is undefined");
             
     }
 

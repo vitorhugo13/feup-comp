@@ -424,9 +424,9 @@ class Generator {
         else if (type.equals("array") || type.equals("Array"))
             ret = "[I";
         else if (type.equals("stringarray"))
-            ret = "[L/java/lang/String";
+            ret = "[L/java/lang/String;";
         else if (type.equals("String"))
-            ret = "L/java/lang/String";
+            ret = "L/java/lang/String;";
         else if (type.equals("void"))
             ret = "V";
         else 

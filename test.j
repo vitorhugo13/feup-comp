@@ -7,7 +7,7 @@
     return
 .end method
 
-.method public static main([L/java/lang/String)V
+.method public static main([L/java/lang/String;)V
     .limit_stack 99
     .limit_locals 99
 
@@ -28,10 +28,10 @@
     aload 1
     aload 2
     invokevirtual Simple/add(II)I
-    astore 4
+    istore 4
 
     aload 4
-    invokevirtual io/println([I)
+    invokestatic io/println(I)V
     return
 .end method
 

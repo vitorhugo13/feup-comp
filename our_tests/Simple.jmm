@@ -6,7 +6,7 @@ class Simple {
 		int a;
 		int b;
 		Simple simple;
-		int[] c;
+		int c;
 
 		a = 30;
 		b = 0-10;

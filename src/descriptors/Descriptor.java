@@ -17,6 +17,8 @@ abstract public class Descriptor {
             return "Integer";
         else if(dataType.equals("array"))
             return "Array";
+        else if(dataType.equals("boolean"))
+            return "Boolean";
         else
             return dataType;
 

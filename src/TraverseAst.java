@@ -8,7 +8,7 @@ public class TraverseAst{
     protected SimpleNode root;
     protected SymbolTable symbolTable;
     static private String VOID = "void";
-    protected String className;
+    
 
 
     public TraverseAst(SimpleNode root, SymbolTable symbolTable){
@@ -33,13 +33,13 @@ public class TraverseAst{
         else if(node.toString().equals("NonStaticImport")){
             processNonStaticImport(node);
         }
-        else if(node.toString().contains("Class")){
+        else if(Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])")){
             processClass(node);
         }
         else if(node.toString().equals("Method[main]")){
             processMain(node);
         }
-        else if(!node.toString().equals("MethodInvocation") && node.toString().contains("Method")){
+        else if(!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])")){
             processMethod(node);
         }
         else{
@@ -52,6 +52,14 @@ public class TraverseAst{
     private void processProgram(Node node){
 
         symbolTable.enterScope(); // Enter Import Scope
+
+        // Hardcoded io.println(int): this is a built in function
+        ArrayList<VarDescriptor> params =new ArrayList<>(); 
+        params.add(new VarDescriptor("Integer", null));
+        MethodDescriptor descriptor = new MethodDescriptor("println", "void", params, true);
+        symbolTable.add("io", descriptor, true);
+
+
 
         for (int i = 0; i < node.jjtGetNumChildren()-1; i++) { // Imports
             execute(node.jjtGetChild(i));
@@ -80,14 +88,14 @@ public class TraverseAst{
                 symbolTable.add(Utils.parseName(node.jjtGetChild(0).toString()), descriptor, true);
                 return;
             case 2:
-                if(node.jjtGetChild(1).toString().contains("Method")){ // Ex: import List.add(int);
+                if(Utils.analyzeRegex(node.jjtGetChild(1).toString(), "(Method\\[)(.)*(\\])")){ // Ex: import List.add(int); 
 
                     ArrayList<VarDescriptor> params = getMethodParams(node.jjtGetChild(1).jjtGetChild(0));
                     String returnType = getMethodReturnType(node.jjtGetChild(1));
-                    String name = Utils.parseName(node.jjtGetChild(0).toString());
+                    String name = Utils.parseName(node.jjtGetChild(1).toString());
 
                     descriptor= new MethodDescriptor(name, returnType, params, false);
-                    symbolTable.add(name, descriptor, true);
+                    symbolTable.add(Utils.parseName(node.jjtGetChild(0).toString()), descriptor, true);
 
                     return;
                 }
@@ -118,10 +126,9 @@ public class TraverseAst{
         ArrayList<VarDescriptor> params = getMethodParams(node.jjtGetChild(1).jjtGetChild(0));
         String returnType = getMethodReturnType(node.jjtGetChild(1));
 
-
-        String name = Utils.parseName(node.jjtGetChild(0).toString());
+        String name = Utils.parseName(node.jjtGetChild(1).toString());
         MethodDescriptor descriptor = new MethodDescriptor(name, returnType, params, true);
-        symbolTable.add(name, descriptor, true);
+        symbolTable.add(Utils.parseName(node.jjtGetChild(0).toString()), descriptor, true);
     }
 
     private String getMethodReturnType(Node method) {
@@ -157,7 +164,7 @@ public class TraverseAst{
 
         MethodDescriptor methodDescriptor = new MethodDescriptor(Utils.parseName(node.toString()), Utils.parseName(node.jjtGetChild(0).toString()), params, false);
         
-        symbolTable.add(this.className, methodDescriptor, true);
+        symbolTable.add(this.symbolTable.getClassName(), methodDescriptor, true);
         symbolTable.enterScope();
 
         for(int i=0; i<params.size(); i++){
@@ -190,7 +197,7 @@ public class TraverseAst{
         }
 
         MethodDescriptor methodDescriptor = new MethodDescriptor(Utils.parseName(node.toString()), null, params, true);
-        symbolTable.add(this.className, methodDescriptor, true);
+        symbolTable.add(this.symbolTable.getClassName(), methodDescriptor, true);
         symbolTable.enterScope();
 
         for(int i=0; i<params.size(); i++){
@@ -208,7 +215,7 @@ public class TraverseAst{
 
     private void processClass(Node node) {
         symbolTable.enterScope();
-        this.className=Utils.parseName(node.toString());
+        this.symbolTable.setClassName(Utils.parseName(node.toString()));
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             execute(node.jjtGetChild(i));
         }
@@ -222,5 +229,10 @@ public class TraverseAst{
 }
 
 
+//return type nao tem nada a ver
+//add(boolean, int)
+//add(int, int)
+//add(boolean, bolean)
+//add(int, boolean)
 
 
