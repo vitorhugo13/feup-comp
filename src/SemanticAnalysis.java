@@ -45,7 +45,7 @@ class SemanticAnalysis{
             }
         }catch (Exception e) {
             System.err.println("[SEMANTIC ERROR]: " + e.getMessage());
-            e.printStackTrace();
+            // e.printStackTrace();
             exceptionCounter++;
 
             if (exceptionCounter >= MAX_EXCEPTIONS) {
@@ -58,8 +58,8 @@ class SemanticAnalysis{
     private String processInvocation(Node node) throws IOException{
         String id;
         ClassDescriptor classDescriptor;
-
-        if(node.jjtGetChild(0).equals("This")){
+ 
+        if(node.jjtGetChild(0).toString().equals("This")){
             classDescriptor = (ClassDescriptor) symbolTable.lookup(symbolTable.getClassName()).get(0);
         }
         else{ //io.prinln() ou obj.add();
@@ -91,7 +91,6 @@ class SemanticAnalysis{
                 for(int param = 0; param < md.getParameters().size(); param++){    
 
                     String typeArg = getNodeDataType(node.jjtGetChild(2).jjtGetChild(param)); //tipo de argumento passado
-                    System.out.println("TYPE OF ARGUMENT: " + typeArg);
                     String expectedType = md.getParameters().get(param).getDataType(); //tipo de argumento esperado
 
                     if(!typeArg.equals(expectedType)){
@@ -184,7 +183,7 @@ class SemanticAnalysis{
         if(node.toString().contains("Identifier")){ //IDENTIFIER[a]
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.toString())).get(0);
             if(!varDescriptor.getInitialized())
-                throw new IOException("Variable " + varDescriptor.getIdentifier() + " is not initialized");
+                throw new IOException("Variable " + varDescriptor.getIdentifier() + " was not initialized");
             return varDescriptor.getDataType();
         }
         else if(node.toString().equals("Add") || node.toString().equals("Sub") || node.toString().equals("Div") || node.toString().equals("Mul")){
