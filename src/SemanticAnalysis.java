@@ -7,8 +7,8 @@ import java.io.IOException;
 //TODO: invoke.add(1,2).printIsto() -> joana
 //TODO: extends -> joana
 //TODO: ifs and whiles -> vitor 
-//TODO: warnings de variavéis que podem so estar a ser inicializadas nos if/whiles
 
+//TODO: warnings de variavéis que podem so estar a ser inicializadas nos if/whiles
 //TODO: negações
 
 class SemanticAnalysis{
@@ -46,6 +46,9 @@ class SemanticAnalysis{
                 processIfStatement(node);
             }
             else if(node.toString().equals("While")){
+                processWhile(node);
+            }
+            else if(node.toString().equals("While")){
                 System.out.println("VI UM WHILE");
             }
             else {
@@ -60,20 +63,38 @@ class SemanticAnalysis{
                 System.exit(0);
             }
             // throw new ParseException("Parse exception");
-
-            
         }
     }
 
     private void processIfStatement(Node node)throws IOException{
-        //TODO: verificar que a condição do if retorna um boolean (nao pode ter if(1))
+
         Node condition = node.jjtGetChild(0);
 
         if(!getNodeDataType(condition.jjtGetChild(0)).equals("Boolean")){
-            System.out.println("NÃO É BOOLEANO");
+            System.out.println("IF: NÃO É BOOLEANO");
         }
 
+        for(int i = 0; i < node.jjtGetChild(1).jjtGetNumChildren(); i++){
+            execute(node.jjtGetChild(1).jjtGetChild(i));
+        }
 
+        for(int j = 0; j < node.jjtGetChild(2).jjtGetNumChildren(); j++){
+            execute(node.jjtGetChild(2).jjtGetChild(j));
+        }
+
+    }
+
+    private void processWhile(Node node)throws IOException{
+
+        Node condition = node.jjtGetChild(0);
+
+        if(!getNodeDataType(condition.jjtGetChild(0)).equals("Boolean")){
+            System.out.println("WHILE: NÃO É BOOLEANO");
+        }
+
+        for(int i = 0; i < node.jjtGetChild(1).jjtGetNumChildren(); i++){
+            execute(node.jjtGetChild(1).jjtGetChild(i));
+        }
     }
 
     private String processInvocation(Node node) throws IOException{

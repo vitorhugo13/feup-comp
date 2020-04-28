@@ -4,15 +4,36 @@ class Stmt{
 
         int a;
         int b;
+        Boolean c;
+        c = true;
 
         a = 2;
         b = 1;
 
-        if(!(a < 4)){
-           
+        while(true){
+            if(c){
+                c = false;
+                b = 23 + 1;
+
+                while(!false){
+                    b = 23;
+                }
+            }
+            else{
+                if(true){
+                    b = 34;
+                }
+                else{
+
+                }
+            }
+        }
+
+        if(true){
+
         }
         else{
-            
+
         }
     }
 }
