@@ -1,0 +1,30 @@
+class Overload{
+
+    public static void main(String[] args){
+
+    }
+
+    public int add(int a, int b){
+        return 1;
+    }
+
+    public int add(Boolean a, int b){
+        return 1;
+        
+    }
+
+    public int add(int a, Boolean b){
+        return 1;
+        
+    }
+
+    public int add(Boolean a, Boolean b){
+        return 1;
+        
+    }
+
+    public int add(int a, Boolean b, int c){
+        return 1;
+    }
+
+}

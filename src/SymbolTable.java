@@ -104,7 +104,7 @@ public class SymbolTable{
         }
         else{
             ((ClassDescriptor) stack.peek().getDescriptor(id).get(0)).addMethod(info);
-            System.out.println("Get descriptor: " + ((ClassDescriptor) stack.peek().getDescriptor(id).get(0)).getMethods());
+            //System.out.println("Get descriptor: " + ((ClassDescriptor) stack.peek().getDescriptor(id).get(0)).getMethods());
         }
 
     }

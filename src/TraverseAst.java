@@ -85,7 +85,6 @@ public class TraverseAst{
                     ArrayList<VarDescriptor> params = getMethodParams(node.jjtGetChild(1).jjtGetChild(0));
                     String returnType = getMethodReturnType(node.jjtGetChild(1));
                     String name = Utils.parseName(node.jjtGetChild(1).toString());
-                    System.out.println("ERROS: " + name);
 
                     descriptor= new MethodDescriptor(name, returnType,  params);
                     symbolTable.add(Utils.parseName(node.jjtGetChild(0).toString()), descriptor, true);
@@ -222,5 +221,10 @@ public class TraverseAst{
 }
 
 
+//return type nao tem nada a ver
+//add(boolean, int)
+//add(int, int)
+//add(boolean, bolean)
+//add(int, boolean)
 
 

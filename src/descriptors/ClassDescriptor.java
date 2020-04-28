@@ -21,6 +21,38 @@ public class ClassDescriptor extends Descriptor {
         return false;
     }
 
+    private Boolean possibleToOverload(MethodDescriptor method){
+
+        Boolean argsAllSame = true;
+        ArrayList<VarDescriptor> method_parameters = method.getParameters();
+        ArrayList<VarDescriptor> parameters = new ArrayList<>();
+
+        for(int i = 0; i < this.methods.size(); i++){
+          
+
+            if(this.methods.get(i).getIdentifier().equals(method.getIdentifier())){
+
+                argsAllSame = true;
+                parameters = this.methods.get(i).getParameters();
+                
+                if(method_parameters.size() == parameters.size()){
+
+                    for(int j = 0; j < parameters.size(); j++){
+                        if(!parameters.get(j).getDataType().equals(method_parameters.get(j).getDataType())){
+                            argsAllSame = false;
+                        }
+                    }
+
+                    if(argsAllSame){
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
     public ArrayList<MethodDescriptor> getMethodsMatchingId(String id) throws IOException{
         ArrayList<MethodDescriptor> methodsMatchingId = new ArrayList<>();
         if(existsMethod(id)){
@@ -36,7 +68,10 @@ public class ClassDescriptor extends Descriptor {
     }
 
     public void addMethod(MethodDescriptor method){
-        methods.add(method);
+
+        if(possibleToOverload(method))
+            methods.add(method);
+        
     }
 
     public ArrayList<MethodDescriptor> getMethods(){
