@@ -9,6 +9,15 @@ public class SymbolTable{
     private Stack<MyHashMap> stack;
     private ArrayList<MyHashMap> all_hashes;
     private int posArrayForAnalysis;
+    private String className;
+
+    public void setClassName(String name){
+        this.className = name;
+    }
+
+    public String getClassName(){
+        return this.className;
+    }
 
     public SymbolTable() {
 

@@ -1,10 +1,13 @@
 import java.util.ArrayList;
 import descriptors.*;
 import java.io.IOException;
+
+//TODO: this para chamar metodos da propria class
 //TODO: import io
-//TODO: import methods
+//TODO: invoke.add(1,2).printIsto()
 //TODO: extends
 //TODO: ifs and whiles
+//TODO: negações
 
 class SemanticAnalysis{
     static private String VOID = "void";
@@ -56,7 +59,12 @@ class SemanticAnalysis{
         
 
         String id = Utils.parseName(node.jjtGetChild(0).toString());  //
+        /*if(id.equals("this")){
+            id = this.symbolTable.getClassName();
+        }*/
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0); //verifica se a class existe, está importada/extend
+
+        
         
         String className = varDescriptor.getDataType();
         ClassDescriptor classDescriptor = (ClassDescriptor) symbolTable.lookup(className).get(0);
@@ -151,6 +159,7 @@ class SemanticAnalysis{
             throw new IOException("When initializing array, array size must be an integer");
         }
 
+        varDescriptor.setInitialized();
     }
 
     private String getNodeDataType(Node node) throws IOException{ 
@@ -183,6 +192,7 @@ class SemanticAnalysis{
             return processArrayRight(node);
         }
         else if(node.toString().equals("MethodInvocation")){
+
             String tipo = processInvocation(node);
             
             if(tipo.equals("int")){

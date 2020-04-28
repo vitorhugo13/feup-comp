@@ -17,6 +17,7 @@ public class ClassDescriptor extends Descriptor {
             if(methods.get(i).getIdentifier().equals(id))
                 return true;
         }
+
         return false;
     }
 
@@ -27,6 +28,8 @@ public class ClassDescriptor extends Descriptor {
                 if(methods.get(i).getIdentifier().equals(id))
                     methodsMatchingId.add(methods.get(i));
             }
+
+
             return methodsMatchingId;
         }
         throw new IOException("No Method in class " + this.identifier + " matches method named " + id);

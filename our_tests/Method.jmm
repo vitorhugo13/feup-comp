@@ -10,7 +10,7 @@ class Method{
         b = 2;
         a = 2;
         meth = new Method();
-        c = b + meth.add(a,b);
+        c = b + Method.add(a,b);
     }
 
     public int add(int a, int b){
@@ -19,6 +19,10 @@ class Method{
 
     public int add(int a, int b, int c){
         return a + b + c;
+    }
+    
+    public int escreve(){
+        return 2;
     }
 
 }
