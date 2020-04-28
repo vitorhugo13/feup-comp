@@ -129,7 +129,7 @@ public class SymbolTable{
             return all_hashes.get(0).getDescriptor(id);
         }
         
-        throw new IOException("Variable " + id + " was not declared");
+        throw new IOException("Variable " + id + " is undefined");
             
     }
 

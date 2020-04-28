@@ -53,6 +53,14 @@ public class TraverseAst{
 
         symbolTable.enterScope(); // Enter Import Scope
 
+        // Hardcoded io.println(int): this is a built in function
+        ArrayList<VarDescriptor> params =new ArrayList<>(); 
+        params.add(new VarDescriptor("Integer", null));
+        MethodDescriptor descriptor = new MethodDescriptor("println", "void", params);
+        symbolTable.add("io", descriptor, true);
+
+
+
         for (int i = 0; i < node.jjtGetNumChildren()-1; i++) { // Imports
             execute(node.jjtGetChild(i));
         }

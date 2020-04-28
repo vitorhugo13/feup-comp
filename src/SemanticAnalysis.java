@@ -45,21 +45,23 @@ class SemanticAnalysis{
             }
         }catch (Exception e) {
             System.err.println("[SEMANTIC ERROR]: " + e.getMessage());
-            e.printStackTrace();
+            // e.printStackTrace();
             exceptionCounter++;
-
             if (exceptionCounter >= MAX_EXCEPTIONS) {
                 System.err.println("[PROGRAM TERMINATING] THERE ARE MORE THAN " + MAX_EXCEPTIONS + " SEMANTIC ERRORS.");
                 System.exit(0);
             }
+            // throw new ParseException("Parse exception");
+
+            
         }
     }
 
     private String processInvocation(Node node) throws IOException{
         String id;
         ClassDescriptor classDescriptor;
-
-        if(node.jjtGetChild(0).equals("This")){
+ 
+        if(node.jjtGetChild(0).toString().equals("This")){
             classDescriptor = (ClassDescriptor) symbolTable.lookup(symbolTable.getClassName()).get(0);
         }
         else{ //io.prinln() ou obj.add();
@@ -77,13 +79,13 @@ class SemanticAnalysis{
 
         String methodName = Utils.parseName(node.jjtGetChild(1).toString()); 
         ArrayList<MethodDescriptor> methodDescriptors = classDescriptor.getMethodsMatchingId(methodName);
-
         //dado que pode ocorrer method overload temos de percorrer a lista de descritores returnados
         //e saber se existe o certo, e se sim processar os args e o return type
         int numArgs = node.jjtGetChild(2).jjtGetNumChildren();
         Boolean correct = true;
 
         for(int method = 0; method < methodDescriptors.size(); method++){
+    
             MethodDescriptor md = methodDescriptors.get(method);
 
             if(md.getParameters().size() == numArgs){
@@ -91,7 +93,6 @@ class SemanticAnalysis{
                 for(int param = 0; param < md.getParameters().size(); param++){    
 
                     String typeArg = getNodeDataType(node.jjtGetChild(2).jjtGetChild(param)); //tipo de argumento passado
-                    System.out.println("TYPE OF ARGUMENT: " + typeArg);
                     String expectedType = md.getParameters().get(param).getDataType(); //tipo de argumento esperado
 
                     if(!typeArg.equals(expectedType)){
@@ -107,7 +108,7 @@ class SemanticAnalysis{
             }
         }
 
-        return "";
+        throw new IOException("No signature of method " + methodName + " matches list of arguments given");
         
     }
 
@@ -156,6 +157,7 @@ class SemanticAnalysis{
 
         varDescriptor.setInitialized();
     }
+
     private void processInitializeArray(Node node) throws IOException{
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
         if(!varDescriptor.getDataType().equals("Array")){
@@ -184,7 +186,7 @@ class SemanticAnalysis{
         if(Utils.analyzeRegex(node.toString(), "(Identifier\\[)(.)*(\\])")){ //IDENTIFIER[a]
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.toString())).get(0);
             if(!varDescriptor.getInitialized())
-                throw new IOException("Variable " + varDescriptor.getIdentifier() + " is not initialized");
+                throw new IOException("Variable " + varDescriptor.getIdentifier() + " was not initialized");
             return varDescriptor.getDataType();
         }
         else if(node.toString().equals("Add") || node.toString().equals("Sub") || node.toString().equals("Div") || node.toString().equals("Mul")){
@@ -295,13 +297,13 @@ class SemanticAnalysis{
     }
 
 
-    private void processNewScope(Node node) {
+    private void processNewScope(Node node){
         symbolTable.enterScopeForAnalysis();
         processChildren(node);
         symbolTable.exitScopeForAnalysis();
     }
 
-    private void processChildren(Node node) {
+    private void processChildren(Node node){
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             execute(node.jjtGetChild(i));
         }
