@@ -76,7 +76,7 @@ public class TraverseAst{
 
         switch(node.jjtGetNumChildren()){
             case 1: // Ex.: import List;
-                descriptor= new MethodDescriptor(Utils.parseName(node.jjtGetChild(0).toString()), VOID, new ArrayList<>());
+                descriptor= new MethodDescriptor(Utils.parseName(node.jjtGetChild(0).toString()), VOID, new ArrayList<>(), false);
                 symbolTable.add(Utils.parseName(node.jjtGetChild(0).toString()), descriptor, true);
                 return;
             case 2:
@@ -86,7 +86,7 @@ public class TraverseAst{
                     String returnType = getMethodReturnType(node.jjtGetChild(1));
                     String name = Utils.parseName(node.jjtGetChild(0).toString());
 
-                    descriptor= new MethodDescriptor(name, returnType,  params);
+                    descriptor= new MethodDescriptor(name, returnType, params, false);
                     symbolTable.add(name, descriptor, true);
 
                     return;
@@ -94,7 +94,7 @@ public class TraverseAst{
                 else{ // Contructor with params - Ex: import List(int);
                     ArrayList<VarDescriptor> params = getMethodParams(node.jjtGetChild(1));
 
-                    descriptor= new MethodDescriptor(Utils.parseName(node.jjtGetChild(0).toString()), VOID, params);
+                    descriptor= new MethodDescriptor(Utils.parseName(node.jjtGetChild(0).toString()), VOID, params, false);
                     symbolTable.add(Utils.parseName(node.jjtGetChild(0).toString()), descriptor, true);
 
                     return;
@@ -120,7 +120,7 @@ public class TraverseAst{
 
 
         String name = Utils.parseName(node.jjtGetChild(0).toString());
-        MethodDescriptor descriptor = new MethodDescriptor(name, returnType, params);
+        MethodDescriptor descriptor = new MethodDescriptor(name, returnType, params, true);
         symbolTable.add(name, descriptor, true);
     }
 
@@ -145,17 +145,17 @@ public class TraverseAst{
         ArrayList<VarDescriptor> params = new ArrayList<>();
         Node paramList= node.jjtGetChild(1);
         Node currentNode;
-
+        int localIndex = 1;
 
         for(int i=0; i<paramList.jjtGetNumChildren(); i++){
 
             currentNode= paramList.jjtGetChild(i); //VarDeclaration
-            VarDescriptor varDescriptor =new VarDescriptor(Utils.parseName(currentNode.jjtGetChild(0).toString()), Utils.parseName(currentNode.jjtGetChild(1).toString()));
+            VarDescriptor varDescriptor =new VarDescriptor(Utils.parseName(currentNode.jjtGetChild(0).toString()), Utils.parseName(currentNode.jjtGetChild(1).toString()), localIndex++);
             params.add(varDescriptor);
 
         }
 
-        MethodDescriptor methodDescriptor = new MethodDescriptor(Utils.parseName(node.toString()), Utils.parseName(node.jjtGetChild(0).toString()), params);
+        MethodDescriptor methodDescriptor = new MethodDescriptor(Utils.parseName(node.toString()), Utils.parseName(node.jjtGetChild(0).toString()), params, false);
         
         symbolTable.add(this.className, methodDescriptor, true);
         symbolTable.enterScope();
@@ -178,17 +178,18 @@ public class TraverseAst{
         ArrayList<VarDescriptor> params = new ArrayList<>();
         Node paramList= node.jjtGetChild(0);
         Node currentNode;
+        int localIndex = 0;
 
-        for(int i=0; i<paramList.jjtGetNumChildren(); i++){
-            if(paramList.jjtGetChild(i).toString().equals("VarDeclaration")){
-                currentNode= paramList.jjtGetChild(i);
-                VarDescriptor varDescriptor =new VarDescriptor(Utils.parseName(currentNode.jjtGetChild(0).toString()), Utils.parseName(currentNode.jjtGetChild(1).toString())); //tyoe, identifier
+        for (int i = 0; i < paramList.jjtGetNumChildren(); i++){
+            if (paramList.jjtGetChild(i).toString().equals("VarDeclaration")) {
+                currentNode = paramList.jjtGetChild(i);
+                VarDescriptor varDescriptor =new VarDescriptor(Utils.parseName(currentNode.jjtGetChild(0).toString()), Utils.parseName(currentNode.jjtGetChild(1).toString()), localIndex++); //tyoe, identifier
                 params.add(varDescriptor);
             }
            
         }
 
-        MethodDescriptor methodDescriptor = new MethodDescriptor(Utils.parseName(node.toString()), null, params);
+        MethodDescriptor methodDescriptor = new MethodDescriptor(Utils.parseName(node.toString()), null, params, true);
         symbolTable.add(this.className, methodDescriptor, true);
         symbolTable.enterScope();
 

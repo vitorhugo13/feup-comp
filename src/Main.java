@@ -7,6 +7,15 @@ public class Main {
 
     public static void main(String[] args) throws ParseException {
 
+        // TODO: create a flag system:
+            // -t -> display the AST
+            // -c -> generate code
+
+        if (args.length <= 0 || args.length > 2) {
+            System.out.println("Usage: java -jar comp2020-3h.jar <file> -c");
+            return;
+        }
+
         InputStream in = null;
         try {
             in = new FileInputStream(args[0]);
@@ -16,7 +25,6 @@ public class Main {
         }
         Parser parser = new Parser(in);
 
-        // parser.Program();
         SimpleNode root = parser.Program();
 
         if (parser.errors > 0) {
@@ -34,9 +42,11 @@ public class Main {
         // semanticAnalysis.execute(root);
 
         // TODO: get the name of the file from the args
-        // Generator codeGenerator = new Generator(symbolTable);
-        // codeGenerator.generate(root, "test");
-        // System.out.println("CODE GENERATION COMPLETE");
-    }
+        if (args.length == 2 && args[1].equals("-c")) {
+            Generator codeGenerator = new Generator(symbolTable);
+            codeGenerator.generate(root, "test");
+            System.out.println("CODE GENERATION COMPLETE");
+        }
 
+    }
 }

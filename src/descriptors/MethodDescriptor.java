@@ -7,15 +7,19 @@ public class MethodDescriptor extends Descriptor {
     protected String identifier;
     protected String returnType;
     protected ArrayList<VarDescriptor> parameters;
+    protected boolean isStatic;
 
-    public MethodDescriptor(String identifier, String returnType, ArrayList<VarDescriptor> parameters){
+    public MethodDescriptor(String identifier, String returnType, ArrayList<VarDescriptor> parameters, boolean isStatic){
         this.type=Type.METHOD;
 
         this.returnType=returnType;
         this.parameters=parameters;
         this.identifier=identifier;
+        this.isStatic = isStatic;
 
     }
+
+    public boolean isStatic() { return this.isStatic; }
 
     public String getReturnType(){
         return this.returnType;

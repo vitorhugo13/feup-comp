@@ -4,7 +4,6 @@ import java.util.Stack;
 import java.util.ArrayList;
 import java.io.IOException;
 
-//TODO: getVars
 public class SymbolTable{
 
     private Stack<MyHashMap> stack;
@@ -22,17 +21,13 @@ public class SymbolTable{
 
     }
 
-    public boolean inClassScope() {
-        return posArrayForAnalysis <= 2;
-    }
-
     
     public void enterScope() {
 
         MyHashMap myHash = new MyHashMap(stack.peek());
         stack.push(myHash);
         all_hashes.add(myHash);
-       // System.out.println("[SCOPE] Entered scope: " + stack.peek());
+    //    System.out.println("[SCOPE] Entered scope: " + stack.peek());
 
     }
 
@@ -40,7 +35,7 @@ public class SymbolTable{
         
         stack.push(all_hashes.get(posArrayForAnalysis));
         posArrayForAnalysis++;
-        //System.out.println("[SCOPE] Enter scope for analysis: " + stack.peek());
+        System.out.println("[SCOPE] Enter scope for analysis: " + stack.peek());
     }
 
     public ArrayList<VarDescriptor> getClassAtributes(){
@@ -63,7 +58,7 @@ public class SymbolTable{
     }
 
     public void exitScopeForAnalysis() {
-        //System.out.println("[SCOPE] Exit scope for analysis: " + stack.peek());
+        System.out.println("[SCOPE] Exit scope for analysis: " + stack.peek());
         stack.pop();
     }
 
@@ -107,7 +102,6 @@ public class SymbolTable{
 
 
 
-    //TODO: search methods in import
     public ArrayList<Descriptor>  lookup(String id) throws IOException {
 
         if (stack.empty()) {
@@ -180,4 +174,4 @@ public class SymbolTable{
 }
 
 
-       
+

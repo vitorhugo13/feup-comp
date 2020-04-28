@@ -6,6 +6,7 @@ public class VarDescriptor extends Descriptor {
     protected Boolean isInitialized;
     protected String currValue;
     protected Scope scope;
+    protected int localIndex;
 
     public VarDescriptor(String dataType, String identifier){
         this.type=Type.VAR;
@@ -14,6 +15,12 @@ public class VarDescriptor extends Descriptor {
         this.dataType = getParsedDataType(dataType);
         this.isInitialized = false;
         this.scope = null;
+        this.localIndex = -1;
+    }
+
+    public VarDescriptor(String dataType, String identifier, int localIndex) {
+        this(dataType, identifier);
+        this.localIndex = localIndex;
     }
 
     public String getDataType(){
@@ -52,4 +59,6 @@ public class VarDescriptor extends Descriptor {
         return this.scope;
     }
 
+    public int getLocalIndex() { return this.localIndex; }
+    public void setLocalIndex(int localIndex) { this.localIndex = localIndex; }
 }
