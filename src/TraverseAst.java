@@ -39,7 +39,7 @@ public class TraverseAst{
         else if(node.toString().equals("Method[main]")){
             processMain(node);
         }
-        else if(!node.toString().equals("MethodInvocation") && node.toString().contains("Method")){
+        else if(!node.toString().equals("MethodInvocation") && node.toString().contains("Method[")){
             processMethod(node);
         }
         else{

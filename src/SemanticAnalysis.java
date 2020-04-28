@@ -28,7 +28,7 @@ class SemanticAnalysis{
         try {
             if (node.toString().equals("StaticImport") || node.toString().equals("NonStaticImport")) { 
             } 
-            else if (node.toString().contains("Class") || node.toString().equals("Method[main]") || (!node.toString().equals("MethodInvocation") && node.toString().contains("Method"))) {
+            else if (node.toString().contains("Class") || node.toString().equals("Method[main]") || (!node.toString().equals("MethodInvocation") && node.toString().contains("Method["))) {
                 processNewScope(node);
             }
             else if(node.toString().equals("MethodInvocation")){
@@ -45,7 +45,7 @@ class SemanticAnalysis{
             }
         }catch (Exception e) {
             System.err.println("[SEMANTIC ERROR]: " + e.getMessage());
-            //e.printStackTrace();
+            e.printStackTrace();
             exceptionCounter++;
 
             if (exceptionCounter >= MAX_EXCEPTIONS) {
@@ -56,18 +56,24 @@ class SemanticAnalysis{
     }
 
     private String processInvocation(Node node) throws IOException{
-        
+        String id;
+        ClassDescriptor classDescriptor;
 
-        String id = Utils.parseName(node.jjtGetChild(0).toString());  //
-        /*if(id.equals("this")){
-            id = this.symbolTable.getClassName();
-        }*/
-        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0); //verifica se a class existe, está importada/extend
-
+        if(node.jjtGetChild(0).equals("This")){
+            classDescriptor = (ClassDescriptor) symbolTable.lookup(symbolTable.getClassName()).get(0);
+        }
+        else{ //io.prinln() ou obj.add();
+            id=Utils.parseName(node.jjtGetChild(0).toString());  
+            Descriptor descriptor =symbolTable.lookup(id).get(0);
+            if(descriptor.getType().equals(Descriptor.Type.CLASS)){
+                classDescriptor = (ClassDescriptor) descriptor;
+            }
+            else{
+                String className = ((VarDescriptor) descriptor).getDataType();
+                classDescriptor = (ClassDescriptor) symbolTable.lookup(className).get(0);
+            }
+        }
         
-        
-        String className = varDescriptor.getDataType();
-        ClassDescriptor classDescriptor = (ClassDescriptor) symbolTable.lookup(className).get(0);
 
         String methodName = Utils.parseName(node.jjtGetChild(1).toString()); 
         ArrayList<MethodDescriptor> methodDescriptors = classDescriptor.getMethodsMatchingId(methodName);
