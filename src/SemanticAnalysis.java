@@ -28,7 +28,7 @@ class SemanticAnalysis{
         try {
             if (node.toString().equals("StaticImport") || node.toString().equals("NonStaticImport")) { 
             } 
-            else if (node.toString().contains("Class") || node.toString().equals("Method[main]") || (!node.toString().equals("MethodInvocation") && node.toString().contains("Method["))) {
+            else if (Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])") || node.toString().equals("Method[main]") || (!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])"))) {
                 processNewScope(node);
             }
             else if(node.toString().equals("MethodInvocation")){
@@ -114,10 +114,10 @@ class SemanticAnalysis{
 
         // TODO: Arrays (also need to update symbol table with those), Class types and constructor invocations, sums (a= b+c)
 
-        if(node.jjtGetChild(0).toString().equals("Array") && !node.jjtGetChild(1).toString().contains("Array")){
+        if(node.jjtGetChild(0).toString().equals("Array") && !Utils.analyzeRegex(node.jjtGetChild(1).toString(), "(Array\\[)(.)*(\\])")){ 
             processArrayLeft(node);
         }
-        else if(node.jjtGetChild(0).toString().equals("Array") && node.jjtGetChild(1).toString().contains("Array")){
+        else if(node.jjtGetChild(0).toString().equals("Array") && Utils.analyzeRegex(node.jjtGetChild(1).toString(), "(Array\\[)(.)*(\\])")){
             processArrayBoth(node);
         }
         else if(node.jjtGetChild(1).toString().equals("NewIntArray")){
@@ -180,7 +180,7 @@ class SemanticAnalysis{
             
         */
 
-        if(node.toString().contains("Identifier")){ //IDENTIFIER[a]
+        if(Utils.analyzeRegex(node.toString(), "(Identifier\\[)(.)*(\\])")){ //IDENTIFIER[a]
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.toString())).get(0);
             if(!varDescriptor.getInitialized())
                 throw new IOException("Variable " + varDescriptor.getIdentifier() + " was not initialized");
