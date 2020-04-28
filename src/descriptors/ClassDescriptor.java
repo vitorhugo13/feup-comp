@@ -31,18 +31,17 @@ public class ClassDescriptor extends Descriptor {
           
 
             if(this.methods.get(i).getIdentifier().equals(method.getIdentifier())){
-
                 argsAllSame = true;
                 parameters = this.methods.get(i).getParameters();
                 
                 if(method_parameters.size() == parameters.size()){
-
+                
                     for(int j = 0; j < parameters.size(); j++){
                         if(!parameters.get(j).getDataType().equals(method_parameters.get(j).getDataType())){
                             argsAllSame = false;
                         }
                     }
-
+                
                     if(argsAllSame){
                         return false;
                     }
@@ -67,11 +66,12 @@ public class ClassDescriptor extends Descriptor {
         throw new IOException("No Method in class " + this.identifier + " matches method named " + id);
     }
 
+    //TODO: dar throw de um warning/exception se ocorrer overload
     public void addMethod(MethodDescriptor method){
 
         if(possibleToOverload(method))
             methods.add(method);
-        
+           
     }
 
     public ArrayList<MethodDescriptor> getMethods(){

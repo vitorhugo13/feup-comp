@@ -2,11 +2,12 @@ import java.util.ArrayList;
 import descriptors.*;
 import java.io.IOException;
 
-//TODO: this para chamar metodos da propria class
-//TODO: import io
-//TODO: invoke.add(1,2).printIsto()
-//TODO: extends
-//TODO: ifs and whiles
+
+
+//TODO: invoke.add(1,2).printIsto() -> joana
+//TODO: extends -> joana
+//TODO: ifs and whiles -> vitor 
+
 //TODO: negações
 
 class SemanticAnalysis{
