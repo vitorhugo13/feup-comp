@@ -97,7 +97,6 @@ class Generator {
         out.println(String.format(".super java/lang/Object"));
         out.println();
         
-        // FIXME: the data types
         for (VarDescriptor var : symbolTable.getClassAtributes())
             out.println(String.format(".field public %s %s", var.getIdentifier(), parseType(var.getDataType())));
 
@@ -130,7 +129,6 @@ class Generator {
         String name = Utils.parseName(node.toString());
         name = name.equals("main") ? "static main" : name;
 
-        // FIXME: fix the types 
         String type = node.jjtGetChild(0).toString().contains("Type") ? parseType(Utils.parseName(node.jjtGetChild(0).toString())) : "V";
         int childNum = type.equals("V") ? 0 : 1;
         
@@ -239,13 +237,27 @@ class Generator {
     // ==========================================
 
     public void processAssignment(Node node, PrintWriter out) {
-        String varName = Utils.parseName(node.jjtGetChild(0).toString());
+
+        // get the right part of the assignment
+        execute(node.jjtGetChild(1), out);
+
+        String nodeName = node.jjtGetChild(0).toString();
+        String identifier = ""
+
+        if (nodeName.contains("Array")) {
+            Node array = node.jjtGetChild(0);
+            identifier = Utils.parseName(array.jjtGetChild(0));
+            // push the reference onto the stack
+            execute(array.jjtGetChild(1), out);
+        }
+        else if (nodeName.contains("Identifier")) {
+            identifier = Utils.parseName(nodeName);
+        }
+
         VarDescriptor var = null;
         try {
-            var = (VarDescriptor) symbolTable.lookup(varName).get(0);
+            var = (VarDescriptor) symbolTable.lookup(identifier).get(0);
         } catch (Exception e) {}
-
-        execute(node.jjtGetChild(1), out);
 
         if (var.getScope() == Descriptor.Scope.GLOBAL) {
             out.println(String.format("    putfield %s/%s", mainClass, varName));
@@ -253,9 +265,13 @@ class Generator {
         else {
             if (var.getLocalIndex() == -1)
                 var.setLocalIndex(localIndex++);
-            
+                
             String type = parseType(var.getDataType());
-            out.println(String.format("    %s %d", type.equals("I") ? "istore" : "astore", var.getLocalIndex()));
+
+            else if (type.equals("[I"))
+                out.println(String.format("    iastore"));
+            else
+                out.println(String.format("    %sstore %d", type.equals("I") ? "i" : "a", var.getLocalIndex()));
         }
     }
 
@@ -338,9 +354,19 @@ class Generator {
     // ==========================================
 
     private String processArray(Node node, PrintWriter out) {
-        // TODO:
 
-        return "";
+        try {
+            VarDescriptor var = (VarDescriptor) symbolTable.lookup(node.jjtGetChild(0)).get(0);
+            local = var.getLocalIndex();
+            // push the array reference
+            // push the index
+        } catch (Exception e) {}
+        
+        // array ref -> Utils.parseName(node.jjtGetChild(1).toString());
+        // array index -> var.getLocalIndex();
+        out.println(String.format("    iaload"))
+
+        return "[I";
     }
 
     private String processInteger(Node node, PrintWriter out) {
@@ -404,7 +430,7 @@ class Generator {
     }
 
     private String processThis(Node node, PrintWriter out) {
-        out.println(String.format("aload 0"));
+        out.println(String.format("    aload 0"));
 
         return mainClass;
     }

@@ -36,7 +36,7 @@ public class SymbolTable{
         MyHashMap myHash = new MyHashMap(stack.peek());
         stack.push(myHash);
         all_hashes.add(myHash);
-    //    System.out.println("[SCOPE] Entered scope: " + stack.peek());
+       // System.out.println("[SCOPE] Entered scope: " + stack.peek());
 
     }
 
@@ -44,7 +44,7 @@ public class SymbolTable{
         
         stack.push(all_hashes.get(posArrayForAnalysis));
         posArrayForAnalysis++;
-        System.out.println("[SCOPE] Enter scope for analysis: " + stack.peek());
+        //System.out.println("[SCOPE] Enter scope for analysis: " + stack.peek());
     }
 
     public ArrayList<VarDescriptor> getClassAtributes(){
@@ -67,7 +67,7 @@ public class SymbolTable{
     }
 
     public void exitScopeForAnalysis() {
-        System.out.println("[SCOPE] Exit scope for analysis: " + stack.peek());
+        //System.out.println("[SCOPE] Exit scope for analysis: " + stack.peek());
         stack.pop();
     }
 
@@ -183,4 +183,4 @@ public class SymbolTable{
 }
 
 
-
+       
