@@ -1,7 +1,6 @@
 import static io.println(int) void;
 
-
-class Simple{
+class Symbol {
 
     public int add(int a, int b){
         int c;
@@ -9,21 +8,15 @@ class Simple{
         return c;
     }
 
-    public int add(int a, int b,int c){
-        int d;
-        c = a+b;
-        return c;
-    }
-
     public static void main(String[] args){
-        int a;
+        int test;
         int b;
         int c;
         Simple s;
-        a = 20;
+        test = 20;
         b = 10;
         s = new Simple();
-        c = s.add(a,b);
+        c = s.add(test,b);
         io.println(c);
     }
 

@@ -230,17 +230,6 @@ class SemanticAnalysis{
 
     private String getNodeDataType(Node node) throws IOException{ 
 
-        /*
-
-        Identifier[a]
-        INTEGER[2]
-        ADD
-            IDENTIFIER
-            INTEGER
-        ARRAY
-            
-        */
-
         if(Utils.analyzeRegex(node.toString(), "(Identifier\\[)(.)*(\\])")){ //IDENTIFIER[a]
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.toString())).get(0);
             if(!varDescriptor.getInitialized())
