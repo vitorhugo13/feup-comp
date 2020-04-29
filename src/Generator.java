@@ -401,6 +401,7 @@ class Generator {
         // there is the need to load the value onto the stack
         if (descriptor.getType() == Descriptor.Type.VAR) {
             VarDescriptor var = (VarDescriptor) descriptor;
+            type = parseType(var.getDataType());
             
             // for global variables AKA class atributes
             if (var.getScope() == Descriptor.Scope.GLOBAL) {
@@ -411,7 +412,7 @@ class Generator {
                 out.println(String.format("    %sload %d", type.equals("I") ? "i" : "a", var.getLocalIndex()));
             }
 
-            type = parseType(var.getDataType());
+           
         }
 
         return type;
