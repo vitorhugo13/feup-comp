@@ -14,8 +14,8 @@ todas as verificações feitas na análise semantica devem reportar erro excepto
 * ~~verificar se um array access é de facto feito sobre um array~~
 * ~~verificar se o indice do array access é um inteiro~~
 * ~~verificar se valor do assignee é igual ao do assigned (a_int = b_boolean não é permitido!)~~
-* verificar se operação booleana é efetuada só com booleanos
-* verificar se conditional expressions (if e while) resulta num booleano
+* ~~verificar se operação booleana é efetuada só com booleanos~~
+* ~~verificar se conditional expressions (if e while) resulta num booleano~~
 * verificar se variáveis são inicializadas, dando um WARNING em vez de ERRO
    * ~~parametros são assumidos como inicializados~~
    * devem fazer uma análise através do control flow, i.e., se há um if e a variável só é inicializada dentro de ou othen ou o else, deve-se dar um warning a indicar que poderá não estar inicializada

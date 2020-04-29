@@ -78,8 +78,7 @@ public class ClassDescriptor extends Descriptor {
     public void addMethod(MethodDescriptor method){
 
         if(possibleToOverload(method))
-            methods.add(method);
-           
+            methods.add(method);           
     }
 
     public ArrayList<MethodDescriptor> getMethods(){
