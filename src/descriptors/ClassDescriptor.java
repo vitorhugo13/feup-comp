@@ -5,11 +5,21 @@ import java.util.ArrayList;
 
 public class ClassDescriptor extends Descriptor {
     ArrayList<MethodDescriptor> methods;
+    ClassDescriptor parentClass;
 
     public ClassDescriptor(String identifier){
         this.type=Type.CLASS;
         this.identifier=identifier;
         methods = new ArrayList<>();
+        parentClass = null;
+    }
+
+    public void setParentClass(ClassDescriptor classDescriptor){
+        this.parentClass = classDescriptor;
+    }
+
+    public ClassDescriptor getParentClass(){
+        return this.parentClass;
     }
 
     private Boolean existsMethod(String id){
@@ -59,8 +69,6 @@ public class ClassDescriptor extends Descriptor {
                 if(methods.get(i).getIdentifier().equals(id))
                     methodsMatchingId.add(methods.get(i));
             }
-
-
             return methodsMatchingId;
         }
         throw new IOException("No Method in class " + this.identifier + " matches method named " + id);
@@ -70,8 +78,7 @@ public class ClassDescriptor extends Descriptor {
     public void addMethod(MethodDescriptor method){
 
         if(possibleToOverload(method))
-            methods.add(method);
-           
+            methods.add(method);           
     }
 
     public ArrayList<MethodDescriptor> getMethods(){

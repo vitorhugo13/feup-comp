@@ -37,9 +37,15 @@ public class Main {
         SymbolTable symbolTable = new SymbolTable();
         TraverseAst traverseAst = new TraverseAst(root, symbolTable);
         traverseAst.execute(root);
-        // SemanticAnalysis semanticAnalysis = new SemanticAnalysis(symbolTable);
-        // System.out.println("SEMANTIC ANALYSIS");
-        // semanticAnalysis.execute(root);
+        symbolTable.print_all();
+        System.out.println("\nSYMBOL TABLE CREATED\n\n");        
+        
+        System.out.println("SEMANTIC ANALYSIS\n");
+        SemanticAnalysis semanticAnalysis = new SemanticAnalysis(symbolTable);
+        semanticAnalysis.execute(root);
+        System.out.println("\nFINISHED SEMANTIC ANALYSIS\n");
+
+        symbolTable.reset();
 
         // TODO: get the name of the file from the args
         if (args.length == 2 && args[1].equals("-c")) {

@@ -242,11 +242,11 @@ class Generator {
         execute(node.jjtGetChild(1), out);
 
         String nodeName = node.jjtGetChild(0).toString();
-        String identifier = ""
+        String identifier = "";
 
         if (nodeName.contains("Array")) {
             Node array = node.jjtGetChild(0);
-            identifier = Utils.parseName(array.jjtGetChild(0));
+            identifier = Utils.parseName(array.jjtGetChild(0).toString());
             // push the reference onto the stack
             execute(array.jjtGetChild(1), out);
         }
@@ -260,7 +260,7 @@ class Generator {
         } catch (Exception e) {}
 
         if (var.getScope() == Descriptor.Scope.GLOBAL) {
-            out.println(String.format("    putfield %s/%s", mainClass, varName));
+            out.println(String.format("    putfield %s/%s", mainClass, identifier));
         }
         else {
             if (var.getLocalIndex() == -1)
@@ -268,7 +268,7 @@ class Generator {
                 
             String type = parseType(var.getDataType());
 
-            else if (type.equals("[I"))
+            if (type.equals("[I"))
                 out.println(String.format("    iastore"));
             else
                 out.println(String.format("    %sstore %d", type.equals("I") ? "i" : "a", var.getLocalIndex()));
@@ -355,8 +355,10 @@ class Generator {
 
     private String processArray(Node node, PrintWriter out) {
 
+        String identifier = Utils.parseName(node.jjtGetChild(0).toString());
+        int local = -1;
         try {
-            VarDescriptor var = (VarDescriptor) symbolTable.lookup(node.jjtGetChild(0)).get(0);
+            VarDescriptor var = (VarDescriptor) symbolTable.lookup(identifier).get(0);
             local = var.getLocalIndex();
             // push the array reference
             // push the index
@@ -364,7 +366,7 @@ class Generator {
         
         // array ref -> Utils.parseName(node.jjtGetChild(1).toString());
         // array index -> var.getLocalIndex();
-        out.println(String.format("    iaload"))
+        out.println(String.format("    iaload"));
 
         return "[I";
     }

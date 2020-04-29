@@ -59,15 +59,12 @@ public class TraverseAst{
         MethodDescriptor descriptor = new MethodDescriptor("println", "void", params, true);
         symbolTable.add("io", descriptor, true);
 
-
-
         for (int i = 0; i < node.jjtGetNumChildren()-1; i++) { // Imports
             execute(node.jjtGetChild(i));
         }
 
         symbolTable.exitScope(); // Leave Import Scope
         execute(node.jjtGetChild(node.jjtGetNumChildren()-1)); // Class
-
     }
 
     private void processVarDeclaration(Node node) {
@@ -196,7 +193,7 @@ public class TraverseAst{
            
         }
 
-        MethodDescriptor methodDescriptor = new MethodDescriptor(Utils.parseName(node.toString()), null, params, true);
+        MethodDescriptor methodDescriptor = new MethodDescriptor(Utils.parseName(node.toString()), "void", params, true);
         symbolTable.add(this.symbolTable.getClassName(), methodDescriptor, true);
         symbolTable.enterScope();
 
@@ -216,6 +213,20 @@ public class TraverseAst{
     private void processClass(Node node) {
         symbolTable.enterScope();
         this.symbolTable.setClassName(Utils.parseName(node.toString()));
+
+        if(Utils.analyzeRegex(node.jjtGetChild(0).toString(), "(Extends\\[)(.)*(\\])")){
+            ClassDescriptor classDescriptor = new ClassDescriptor(this.symbolTable.getClassName());
+            try{
+                ClassDescriptor parentClassDescriptor = (ClassDescriptor) this.symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
+                classDescriptor.setParentClass(parentClassDescriptor);
+                symbolTable.add(this.symbolTable.getClassName(), classDescriptor);
+            }
+            catch(Exception E){
+                System.out.println("Class " + Utils.parseName(node.jjtGetChild(0).toString()) + " that is extended by class " + this.symbolTable.getClassName() + " is not imported");
+            }
+            
+        }
+
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             execute(node.jjtGetChild(i));
         }

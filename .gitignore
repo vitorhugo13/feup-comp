@@ -2,7 +2,12 @@
 /build/
 /generated/
 *.jar
+<<<<<<< HEAD
+bin/
+our_tests/
+=======
 bin/*
+>>>>>>> c197672657fc5696c2d28941c2bac8db8ec30811
 # Ignore Gradle GUI config
 gradle-app.setting
 

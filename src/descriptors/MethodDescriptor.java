@@ -12,7 +12,7 @@ public class MethodDescriptor extends Descriptor {
     public MethodDescriptor(String identifier, String returnType, ArrayList<VarDescriptor> parameters, boolean isStatic){
         this.type=Type.METHOD;
 
-        this.returnType=returnType;
+        this.returnType=getParsedDataType(returnType);
         this.parameters=parameters;
         this.identifier=identifier;
         this.isStatic = isStatic;

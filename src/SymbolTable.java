@@ -19,6 +19,10 @@ public class SymbolTable{
         return this.className;
     }
 
+    public void reset() {
+        this.posArrayForAnalysis = 0;
+    }
+
     public SymbolTable() {
 
         MyHashMap firstHash = new MyHashMap(null);
@@ -150,10 +154,15 @@ public class SymbolTable{
         for(int i = 0; i < all_hashes.size(); i++){
             System.out.println("\n======= SCOPE ========");
             all_hashes.get(i).getHash().entrySet().forEach(entry->{
-                System.out.println(entry.getKey());
+                // System.out.println(entry.getKey());
                 if(entry.getValue().get(0).getType().equals(Descriptor.Type.VAR))
-                    System.out.println(" " + ((VarDescriptor)entry.getValue().get(0)).getDataType() + " " + ((VarDescriptor)entry.getValue().get(0)).getScope());  
-             });
+                    System.out.println(entry.getKey() + " " + ((VarDescriptor)entry.getValue().get(0)).getDataType() + " " + ((VarDescriptor)entry.getValue().get(0)).getScope());  
+                else if(entry.getValue().get(0).getType().equals(Descriptor.Type.CLASS)){
+                    if(((ClassDescriptor)entry.getValue().get(0)).getParentClass()!= null)
+                        System.out.println(entry.getKey() +" EXTENDS: " + ((ClassDescriptor)entry.getValue().get(0)).getParentClass().getIdentifier() + " " + ((ClassDescriptor)entry.getValue().get(0)).getMethods()); 
+                    System.out.println(entry.getKey() + " " + ((ClassDescriptor)entry.getValue().get(0)).getMethods());  
+                }
+                });
 
             //  all_hashes.get(i).getHash().entrySet().forEach(entry->{
             //     System.out.println(entry.getKey() + entry.getValue());

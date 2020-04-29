@@ -5,9 +5,6 @@ import java.io.IOException;
 
 
 //TODO: invoke.add(1,2).printIsto() -> joana
-//TODO: extends -> joana
-//TODO: ifs and whiles -> vitor 
-
 //TODO: warnings de variavéis que podem so estar a ser inicializadas nos if/whiles
 //TODO: negações
 
@@ -100,6 +97,7 @@ class SemanticAnalysis{
     private String processInvocation(Node node) throws IOException{
         String id;
         ClassDescriptor classDescriptor;
+        String methodName = Utils.parseName(node.jjtGetChild(1).toString());
  
         if(node.jjtGetChild(0).toString().equals("This")){
             classDescriptor = (ClassDescriptor) symbolTable.lookup(symbolTable.getClassName()).get(0);
@@ -116,8 +114,32 @@ class SemanticAnalysis{
             }
         }
         
+        String returnValue;
+        try{
+            returnValue = compareArgsAndParams(node, classDescriptor); 
+            if(!returnValue.equals("")){
+                return returnValue; //Method exists in the class
+            }
+        }
+        catch(Exception e){ //Method does not exist in first class but can still exist in parent
+        }
+       
+        if(node.jjtGetChild(0).toString().equals("This") || classDescriptor.getIdentifier().equals(this.symbolTable.getClassName())){
+            returnValue = compareArgsAndParams(node, classDescriptor.getParentClass());
+            if(!returnValue.equals("")){
+                return returnValue; //Method exists in parent class
+            }
+            else{
+                throw new IOException("No signature of method " + methodName + " matches list of arguments given");
+            }
+        } else{
+            throw new IOException("No signature of method " + methodName + " matches list of arguments given");
+        }
 
-        String methodName = Utils.parseName(node.jjtGetChild(1).toString()); 
+    }
+
+    private String compareArgsAndParams(Node node, ClassDescriptor classDescriptor) throws IOException {
+        String methodName = Utils.parseName(node.jjtGetChild(1).toString());
         ArrayList<MethodDescriptor> methodDescriptors = classDescriptor.getMethodsMatchingId(methodName);
         //dado que pode ocorrer method overload temos de percorrer a lista de descritores returnados
         //e saber se existe o certo, e se sim processar os args e o return type
@@ -125,19 +147,16 @@ class SemanticAnalysis{
         Boolean correct = true;
 
         for(int method = 0; method < methodDescriptors.size(); method++){
-    
+            correct=true;
             MethodDescriptor md = methodDescriptors.get(method);
-
             if(md.getParameters().size() == numArgs){
-
-                for(int param = 0; param < md.getParameters().size(); param++){    
-
+                for(int param = 0; param < md.getParameters().size(); param++){
                     String typeArg = getNodeDataType(node.jjtGetChild(2).jjtGetChild(param)); //tipo de argumento passado
                     String expectedType = md.getParameters().get(param).getDataType(); //tipo de argumento esperado
 
                     if(!typeArg.equals(expectedType)){
                         correct = false;
-                        throw new IOException(Utils.parseName(node.jjtGetChild(2).jjtGetChild(param).toString())+ " does not match type " + expectedType + " in " + methodName);
+                        // throw new IOException(Utils.parseName(node.jjtGetChild(2).jjtGetChild(param).toString())+ " does not match type " + expectedType + " in " + methodName);
                     }
                 }
 
@@ -147,10 +166,9 @@ class SemanticAnalysis{
 
             }
         }
-
-        throw new IOException("No signature of method " + methodName + " matches list of arguments given");
-        
+        return "";
     }
+
 
     private void processAssign(Node node) throws IOException{
 
