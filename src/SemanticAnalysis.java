@@ -6,7 +6,10 @@ import java.io.IOException;
 
 //TODO: invoke.add(1,2).printIsto() -> joana
 //TODO: warnings de variavéis que podem so estar a ser inicializadas nos if/whiles
-//TODO: negações
+//TODO: dar print as linhas de erro
+//TODO: excecoes/warnings 
+//TODO: signatures: return several signatures in error message
+//TODO: check return
 
 class SemanticAnalysis{
     static private String VOID = "void";
