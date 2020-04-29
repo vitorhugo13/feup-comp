@@ -302,6 +302,10 @@ class SemanticAnalysis{
             throw new IOException("Index of array " + id + " is not Integer!");
         }
 
+        if(!varDescriptor.getInitialized()){
+            throw new IOException("Array " + id + " is not initialized");
+        }
+
         return INTEGER;
 
     }
