@@ -50,7 +50,7 @@ class SemanticAnalysis{
             }
         }catch (Exception e) {
             System.err.println("[SEMANTIC ERROR]: " + e.getMessage());
-            e.printStackTrace();
+            // e.printStackTrace();
             exceptionCounter++;
             if (exceptionCounter >= MAX_EXCEPTIONS) {
                 System.err.println("[PROGRAM TERMINATING] THERE ARE MORE THAN " + MAX_EXCEPTIONS + " SEMANTIC ERRORS.");
