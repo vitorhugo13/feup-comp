@@ -117,14 +117,20 @@ class SemanticAnalysis{
             }
         }
         
-        String returnValue = compareArgsAndParams(node, classDescriptor);
-        if(!returnValue.equals("")){
-            return returnValue;
+        String returnValue;
+        try{
+            returnValue = compareArgsAndParams(node, classDescriptor); 
+            if(!returnValue.equals("")){
+                return returnValue; //Method exists in the class
+            }
         }
-        else if(node.jjtGetChild(0).toString().equals("This") || classDescriptor.getIdentifier().equals(this.symbolTable.getClassName())){
+        catch(Exception e){ //Method does not exist in first class but can still exist in parent
+        }
+       
+        if(node.jjtGetChild(0).toString().equals("This") || classDescriptor.getIdentifier().equals(this.symbolTable.getClassName())){
             returnValue = compareArgsAndParams(node, classDescriptor.getParentClass());
             if(!returnValue.equals("")){
-                return returnValue;
+                return returnValue; //Method exists in parent class
             }
             else{
                 throw new IOException("No signature of method " + methodName + " matches list of arguments given");

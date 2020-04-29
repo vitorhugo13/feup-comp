@@ -11,7 +11,7 @@ public class MethodDescriptor extends Descriptor {
     public MethodDescriptor(String identifier, String returnType, ArrayList<VarDescriptor> parameters){
         this.type=Type.METHOD;
 
-        this.returnType=returnType;
+        this.returnType=getParsedDataType(returnType);
         this.parameters=parameters;
         this.identifier=identifier;
 
