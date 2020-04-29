@@ -25,7 +25,7 @@ todas as verificações feitas na análise semantica devem reportar erro excepto
 		
 ## Function Verification
 * ~~verificar se o "target" do método existe, e se este contém o método (e.g. a.foo, ver se 'a' existe e se tem um método'foo')~~
-    - caso seja do tipo da classe declarada (e.g. a usar o this), verificar se é método do extends olhando para o quefoi importado (isto se a classe fizer extends de outra classe importada)
+    - ~~caso seja do tipo da classe declarada (e.g. a usar o this), verificar se é método do extends olhando para o quefoi importado (isto se a classe fizer extends de outra classe importada)~~
 * ~~caso o método não seja da classe declarada, isto é importada, verificar se método foi importado~~
 * ~~verificar se o número de argumentos na invocação é igual ao número de parâmetros da declaração~~
 * ~~verificar se o tipo dos parâmetros coincide com o tipo dos argumentos~~

@@ -5,9 +5,6 @@ import java.io.IOException;
 
 
 //TODO: invoke.add(1,2).printIsto() -> joana
-//TODO: extends -> joana
-//TODO: ifs and whiles -> vitor 
-
 //TODO: warnings de variavéis que podem so estar a ser inicializadas nos if/whiles
 //TODO: negações
 
