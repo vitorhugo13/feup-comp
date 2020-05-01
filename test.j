@@ -1,4 +1,4 @@
-.class public Simple
+.class public ArrayTest
 .super java/lang/Object
 
 .method public<init>()V
@@ -11,36 +11,38 @@
     .limit_stack 99
     .limit_locals 99
 
-    bipush 30
-    istore 1
+    iconst_1
+    newarray int
+    astore_1
 
-    iconst_0
-    bipush 10
-    isub
-    istore 2
+    iconst_2
+    istore_2
 
-    new Simple
-    dup
-    invokespecial Simple/<init>()V
-    astore 3
+    iload_2
+    newarray int
+    astore_3
 
-    aload 3
-    aload 1
-    aload 2
-    invokevirtual Simple/add(II)I
+    iload_2
     istore 4
 
-    aload 4
-    invokestatic io/println(I)V
-    return
-.end method
+    iconst_1
+    iconst_0
+    iconst_2
+    iastore
 
-.method public add(II)I
-    .limit_stack 99
-    .limit_locals 99
+    iconst_1
+    iconst_1
+    iaload
+    istore_2
 
-    aload 1
-    aload 2
+    iconst_3
+    iload_2
+    iconst_1
+    iload_2
+    iload 4
     iadd
-    ireturn
+    iaload
+    iastore
+
+    return
 .end method

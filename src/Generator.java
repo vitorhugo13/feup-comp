@@ -51,6 +51,9 @@ class Generator {
         // NEW OBJECT
         else if (nodeName.equals("NewObject"))
             ret = processConstructorInvocation(node, out);
+        // NEW INT ARRAY
+        else if (nodeName.equals("NewIntArray"))
+            ret = processNewIntArray(node, out);
 
         // OPERATORS
         else if (nodeName.equals("And"))
@@ -150,6 +153,7 @@ class Generator {
         }
 
         Node lastInstruction = body.jjtGetChild(body.jjtGetNumChildren() - 1);
+        out.println();
         if (lastInstruction.toString().equals("Return")) {
             for (int i = 0; i < lastInstruction.jjtGetNumChildren(); i++)
                 execute(lastInstruction.jjtGetChild(i), out);
@@ -221,7 +225,6 @@ class Generator {
     }
 
     private String processConstructorInvocation(Node node, PrintWriter out) {
-
         String className = processIdentifier(node.jjtGetChild(0), out);
 
         out.println(String.format("    new %s", className));
@@ -231,48 +234,57 @@ class Generator {
         return "V";
     }
 
+    private String processNewIntArray(Node node, PrintWriter out) {
+        execute(node.jjtGetChild(0), out);
+        out.println(String.format("    newarray int"));
+
+        return "[I";
+    }
+
 
     // ==========================================
     //                ASSIGNMENT
     // ==========================================
 
     public void processAssignment(Node node, PrintWriter out) {
-
-        // get the right part of the assignment
-        execute(node.jjtGetChild(1), out);
-
         String nodeName = node.jjtGetChild(0).toString();
+        String instruction = ""; 
         String identifier = "";
 
-        if (nodeName.contains("Array")) {
-            Node array = node.jjtGetChild(0);
-            identifier = Utils.parseName(array.jjtGetChild(0).toString());
-            // push the reference onto the stack
-            execute(array.jjtGetChild(1), out);
-        }
-        else if (nodeName.contains("Identifier")) {
+        if (nodeName.contains("Array"))
+            identifier = Utils.parseName(node.jjtGetChild(0).jjtGetChild(0).toString());
+        else if (nodeName.contains("Identifier"))
             identifier = Utils.parseName(nodeName);
-        }
 
         VarDescriptor var = null;
         try {
             var = (VarDescriptor) symbolTable.lookup(identifier).get(0);
         } catch (Exception e) {}
 
-        if (var.getScope() == Descriptor.Scope.GLOBAL) {
-            out.println(String.format("    putfield %s/%s", mainClass, identifier));
-        }
+        // class atributes
+        if (var.getScope() == Descriptor.Scope.GLOBAL)
+            out.println(String.format("putfield %s/%s", mainClass, identifier));
+        
+        // local variables
         else {
             if (var.getLocalIndex() == -1)
                 var.setLocalIndex(localIndex++);
                 
             String type = parseType(var.getDataType());
 
-            if (type.equals("[I"))
-                out.println(String.format("    iastore"));
+            if (nodeName.contains("Array")) {
+                pushInteger(var.getLocalIndex(), out);                   // array reference
+                execute(node.jjtGetChild(0).jjtGetChild(1), out);        // element index
+                instruction = String.format("iastore");
+            }
             else
-                out.println(String.format("    %sstore %d", type.equals("I") ? "i" : "a", var.getLocalIndex()));
+                instruction = store(type, var.getLocalIndex());
         }
+
+        // process the right side of the expression, push value to stack
+        execute(node.jjtGetChild(1), out);
+
+        out.println(String.format("    %s", instruction));
     }
 
 
@@ -354,36 +366,20 @@ class Generator {
     // ==========================================
 
     private String processArray(Node node, PrintWriter out) {
-
         String identifier = Utils.parseName(node.jjtGetChild(0).toString());
-        int local = -1;
         try {
             VarDescriptor var = (VarDescriptor) symbolTable.lookup(identifier).get(0);
-            local = var.getLocalIndex();
-            // push the array reference
-            // push the index
+            pushInteger(var.getLocalIndex(), out);
         } catch (Exception e) {}
         
-        // array ref -> Utils.parseName(node.jjtGetChild(1).toString());
-        // array index -> var.getLocalIndex();
-        out.println(String.format("    iaload"));
+        execute(node.jjtGetChild(1), out);
 
+        out.println(String.format("    iaload"));
         return "[I";
     }
 
     private String processInteger(Node node, PrintWriter out) {
-        String value = Utils.parseName(node.toString());
-        int val = Integer.parseInt(value);
-        String instruction = "";
-
-        if (val >= 0 && val <= 5)
-            instruction = "iconst_";
-        else if (val <= 127)
-            instruction = "bipush ";
-        else if (val <= 32767)
-            instruction = "ldc ";
-        
-        out.println(String.format("    %s%s", instruction, value));
+        pushInteger(Integer.parseInt(Utils.parseName(node.toString())), out);
 
         return "I";
     }
@@ -404,15 +400,12 @@ class Generator {
             type = parseType(var.getDataType());
             
             // for global variables AKA class atributes
-            if (var.getScope() == Descriptor.Scope.GLOBAL) {
+            if (var.getScope() == Descriptor.Scope.GLOBAL)
                 out.println(String.format("    getfield %s/%s", mainClass, nodeName));
-            }
-            // for local variables
-            else {
-                out.println(String.format("    %sload %d", type.equals("I") ? "i" : "a", var.getLocalIndex()));
-            }
 
-           
+            // for local variables
+            else
+                out.println(String.format("    %s", load(type, var.getLocalIndex())));
         }
 
         return type;
@@ -420,20 +413,14 @@ class Generator {
 
     private String processBoolean(Node node, PrintWriter out) {
         String value = Utils.parseName(node.toString());
-        String instruction = "";
-
-        if (value.equals("true"))
-            instruction = "iconst_1";
-        else
-            instruction = "iconst_0";
-
-        out.println(String.format("    %s", instruction));
+        
+        out.println(String.format("    iconst_%d", value.equals("true") ? 1 : 0));
 
         return "Z";
     }
 
     private String processThis(Node node, PrintWriter out) {
-        out.println(String.format("    aload 0"));
+        out.println(String.format("    aload_0"));
 
         return mainClass;
     }
@@ -462,6 +449,38 @@ class Generator {
             ret = type;
 
         return ret;
+    }
+
+
+    // ==========================================
+    //         OPTIMIZATION UTILITIES
+    // ==========================================
+
+    private void pushInteger(int value, PrintWriter out) {
+        String instruction = "";
+
+        if (value >= 0 && value <= 5)
+            instruction = "iconst_";
+        else if (value <= 127)
+            instruction = "bipush ";
+        else if (value <= 32767)
+            instruction = "ldc ";
+        
+        out.println(String.format("    %s%d", instruction, value));
+    }
+
+    private String load(String type, int index) {
+        return String.format("%sload%s%d", 
+            type.equals("I") ? "i" : "a",
+            index < 4 ? "_" : " ",
+            index);
+    }
+
+    private String store(String type, int index) {
+        return String.format("%sstore%s%d", 
+            type.equals("I") ? "i" : "a",
+            index < 4 ? "_" : " ",
+            index);
     }
 }
 
