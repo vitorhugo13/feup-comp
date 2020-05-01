@@ -192,7 +192,7 @@ class SemanticAnalysis{
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
         VarDescriptor.INITIALIZATION_TYPE wasInitializedBefore = varDescriptor.getInitialized();
         processAssign(node);
-        if(wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
+        if(wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.FALSE) || wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
             changedToTrue.put(varDescriptor.getIdentifier(), wasInitializedBefore);
             return varDescriptor.getIdentifier();
         }
