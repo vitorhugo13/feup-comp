@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HashMap;
 
 import descriptors.*;
 import java.io.IOException;
@@ -8,11 +9,10 @@ import java.io.IOException;
 
 //TODO: invoke.add(1,2).printIsto() -> joana
 //TODO: warnings de variavéis que podem so estar a ser inicializadas nos if/whiles
-
+//TODO: size
 //TODO: dar print as linhas de erro
 //TODO: excecoes/warnings(é apenas um println) 
 //TODO: signatures: return several signatures in error message
-//TODO: check return
 
 class SemanticAnalysis{
     static private String VOID = "void";
@@ -51,7 +51,7 @@ class SemanticAnalysis{
                 VarDescriptor varDescriptor;
                 for(String var:toInit){
                     varDescriptor = (VarDescriptor) symbolTable.lookup(var).get(0);
-                    varDescriptor.setInitialized(true);
+                    varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.TRUE);
                 }
             }
             else if(node.toString().equals("While")){
@@ -101,12 +101,12 @@ class SemanticAnalysis{
         HashSet<String> initializedVarIf = new HashSet<>();
         HashSet<String> initializedVarElse = new HashSet<>();
         HashSet<String> initializedReturn = new HashSet<>();
-        HashSet<String> changedToTrue = new HashSet<>();
+        HashMap<String, VarDescriptor.INITIALIZATION_TYPE> changedToTrue = new HashMap<>();
         Node condition = node.jjtGetChild(0);
 
         /*IF CONDITION */
         if(!getNodeDataType(condition.jjtGetChild(0)).equals("Boolean")){
-            System.out.println("IF: NÃO É BOOLEANO");
+            throw new IOException("If Statement must have a boolean condition");
         }
 
         /*IF SCOPE */
@@ -131,10 +131,9 @@ class SemanticAnalysis{
         }
 
         VarDescriptor varDescriptor;
-        for(String var:changedToTrue){
-            varDescriptor = (VarDescriptor) symbolTable.lookup(var).get(0);
-            varDescriptor.setInitialized(false);
-            System.out.println(var);
+        for(HashMap.Entry<String, VarDescriptor.INITIALIZATION_TYPE> var:changedToTrue.entrySet()){
+            varDescriptor = (VarDescriptor) symbolTable.lookup(var.getKey()).get(0);
+            varDescriptor.setInitialized(var.getValue());
         }
 
         changedToTrue.clear(); //prepare for new scope: else
@@ -159,10 +158,9 @@ class SemanticAnalysis{
             }
         }
 
-        for(String var:changedToTrue){
-            varDescriptor = (VarDescriptor) symbolTable.lookup(var).get(0);
-            varDescriptor.setInitialized(false);
-            System.out.println(var);
+        for(HashMap.Entry<String, VarDescriptor.INITIALIZATION_TYPE> var:changedToTrue.entrySet()){
+            varDescriptor = (VarDescriptor) symbolTable.lookup(var.getKey()).get(0);
+            varDescriptor.setInitialized(var.getValue());
         }
 
         /*compare both hashSets */
@@ -171,13 +169,17 @@ class SemanticAnalysis{
                 initializedReturn.add(varIF);
             }
             else{
-                System.out.println("[WARNING]: Variable " + varIF + " may not have been initialized in IfStatement.");
+                varDescriptor = (VarDescriptor) symbolTable.lookup(varIF).get(0);
+                varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.MAYBE);
+                // System.out.println("[WARNING]: Variable " + varIF + " may not have been initialized.");
             }
         }
 
         for(String varElse:initializedVarElse){
             if(!initializedVarIf.contains(varElse)){
-                System.out.println("[WARNING]: Variable " + varElse + " may not have been initialized in IfStatement.");  
+                varDescriptor = (VarDescriptor) symbolTable.lookup(varElse).get(0);
+                varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.MAYBE);
+                // System.out.println("[WARNING]: Variable " + varElse + " may not have been initialized.");  
             }
         }
 
@@ -185,15 +187,13 @@ class SemanticAnalysis{
 
     }
 
-    private String processStmtAssign(Node node, HashSet<String> changedToTrue) throws IOException{
-        
-        
+    private String processStmtAssign(Node node, HashMap<String, VarDescriptor.INITIALIZATION_TYPE> changedToTrue) throws IOException{
 
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
-        Boolean wasInitializedBefore = varDescriptor.getInitialized();
+        VarDescriptor.INITIALIZATION_TYPE wasInitializedBefore = varDescriptor.getInitialized();
         processAssign(node);
-        if(!wasInitializedBefore){
-            changedToTrue.add(varDescriptor.getIdentifier());
+        if(wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
+            changedToTrue.put(varDescriptor.getIdentifier(), wasInitializedBefore);
             return varDescriptor.getIdentifier();
         }
         return "";
@@ -309,7 +309,7 @@ class SemanticAnalysis{
             String dataType = getNodeDataType(node.jjtGetChild(1));
 
             if(dataType.equals(varDescriptor.getDataType())){
-                    varDescriptor.setInitialized(true);
+                    varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.TRUE);
                     varDescriptor.setCurrValue(Utils.parseName(node.jjtGetChild(1).toString()));
             }
             else{
@@ -329,7 +329,7 @@ class SemanticAnalysis{
             throw new IOException("Variable " + id + " does not match " + varDescriptor.getDataType());
         }
 
-        varDescriptor.setInitialized(true);
+        varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.TRUE);
     }
 
     private void processInitializeArray(Node node) throws IOException{
@@ -341,7 +341,7 @@ class SemanticAnalysis{
             throw new IOException("When initializing array, array size must be an integer");
         }
 
-        varDescriptor.setInitialized(true);
+        varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.TRUE);
 
     }
 
@@ -349,8 +349,11 @@ class SemanticAnalysis{
 
         if(Utils.analyzeRegex(node.toString(), "(Identifier\\[)(.)*(\\])")){ //IDENTIFIER[a]
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.toString())).get(0);
-            if(!varDescriptor.getInitialized())
+            if(varDescriptor.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE))
                 throw new IOException("Variable " + varDescriptor.getIdentifier() + " was not initialized");
+            else if(varDescriptor.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
+                System.out.println("[WARNING]: Variable " + varDescriptor.getIdentifier() + " may not have been initialized.");
+            }
             return varDescriptor.getDataType();
         }
         else if(node.toString().equals("Add") || node.toString().equals("Sub") || node.toString().equals("Div") || node.toString().equals("Mul")){
@@ -422,8 +425,11 @@ class SemanticAnalysis{
             throw new IOException("Index of array " + id + " is not Integer!");
         }
 
-        if(!varDescriptor.getInitialized()){
+        if(varDescriptor.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
             throw new IOException("Array " + id + " is not initialized");
+        }
+        else if(varDescriptor.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
+            System.out.println("[WARNING]: Variable " + varDescriptor.getIdentifier() + " may not have been initialized.");
         }
 
         return INTEGER;
