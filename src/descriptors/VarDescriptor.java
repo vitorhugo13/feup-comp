@@ -35,8 +35,8 @@ public class VarDescriptor extends Descriptor {
         this.identifier = value;
     }
 
-    public void setInitialized(){
-        this.isInitialized = true;
+    public void setInitialized(Boolean isInitialized){
+        this.isInitialized = isInitialized;
     }
 
     public void setCurrValue(String value){

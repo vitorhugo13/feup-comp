@@ -43,7 +43,7 @@ class SemanticAnalysis{
                 processProgram(node);
             } 
             else if (node.toString().equals("Assign")) {
-                processAssign(node, true);
+                processAssign(node);
             }
             else if(node.toString().equals("IfStatement")){
                 HashSet<String> toInit = processIfStatement(node);
@@ -51,8 +51,7 @@ class SemanticAnalysis{
                 VarDescriptor varDescriptor;
                 for(String var:toInit){
                     varDescriptor = (VarDescriptor) symbolTable.lookup(var).get(0);
-                    varDescriptor.setInitialized();
-                    System.out.println(var);
+                    varDescriptor.setInitialized(true);
                 }
             }
             else if(node.toString().equals("While")){
@@ -102,6 +101,7 @@ class SemanticAnalysis{
         HashSet<String> initializedVarIf = new HashSet<>();
         HashSet<String> initializedVarElse = new HashSet<>();
         HashSet<String> initializedReturn = new HashSet<>();
+        HashSet<String> changedToTrue = new HashSet<>();
         Node condition = node.jjtGetChild(0);
 
         /*IF CONDITION */
@@ -113,7 +113,7 @@ class SemanticAnalysis{
         for(int i = 0; i < node.jjtGetChild(1).jjtGetNumChildren(); i++){
 
             if(node.jjtGetChild(1).jjtGetChild(i).toString().equals("Assign")){
-                String variableIf = processStmtAssign(node.jjtGetChild(1).jjtGetChild(i));
+                String variableIf = processStmtAssign(node.jjtGetChild(1).jjtGetChild(i), changedToTrue);
                 if(!variableIf.equals(""))
                     initializedVarIf.add(variableIf);
             }
@@ -127,13 +127,23 @@ class SemanticAnalysis{
             else{
                 execute(node.jjtGetChild(1).jjtGetChild(i));
             }
+
         }
+
+        VarDescriptor varDescriptor;
+        for(String var:changedToTrue){
+            varDescriptor = (VarDescriptor) symbolTable.lookup(var).get(0);
+            varDescriptor.setInitialized(false);
+            System.out.println(var);
+        }
+
+        changedToTrue.clear(); //prepare for new scope: else
 
         /*ELSE SCOPE */
         for(int j = 0; j < node.jjtGetChild(2).jjtGetNumChildren(); j++){
 
             if(node.jjtGetChild(2).jjtGetChild(j).toString().equals("Assign")){
-                String variableElse = processStmtAssign(node.jjtGetChild(2).jjtGetChild(j));
+                String variableElse = processStmtAssign(node.jjtGetChild(2).jjtGetChild(j), changedToTrue);
                 if(!variableElse.equals(""))
                     initializedVarElse.add(variableElse);
             }
@@ -149,19 +159,25 @@ class SemanticAnalysis{
             }
         }
 
+        for(String var:changedToTrue){
+            varDescriptor = (VarDescriptor) symbolTable.lookup(var).get(0);
+            varDescriptor.setInitialized(false);
+            System.out.println(var);
+        }
+
         /*compare both hashSets */
         for(String varIF:initializedVarIf){
             if(initializedVarElse.contains(varIF)){
                 initializedReturn.add(varIF);
             }
             else{
-                System.out.println("[WARNING] Variable " + varIF + " may not have been initialized in IfStatement.");
+                System.out.println("[WARNING]: Variable " + varIF + " may not have been initialized in IfStatement.");
             }
         }
 
         for(String varElse:initializedVarElse){
             if(!initializedVarIf.contains(varElse)){
-                System.out.println("[WARNING] Variable " + varElse + " may not have been initialized in IfStatement.");  
+                System.out.println("[WARNING]: Variable " + varElse + " may not have been initialized in IfStatement.");  
             }
         }
 
@@ -169,15 +185,17 @@ class SemanticAnalysis{
 
     }
 
-    private String processStmtAssign(Node node) throws IOException{
+    private String processStmtAssign(Node node, HashSet<String> changedToTrue) throws IOException{
         
-        processAssign(node, false);
+        
 
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
-        if(!varDescriptor.getInitialized()){
+        Boolean wasInitializedBefore = varDescriptor.getInitialized();
+        processAssign(node);
+        if(!wasInitializedBefore){
+            changedToTrue.add(varDescriptor.getIdentifier());
             return varDescriptor.getIdentifier();
         }
-
         return "";
         
     }
@@ -271,7 +289,7 @@ class SemanticAnalysis{
     }
 
 
-    private void processAssign(Node node, Boolean init) throws IOException{
+    private void processAssign(Node node) throws IOException{
 
         if(node.jjtGetChild(0).toString().equals("Array") && !Utils.analyzeRegex(node.jjtGetChild(1).toString(), "(Array\\[)(.)*(\\])")){ 
             processArrayLeft(node);
@@ -280,10 +298,10 @@ class SemanticAnalysis{
             processArrayBoth(node);
         }
         else if(node.jjtGetChild(1).toString().equals("NewIntArray")){
-           processInitializeArray(node, init);
+           processInitializeArray(node);
         }
         else if(node.jjtGetChild(1).toString().equals("NewObject")){
-            processObject(node, init);
+            processObject(node);
         }
         else{
 
@@ -291,11 +309,8 @@ class SemanticAnalysis{
             String dataType = getNodeDataType(node.jjtGetChild(1));
 
             if(dataType.equals(varDescriptor.getDataType())){
-
-                if(init){
-                    varDescriptor.setInitialized();
+                    varDescriptor.setInitialized(true);
                     varDescriptor.setCurrValue(Utils.parseName(node.jjtGetChild(1).toString()));
-                }
             }
             else{
                 throw new IOException("Variable " + varDescriptor.getIdentifier() + " of type " + dataType + " does not match declaration type " + varDescriptor.getDataType());
@@ -303,7 +318,7 @@ class SemanticAnalysis{
         }
     }
 
-    private void processObject(Node node, Boolean init) throws IOException {
+    private void processObject(Node node) throws IOException {
 
         //TODO: o objeto que está a ser criado tem de ser do mesmo tipo da classe onde está inserido, ou da class a que faz extends ou de uma class qql dos imports
         String obj = Utils.parseName(node.jjtGetChild(1).jjtGetChild(0).toString());
@@ -314,11 +329,10 @@ class SemanticAnalysis{
             throw new IOException("Variable " + id + " does not match " + varDescriptor.getDataType());
         }
 
-        if(init)
-            varDescriptor.setInitialized();
+        varDescriptor.setInitialized(true);
     }
 
-    private void processInitializeArray(Node node, Boolean init) throws IOException{
+    private void processInitializeArray(Node node) throws IOException{
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
         if(!varDescriptor.getDataType().equals("Array")){
             throw new IOException("Variable " + varDescriptor.getIdentifier() + " is not an array. Previously declared as a " + varDescriptor.getDataType());
@@ -327,8 +341,7 @@ class SemanticAnalysis{
             throw new IOException("When initializing array, array size must be an integer");
         }
 
-        if(init)
-            varDescriptor.setInitialized();
+        varDescriptor.setInitialized(true);
 
     }
 
