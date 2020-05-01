@@ -7,7 +7,7 @@ import java.io.IOException;
 //TODO: invoke.add(1,2).printIsto() -> joana
 //TODO: warnings de variavéis que podem so estar a ser inicializadas nos if/whiles
 //TODO: dar print as linhas de erro
-//TODO: excecoes/warnings 
+//TODO: excecoes/warnings(é apenas um println) 
 //TODO: signatures: return several signatures in error message
 //TODO: check return
 
