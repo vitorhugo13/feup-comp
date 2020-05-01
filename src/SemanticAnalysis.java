@@ -30,7 +30,7 @@ class SemanticAnalysis{
         try {
             if (node.toString().equals("StaticImport") || node.toString().equals("NonStaticImport")) { 
             } 
-            else if (Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])") || node.toString().equals("Method[main]") || (!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])"))) {
+            else if (Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])") || node.toString().equals("Method[main]") || (!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])"))) {   
                 processNewScope(node);
             }
             else if(node.toString().equals("MethodInvocation")){
@@ -63,6 +63,30 @@ class SemanticAnalysis{
         }
     }
 
+    private Boolean processReturnType(Node node) throws IOException{
+
+
+        String expected = Utils.parseName(node.jjtGetChild(0).toString());
+        String actual = "";
+
+        if(expected.equals("int")){
+            expected = "Integer";
+        }
+
+        Node body = node.jjtGetChild(2);
+
+        for(int i = 0; i < body.jjtGetNumChildren(); i++){
+            if(body.jjtGetChild(i).toString().equals("Return")){
+                actual = getNodeDataType(body.jjtGetChild(i).jjtGetChild(0));
+
+                if(actual.equals(expected)){
+                    return true;
+                }
+            }    
+        }
+
+        return false;
+    }
     private void processIfStatement(Node node)throws IOException{
 
         Node condition = node.jjtGetChild(0);
@@ -373,8 +397,16 @@ class SemanticAnalysis{
     }
 
 
-    private void processNewScope(Node node){
+    private void processNewScope(Node node) throws IOException{
+
         symbolTable.enterScopeForAnalysis();
+
+        if(!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])") && !node.toString().equals("Method[main]")){
+            if(!processReturnType(node)){
+                throw new IOException("Method " + Utils.parseName(node.toString()) + " does not return expected type " + Utils.parseName(node.jjtGetChild(0).toString()));
+            }
+        }
+        
         processChildren(node);
         symbolTable.exitScopeForAnalysis();
     }
