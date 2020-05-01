@@ -1,9 +1,9 @@
 .class public ArrayTest
-.super java/lang/Object
+.super Simple
 
 .method public<init>()V
     aload 0
-    invokenonvirtual java/lang/Object/<init>()V
+    invokenonvirtual Simple/<init>()V
     return
 .end method
 

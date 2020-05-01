@@ -95,18 +95,19 @@ class Generator {
         symbolTable.enterScopeForAnalysis();
         mainClass = Utils.parseName(node.toString());
 
-        // TODO: support extends
+        String extension = node.jjtGetChild(0).toString();
+        extension = extension.contains("Extends") ? Utils.parseName(extension) : "";
+
         out.println(String.format(".class public %s", mainClass));
-        out.println(String.format(".super java/lang/Object"));
+        out.println(String.format(".super %s", extension.equals("") ? "java/lang/Object" : extension));
         out.println();
         
         for (VarDescriptor var : symbolTable.getClassAtributes())
             out.println(String.format(".field public %s %s", var.getIdentifier(), parseType(var.getDataType())));
 
-        // TODO: support extension
         out.println(String.format(".method public<init>()V"));
         out.println(String.format("    aload 0"));
-        out.println(String.format("    invokenonvirtual java/lang/Object/<init>()V"));
+        out.println(String.format("    invokenonvirtual %s/<init>()V", extension.equals("") ? "java/lang/Object" : extension));
         out.println(String.format("    return"));
         out.println(String.format(".end method"));
 
