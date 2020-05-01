@@ -13,6 +13,7 @@ import java.io.IOException;
 //TODO: dar print as linhas de erro
 //TODO: excecoes/warnings(é apenas um println) 
 //TODO: signatures: return several signatures in error message
+//TODO: nas signatures, se uma variavel nao existir, a excepção é que nao ha signature para essa chamada, inves de dizer que nao encontra a variavel
 
 class SemanticAnalysis{
     static private String VOID = "void";
@@ -414,11 +415,13 @@ class SemanticAnalysis{
         String id = Utils.parseName(node.jjtGetChild(0).toString());
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0);
 
-        if(!varDescriptor.getDataType().equals("Array")){
+        if(!varDescriptor.getDataType().equals("Array") && !varDescriptor.getDataType().equals("stringarray")){
             throw new IOException("Variable " + varDescriptor.getIdentifier() + " of type Array does not match declaration type " + varDescriptor.getDataType());
         }
 
+
         String type = getNodeDataType(node.jjtGetChild(1));
+
         if(!type.equals("Integer")){
             throw new IOException("Index of array " + id + " is not Integer!");
         }
@@ -434,7 +437,12 @@ class SemanticAnalysis{
             System.out.println("[WARNING]: Variable " + varDescriptor.getIdentifier() + " may not have been initialized.");
         }
     
-        return INTEGER;
+        if(varDescriptor.getDataType().equals("stringarray")){
+            return "String";
+        }
+        else{
+            return INTEGER;
+        }
 
     }
 
