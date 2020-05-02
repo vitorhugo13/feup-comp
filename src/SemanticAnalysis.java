@@ -11,9 +11,7 @@ import java.io.IOException;
 
 
 //TODO: invoke.add(1,2).printIsto() -> joana
-//TODO: warnings de variavéis que podem so estar a ser inicializadas nos if/whiles
-//TODO: dar print as linhas de erro
-//TODO: excecoes/warnings(é apenas um println) 
+//TODO: dar print as linhas de erro 
 //TODO: signatures: return several signatures in error message
 //TODO: nas signatures, se uma variavel nao existir, a excepção é que nao ha signature para essa chamada, inves de dizer que nao encontra a variavel
 
@@ -68,7 +66,7 @@ class SemanticAnalysis{
             }
         }catch (Exception e) {
             System.err.println("[SEMANTIC ERROR]: " + e.getMessage());
-            e.printStackTrace();
+            //e.printStackTrace();
             exceptionCounter++;
             if (exceptionCounter >= MAX_EXCEPTIONS) {
                 System.err.println("[PROGRAM TERMINATING] THERE ARE MORE THAN " + MAX_EXCEPTIONS + " SEMANTIC ERRORS.");
