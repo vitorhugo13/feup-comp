@@ -1,6 +1,4 @@
-import Simple; 
-
-class ArrayTest extends Simple {
+class ArrayTest {
 
     public static void main(String[] args){
 

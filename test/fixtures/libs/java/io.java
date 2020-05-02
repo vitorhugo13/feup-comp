@@ -72,6 +72,10 @@ public class io {
 		System.out.print(a);
 	}
 
+	final static void print(boolean a) {
+		System.out.print(a);
+	}
+
 	final static void print(String a) {
 		System.out.print(a);
 	}
@@ -90,5 +94,9 @@ public class io {
 
 	final static void println(String a) {
 		System.out.println(a);
-	}	
+	}
+
+	final static void println(boolean a) {
+		System.out.println(a);
+	}
 }

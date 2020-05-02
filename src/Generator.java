@@ -13,10 +13,12 @@ class Generator {
 
     private SymbolTable symbolTable;
     private int localIndex;
+    private int tagIndex;
     private String mainClass;
 
     public Generator(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
+        this.tagIndex = 0;
     }
     
     public void generate(Node root, String filename) {
@@ -101,12 +103,16 @@ class Generator {
         out.println(String.format(".class public %s", mainClass));
         out.println(String.format(".super %s", extension.equals("") ? "java/lang/Object" : extension));
         out.println();
-        
-        for (VarDescriptor var : symbolTable.getClassAtributes())
-            out.println(String.format(".field public %s %s", var.getIdentifier(), parseType(var.getDataType())));
 
-        out.println(String.format(".method public<init>()V"));
-        out.println(String.format("    aload 0"));
+        ArrayList<VarDescriptor> attributes = symbolTable.getClassAtributes();
+        for (int i = attributes.size() - 1; i >= 0; i--) {
+            VarDescriptor var = attributes.get(i);
+            out.println(String.format(".field public %s %s", var.getIdentifier(), parseType2(var.getDataType())));
+        }
+
+        out.println();
+        out.println(String.format(".method public <init>()V"));
+        out.println(String.format("    aload_0"));
         out.println(String.format("    invokenonvirtual %s/<init>()V", extension.equals("") ? "java/lang/Object" : extension));
         out.println(String.format("    return"));
         out.println(String.format(".end method"));
@@ -115,7 +121,7 @@ class Generator {
             Node child = node.jjtGetChild(i);
             String childName = child.toString();
 
-            if (childName.contains("Method"))            
+            if (childName.contains("Method"))
                 processMethod(child, out);
         }
 
@@ -141,8 +147,8 @@ class Generator {
 
         out.println();
         out.println(String.format(".method public %s(%s)%s", name, params, type));
-        out.println(String.format("    .limit_stack 99"));
-        out.println(String.format("    .limit_locals 99"));
+        out.println(String.format("    .limit stack 99"));
+        out.println(String.format("    .limit locals 99"));
 
         Node body = node.jjtGetChild(node.jjtGetNumChildren() - 1); 
         for (int i = 0; i < body.jjtGetNumChildren(); i++) {
@@ -160,7 +166,7 @@ class Generator {
                 execute(lastInstruction.jjtGetChild(i), out);
         }
         
-        out.println(String.format("    %sreturn", (type.equals("V") ? "" : (type.equals("I") ? "i" : "a"))));
+        out.println(String.format("    %sreturn", (type.equals("V") ? "" : (type.equals("I") || type.equals("Z") ? "i" : "a"))));
         out.println(String.format(".end method"));
 
         symbolTable.exitScopeForAnalysis();
@@ -169,7 +175,7 @@ class Generator {
     private String processParamList(Node node) {
         String paramList = "";
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-            paramList += parseType(Utils.parseName(node.jjtGetChild(i).jjtGetChild(0).toString()));
+            paramList += parseType2(Utils.parseName(node.jjtGetChild(i).jjtGetChild(0).toString()));
         }
         return paramList;
     }
@@ -199,6 +205,10 @@ class Generator {
                     signature += parseType(var.getDataType());
                 }
 
+                System.out.println("SIGNATURE : " + signature);
+                System.out.println("ARGLIST : " + argList);
+                System.out.println();
+
                 if (argList.equals(signature))
                     break;
             }
@@ -219,7 +229,7 @@ class Generator {
         String ret = "";
 
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-            ret += parseType(execute(node.jjtGetChild(i), out));
+            ret += parseType2(execute(node.jjtGetChild(i), out));
         }
 
         return ret;
@@ -252,7 +262,7 @@ class Generator {
         String instruction = ""; 
         String identifier = "";
 
-        if (nodeName.contains("Array"))
+        if (nodeName.equals("Array"))
             identifier = Utils.parseName(node.jjtGetChild(0).jjtGetChild(0).toString());
         else if (nodeName.contains("Identifier"))
             identifier = Utils.parseName(nodeName);
@@ -263,8 +273,17 @@ class Generator {
         } catch (Exception e) {}
 
         // class atributes
-        if (var.getScope() == Descriptor.Scope.GLOBAL)
-            out.println(String.format("putfield %s/%s", mainClass, identifier));
+        if (var.getScope() == Descriptor.Scope.GLOBAL) {
+            out.println("    aload_0");
+            if (nodeName.equals("Array")) {
+                out.println(String.format("    getfield %s/%s %s", mainClass, identifier, parseType2(var.getDataType())));
+                execute(node.jjtGetChild(0).jjtGetChild(1), out);
+                instruction = "iastore";
+            }
+            else
+                instruction = String.format("putfield %s/%s %s", mainClass, identifier, parseType2(var.getDataType()));
+            
+        }
         
         // local variables
         else {
@@ -273,8 +292,8 @@ class Generator {
                 
             String type = parseType(var.getDataType());
 
-            if (nodeName.contains("Array")) {
-                pushInteger(var.getLocalIndex(), out);                   // array reference
+            if (nodeName.equals("Array")) {
+                out.println(String.format("    %s", load(parseType(var.getDataType()), var.getLocalIndex())));
                 execute(node.jjtGetChild(0).jjtGetChild(1), out);        // element index
                 instruction = String.format("iastore");
             }
@@ -306,13 +325,15 @@ class Generator {
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
         
-        out.println(String.format("    iflt ltTrue"));
+        out.println(String.format("    if_icmplt ltTrue%d", tagIndex));
         out.println(String.format("    iconst_0"));
-        out.println(String.format("    goto ltFalse"));
-        out.println(String.format("  ltTrue:"));
+        out.println(String.format("    goto ltFalse%d", tagIndex));
+        out.println(String.format("  ltTrue%d:", tagIndex));
         out.println(String.format("    iconst_1"));
-        out.println(String.format("  ltFalse:"));
-        
+        out.println(String.format("  ltFalse%d:", tagIndex));
+
+        tagIndex++;
+
         return "Z";
     }
 
@@ -368,15 +389,30 @@ class Generator {
 
     private String processArray(Node node, PrintWriter out) {
         String identifier = Utils.parseName(node.jjtGetChild(0).toString());
+        String type = "";
         try {
             VarDescriptor var = (VarDescriptor) symbolTable.lookup(identifier).get(0);
-            pushInteger(var.getLocalIndex(), out);
+            type = parseType(var.getDataType());
+
+            // global variables
+            if (var.getScope() == Descriptor.Scope.GLOBAL) {
+                out.println(String.format("    aload_0"));
+                out.println(String.format("    getfield %s/%s %s", mainClass, identifier, parseType2(var.getDataType())));
+            }
+            // local variables
+            else {
+                out.println(String.format("    %s", load(type, var.getLocalIndex())));
+            }
+                // pushInteger(var.getLocalIndex(), out);
         } catch (Exception e) {}
         
         execute(node.jjtGetChild(1), out);
 
-        out.println(String.format("    iaload"));
-        return "[I";
+        type = type.substring(1);
+        System.out.println("ARRAY : " +  identifier + " => " + type);
+
+        out.println(String.format("    %saload", type.equals("I") || type.equals("Z") ? "i" : "a"));
+        return type;
     }
 
     private String processInteger(Node node, PrintWriter out) {
@@ -401,9 +437,10 @@ class Generator {
             type = parseType(var.getDataType());
             
             // for global variables AKA class atributes
-            if (var.getScope() == Descriptor.Scope.GLOBAL)
-                out.println(String.format("    getfield %s/%s", mainClass, nodeName));
-
+            if (var.getScope() == Descriptor.Scope.GLOBAL) {
+                out.println(String.format("    aload_0"));
+                out.println(String.format("    getfield %s/%s %s", mainClass, nodeName, parseType2(var.getDataType())));
+            }
             // for local variables
             else
                 out.println(String.format("    %s", load(type, var.getLocalIndex())));
@@ -436,18 +473,39 @@ class Generator {
 
         if (type.equals("int") || type.equals("Integer"))
             ret = "I";
-        else if (type.equals("boolean"))
+        else if (type.equals("boolean") || type.equals("Boolean"))
             ret = "Z";
         else if (type.equals("array") || type.equals("Array"))
             ret = "[I";
         else if (type.equals("stringarray"))
-            ret = "[L/java/lang/String;";
+            ret = "[Ljava/lang/String;";
         else if (type.equals("String"))
-            ret = "L/java/lang/String;";
+            ret = "Ljava/lang/String;";
         else if (type.equals("void"))
             ret = "V";
         else 
             ret = type;
+
+        return ret;
+    }
+
+    private String parseType2(String type) {
+        String ret = "";
+
+        if (type.equals("int") || type.equals("Integer") || type.equals("I"))
+            ret = "I";
+        else if (type.equals("boolean") || type.equals("Boolean") || type.equals("Z"))
+            ret = "Z";
+        else if (type.equals("array") || type.equals("Array") || type.equals("[I"))
+            ret = "[I";
+        else if (type.equals("stringarray") || type.equals("[Ljava/lang/String;"))
+            ret = "[Ljava/lang/String;";
+        else if (type.equals("String") || type.equals("Ljava/lang/String;"))
+            ret = "Ljava/lang/String;";
+        else if (type.equals("void") || type.equals("V"))
+            ret = "V";
+        else 
+            ret = "L" + type + ";";
 
         return ret;
     }
@@ -472,14 +530,14 @@ class Generator {
 
     private String load(String type, int index) {
         return String.format("%sload%s%d", 
-            type.equals("I") ? "i" : "a",
+            type.equals("I") || type.equals("Z") ? "i" : "a",
             index < 4 ? "_" : " ",
             index);
     }
 
     private String store(String type, int index) {
         return String.format("%sstore%s%d", 
-            type.equals("I") ? "i" : "a",
+            type.equals("I") || type.equals("Z") ? "i" : "a",
             index < 4 ? "_" : " ",
             index);
     }
