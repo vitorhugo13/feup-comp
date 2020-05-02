@@ -1,4 +1,10 @@
 import java.util.ArrayList;
+import java.util.HashSet;
+
+
+
+import java.util.HashMap;
+
 import descriptors.*;
 import java.io.IOException;
 
@@ -7,9 +13,9 @@ import java.io.IOException;
 //TODO: invoke.add(1,2).printIsto() -> joana
 //TODO: warnings de variavéis que podem so estar a ser inicializadas nos if/whiles
 //TODO: dar print as linhas de erro
-//TODO: excecoes/warnings 
+//TODO: excecoes/warnings(é apenas um println) 
 //TODO: signatures: return several signatures in error message
-//TODO: check return
+//TODO: nas signatures, se uma variavel nao existir, a excepção é que nao ha signature para essa chamada, inves de dizer que nao encontra a variavel
 
 class SemanticAnalysis{
     static private String VOID = "void";
@@ -42,8 +48,17 @@ class SemanticAnalysis{
             else if (node.toString().equals("Assign")) {
                 processAssign(node);
             }
+            else if(node.toString().equals("Length")){
+                processLength(node);
+            }
             else if(node.toString().equals("IfStatement")){
-                processIfStatement(node);
+                HashSet<String> toInit = processIfStatement(node);
+            
+                VarDescriptor varDescriptor;
+                for(String var:toInit){
+                    varDescriptor = (VarDescriptor) symbolTable.lookup(var).get(0);
+                    varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.TRUE);
+                }
             }
             else if(node.toString().equals("While")){
                 processWhile(node);
@@ -63,8 +78,14 @@ class SemanticAnalysis{
         }
     }
 
-    private Boolean processReturnType(Node node) throws IOException{
+    private void processLength(Node node) throws IOException{
+        String type = getNodeDataType(node.jjtGetChild(0));
 
+        if(!type.equals("Array") && !type.equals("stringarray")){
+            throw new IOException("It is not possible to invoke length of a non array object");
+        }
+    }
+    private Boolean processReturnType(Node node) throws IOException{
 
         String expected = Utils.parseName(node.jjtGetChild(0).toString());
         String actual = "";
@@ -72,13 +93,18 @@ class SemanticAnalysis{
         if(expected.equals("int")){
             expected = "Integer";
         }
+        else if(expected.equals("array")){
+            expected = "Array";
+        }
+        else if(expected.equals("boolean")){
+            expected = "Boolean";
+        }
 
         Node body = node.jjtGetChild(2);
 
         for(int i = 0; i < body.jjtGetNumChildren(); i++){
             if(body.jjtGetChild(i).toString().equals("Return")){
                 actual = getNodeDataType(body.jjtGetChild(i).jjtGetChild(0));
-
                 if(actual.equals(expected)){
                     return true;
                 }
@@ -87,22 +113,109 @@ class SemanticAnalysis{
 
         return false;
     }
-    private void processIfStatement(Node node)throws IOException{
 
+    private HashSet<String> processIfStatement(Node node)throws IOException{
+
+        HashSet<String> initializedVarIf = new HashSet<>();
+        HashSet<String> initializedVarElse = new HashSet<>();
+        HashSet<String> initializedReturn = new HashSet<>();
+        HashMap<String, VarDescriptor.INITIALIZATION_TYPE> changedToTrue = new HashMap<>();
         Node condition = node.jjtGetChild(0);
 
+        /*IF CONDITION */
         if(!getNodeDataType(condition.jjtGetChild(0)).equals("Boolean")){
-            System.out.println("IF: NÃO É BOOLEANO");
+            throw new IOException("If Statement must have a boolean condition");
         }
 
+        /*IF SCOPE */
         for(int i = 0; i < node.jjtGetChild(1).jjtGetNumChildren(); i++){
-            execute(node.jjtGetChild(1).jjtGetChild(i));
+
+            if(node.jjtGetChild(1).jjtGetChild(i).toString().equals("Assign")){
+                String variableIf = processStmtAssign(node.jjtGetChild(1).jjtGetChild(i), changedToTrue);
+                if(!variableIf.equals(""))
+                    initializedVarIf.add(variableIf);
+            }
+            else if(node.jjtGetChild(1).jjtGetChild(i).toString().equals("IfStatement")){
+                HashSet<String> childHashSet = processIfStatement(node.jjtGetChild(1).jjtGetChild(i));
+
+                for(String var:childHashSet){
+                    initializedVarIf.add(var);
+                }
+            }
+            else{
+                execute(node.jjtGetChild(1).jjtGetChild(i));
+            }
+
         }
 
+        VarDescriptor varDescriptor;
+        for(HashMap.Entry<String, VarDescriptor.INITIALIZATION_TYPE> var:changedToTrue.entrySet()){
+            varDescriptor = (VarDescriptor) symbolTable.lookup(var.getKey()).get(0);
+            varDescriptor.setInitialized(var.getValue());
+        }
+
+        changedToTrue.clear(); //prepare for new scope: else
+
+        /*ELSE SCOPE */
         for(int j = 0; j < node.jjtGetChild(2).jjtGetNumChildren(); j++){
-            execute(node.jjtGetChild(2).jjtGetChild(j));
+
+            if(node.jjtGetChild(2).jjtGetChild(j).toString().equals("Assign")){
+                String variableElse = processStmtAssign(node.jjtGetChild(2).jjtGetChild(j), changedToTrue);
+                if(!variableElse.equals(""))
+                    initializedVarElse.add(variableElse);
+            }
+            else if(node.jjtGetChild(2).jjtGetChild(j).toString().equals("IfStatement")){
+                HashSet<String> childHashSet = processIfStatement(node.jjtGetChild(2).jjtGetChild(j));
+
+                for(String var:childHashSet){
+                    initializedVarElse.add(var);
+                }
+            }
+            else{
+                execute(node.jjtGetChild(2).jjtGetChild(j));                
+            }
         }
 
+        for(HashMap.Entry<String, VarDescriptor.INITIALIZATION_TYPE> var:changedToTrue.entrySet()){
+            varDescriptor = (VarDescriptor) symbolTable.lookup(var.getKey()).get(0);
+            varDescriptor.setInitialized(var.getValue());
+        }
+
+        /*compare both hashSets */
+        for(String varIF:initializedVarIf){
+            if(initializedVarElse.contains(varIF)){
+                initializedReturn.add(varIF);
+            }
+            else{
+                varDescriptor = (VarDescriptor) symbolTable.lookup(varIF).get(0);
+                varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.MAYBE);
+                // System.out.println("[WARNING]: Variable " + varIF + " may not have been initialized.");
+            }
+        }
+
+        for(String varElse:initializedVarElse){
+            if(!initializedVarIf.contains(varElse)){
+                varDescriptor = (VarDescriptor) symbolTable.lookup(varElse).get(0);
+                varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.MAYBE);
+                // System.out.println("[WARNING]: Variable " + varElse + " may not have been initialized.");  
+            }
+        }
+
+        return initializedReturn;
+
+    }
+
+    private String processStmtAssign(Node node, HashMap<String, VarDescriptor.INITIALIZATION_TYPE> changedToTrue) throws IOException{
+
+        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
+        VarDescriptor.INITIALIZATION_TYPE wasInitializedBefore = varDescriptor.getInitialized();
+        processAssign(node);
+        if(wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.FALSE) || wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
+            changedToTrue.put(varDescriptor.getIdentifier(), wasInitializedBefore);
+            return varDescriptor.getIdentifier();
+        }
+        return "";
+        
     }
 
     private void processWhile(Node node)throws IOException{
@@ -140,23 +253,33 @@ class SemanticAnalysis{
         
         String returnValue;
         try{
-            returnValue = compareArgsAndParams(node, classDescriptor); 
-            if(!returnValue.equals("")){
+            returnValue = compareArgsAndParams(node, classDescriptor);
+            if(!returnValue.equals("error")){
                 return returnValue; //Method exists in the class
             }
+
         }
         catch(Exception e){ //Method does not exist in first class but can still exist in parent
         }
        
         if(node.jjtGetChild(0).toString().equals("This") || classDescriptor.getIdentifier().equals(this.symbolTable.getClassName())){
-            returnValue = compareArgsAndParams(node, classDescriptor.getParentClass());
-            if(!returnValue.equals("")){
-                return returnValue; //Method exists in parent class
+
+            if(classDescriptor.getParentClass() != null){
+                returnValue = compareArgsAndParams(node, classDescriptor.getParentClass());
+
+
+                if(!returnValue.equals("error")){
+                    return returnValue; //Method exists in parent class
+                }
+                else{
+                    throw new IOException("No signature of method " + methodName + " matches list of arguments given");
+                }
             }
             else{
                 throw new IOException("No signature of method " + methodName + " matches list of arguments given");
             }
-        } else{
+        } 
+        else{
             throw new IOException("No signature of method " + methodName + " matches list of arguments given");
         }
 
@@ -165,13 +288,11 @@ class SemanticAnalysis{
     private String compareArgsAndParams(Node node, ClassDescriptor classDescriptor) throws IOException {
         String methodName = Utils.parseName(node.jjtGetChild(1).toString());
         ArrayList<MethodDescriptor> methodDescriptors = classDescriptor.getMethodsMatchingId(methodName);
-        //dado que pode ocorrer method overload temos de percorrer a lista de descritores returnados
-        //e saber se existe o certo, e se sim processar os args e o return type
         int numArgs = node.jjtGetChild(2).jjtGetNumChildren();
         Boolean correct = true;
 
         for(int method = 0; method < methodDescriptors.size(); method++){
-            correct=true;
+            correct = true;
             MethodDescriptor md = methodDescriptors.get(method);
             if(md.getParameters().size() == numArgs){
                 for(int param = 0; param < md.getParameters().size(); param++){
@@ -180,7 +301,7 @@ class SemanticAnalysis{
 
                     if(!typeArg.equals(expectedType)){
                         correct = false;
-                        // throw new IOException(Utils.parseName(node.jjtGetChild(2).jjtGetChild(param).toString())+ " does not match type " + expectedType + " in " + methodName);
+                        //throw new IOException(Utils.parseName(node.jjtGetChild(2).jjtGetChild(param).toString())+ " does not match type " + expectedType + " in " + methodName);
                     }
                 }
 
@@ -190,13 +311,13 @@ class SemanticAnalysis{
 
             }
         }
-        return "";
+
+        //TODO: antes estava aqui ""
+        return "error";
     }
 
 
     private void processAssign(Node node) throws IOException{
-
-        // TODO: Arrays (also need to update symbol table with those), Class types and constructor invocations, sums (a= b+c)
 
         if(node.jjtGetChild(0).toString().equals("Array") && !Utils.analyzeRegex(node.jjtGetChild(1).toString(), "(Array\\[)(.)*(\\])")){ 
             processArrayLeft(node);
@@ -216,13 +337,12 @@ class SemanticAnalysis{
             String dataType = getNodeDataType(node.jjtGetChild(1));
 
             if(dataType.equals(varDescriptor.getDataType())){
-                varDescriptor.setInitialized();
-                varDescriptor.setCurrValue(Utils.parseName(node.jjtGetChild(1).toString()));
+                    varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.TRUE);
+                    varDescriptor.setCurrValue(Utils.parseName(node.jjtGetChild(1).toString()));
             }
             else{
                 throw new IOException("Variable " + varDescriptor.getIdentifier() + " of type " + dataType + " does not match declaration type " + varDescriptor.getDataType());
             }
-
         }
     }
 
@@ -237,7 +357,7 @@ class SemanticAnalysis{
             throw new IOException("Variable " + id + " does not match " + varDescriptor.getDataType());
         }
 
-        varDescriptor.setInitialized();
+        varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.TRUE);
     }
 
     private void processInitializeArray(Node node) throws IOException{
@@ -249,22 +369,30 @@ class SemanticAnalysis{
             throw new IOException("When initializing array, array size must be an integer");
         }
 
-        varDescriptor.setInitialized();
+        varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.TRUE);
+
     }
 
     private String getNodeDataType(Node node) throws IOException{ 
 
         if(Utils.analyzeRegex(node.toString(), "(Identifier\\[)(.)*(\\])")){ //IDENTIFIER[a]
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.toString())).get(0);
-            if(!varDescriptor.getInitialized())
+            if(varDescriptor.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE))
                 throw new IOException("Variable " + varDescriptor.getIdentifier() + " was not initialized");
+            else if(varDescriptor.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
+                System.out.println("[WARNING]: Variable " + varDescriptor.getIdentifier() + " may not have been initialized.");
+            }
             return varDescriptor.getDataType();
         }
         else if(node.toString().equals("Add") || node.toString().equals("Sub") || node.toString().equals("Div") || node.toString().equals("Mul")){
             for(int i = 0; i < node.jjtGetNumChildren(); i++){
                 if(!getNodeDataType(node.jjtGetChild(i)).equals(INTEGER))
-                    throw new IOException("Arithmetic operation must be done with Integer values: variable " + Utils.parseName(node.jjtGetChild(i).toString()) + " is not an Integer");
+                    throw new IOException("Arithmetic operation must be done with Integer values: " + Utils.parseName(node.jjtGetChild(i).toString()) + " is not an Integer");
             }
+            return "Integer";
+        }
+        else if(node.toString().equals("Length")){
+            processLength(node);
             return "Integer";
         }
         else if(node.toString().equals("Less")){
@@ -295,6 +423,9 @@ class SemanticAnalysis{
         else if(node.toString().equals("Array")){
             return processArrayRight(node);
         }
+        else if(node.toString().equals("This")){
+            return this.symbolTable.getClassName();
+        }
         else if(node.toString().equals("MethodInvocation")){
 
             String tipo = processInvocation(node);
@@ -316,11 +447,13 @@ class SemanticAnalysis{
         String id = Utils.parseName(node.jjtGetChild(0).toString());
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0);
 
-        if(!varDescriptor.getDataType().equals("Array")){
+        if(!varDescriptor.getDataType().equals("Array") && !varDescriptor.getDataType().equals("stringarray")){
             throw new IOException("Variable " + varDescriptor.getIdentifier() + " of type Array does not match declaration type " + varDescriptor.getDataType());
         }
 
+
         String type = getNodeDataType(node.jjtGetChild(1));
+
         if(!type.equals("Integer")){
             throw new IOException("Index of array " + id + " is not Integer!");
         }
@@ -329,11 +462,19 @@ class SemanticAnalysis{
             throw new IOException("Index of array " + id + " is not Integer!");
         }
 
-        if(!varDescriptor.getInitialized()){
+        if(varDescriptor.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
             throw new IOException("Array " + id + " is not initialized");
         }
-
-        return INTEGER;
+        else if(varDescriptor.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
+            System.out.println("[WARNING]: Variable " + varDescriptor.getIdentifier() + " may not have been initialized.");
+        }
+    
+        if(varDescriptor.getDataType().equals("stringarray")){
+            return "String";
+        }
+        else{
+            return INTEGER;
+        }
 
     }
 
@@ -398,16 +539,14 @@ class SemanticAnalysis{
 
 
     private void processNewScope(Node node) throws IOException{
-
         symbolTable.enterScopeForAnalysis();
-
+        
+        processChildren(node);
         if(!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])") && !node.toString().equals("Method[main]")){
             if(!processReturnType(node)){
                 throw new IOException("Method " + Utils.parseName(node.toString()) + " does not return expected type " + Utils.parseName(node.jjtGetChild(0).toString()));
             }
         }
-        
-        processChildren(node);
         symbolTable.exitScopeForAnalysis();
     }
 
