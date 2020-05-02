@@ -6,13 +6,10 @@ import java.io.IOException;
 
 import descriptors.*;
 
-//TODO: invoke.add(1,2).printIsto() -> joana
-//TODO: warnings de variavéis que podem so estar a ser inicializadas nos if/whiles
-//TODO: dar print as linhas de erro
-//TODO: excecoes/warnings(é apenas um println) 
+//TODO: dar print as linhas de erro 
 //TODO: signatures: return several signatures in error message
 //TODO: nas signatures, se uma variavel nao existir, a excepção é que nao ha signature para essa chamada, inves de dizer que nao encontra a variavel
-
+//TODO: há erros semanticos que estao a ser dados no meio da traverse ast
 class SemanticAnalysis{
     static private String VOID = "void";
     static String INTEGER = "Integer";
@@ -64,7 +61,7 @@ class SemanticAnalysis{
             }
         }catch (Exception e) {
             System.err.println("[SEMANTIC ERROR]: " + e.getMessage());
-            // e.printStackTrace();
+            //e.printStackTrace();
             exceptionCounter++;
             if (exceptionCounter >= MAX_EXCEPTIONS) {
                 System.err.println("[PROGRAM TERMINATING] THERE ARE MORE THAN " + MAX_EXCEPTIONS + " SEMANTIC ERRORS.");
@@ -204,8 +201,13 @@ class SemanticAnalysis{
     }
 
     private String processStmtAssign(Node node, HashMap<String, VarDescriptor.INITIALIZATION_TYPE> changedToTrue) throws IOException{
-
-        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
+        VarDescriptor varDescriptor;
+        if(node.jjtGetChild(0).toString().equals("Array")){
+            varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).jjtGetChild(0).toString())).get(0);
+        }
+        else{
+            varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
+        }
         VarDescriptor.INITIALIZATION_TYPE wasInitializedBefore = varDescriptor.getInitialized();
         processAssign(node);
         if(wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.FALSE) || wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
@@ -219,13 +221,38 @@ class SemanticAnalysis{
     private void processWhile(Node node)throws IOException{
 
         Node condition = node.jjtGetChild(0);
+        VarDescriptor varDescriptor;
 
         if(!getNodeDataType(condition.jjtGetChild(0)).equals("Boolean")){
-            System.out.println("WHILE: NÃO É BOOLEANO");
+            System.out.println("WHILE: Condition is not boolean");
         }
 
         for(int i = 0; i < node.jjtGetChild(1).jjtGetNumChildren(); i++){
-            execute(node.jjtGetChild(1).jjtGetChild(i));
+            if(node.jjtGetChild(1).jjtGetChild(i).toString().equals("Assign")){
+                if(node.jjtGetChild(1).jjtGetChild(i).jjtGetChild(0).toString().equals("Array")){
+                    varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(1).jjtGetChild(i).jjtGetChild(0).jjtGetChild(0).toString())).get(0);
+                }
+                else{
+                    varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(1).jjtGetChild(i).jjtGetChild(0).toString())).get(0);
+                }
+                VarDescriptor.INITIALIZATION_TYPE assignmentStateBeforeWhile = varDescriptor.getInitialized();
+                
+                processAssign(node.jjtGetChild(1).jjtGetChild(i));
+                
+                if(!(assignmentStateBeforeWhile.equals(VarDescriptor.INITIALIZATION_TYPE.TRUE)))
+                    varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.MAYBE);
+            }
+            else if(node.jjtGetChild(1).jjtGetChild(i).toString().equals("IfStatement")){
+                HashSet<String> toInit = processIfStatement(node.jjtGetChild(1).jjtGetChild(i));
+        
+                for(String var:toInit){
+                    varDescriptor = (VarDescriptor) symbolTable.lookup(var).get(0);
+                    varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.MAYBE);
+                }
+            }
+            else{
+                execute(node.jjtGetChild(1).jjtGetChild(i));
+            }
         }
     }
 
@@ -236,6 +263,13 @@ class SemanticAnalysis{
  
         if(node.jjtGetChild(0).toString().equals("This")){
             classDescriptor = (ClassDescriptor) symbolTable.lookup(symbolTable.getClassName()).get(0);
+        }
+        else if(node.jjtGetChild(0).toString().equals("MethodInvocation")){
+            String type= processInvocation(node.jjtGetChild(0));
+            if(type.equals("Integer") || type.equals("boolean")){
+                throw new IOException("Method Invocation: method cannot be invoked for primary types");
+            }
+            classDescriptor = (ClassDescriptor) symbolTable.lookup(type).get(0);
         }
         else{ //io.prinln() ou obj.add();
             id=Utils.parseName(node.jjtGetChild(0).toString());  
