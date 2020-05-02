@@ -22,7 +22,6 @@ public class TraverseAst{
             processProgram(node);
         }
         else if(node.toString().equals("Assign")){
-            //nao queremos assign
         }
         else if(node.toString().equals("VarDeclaration")){
             processVarDeclaration(node);
@@ -69,10 +68,23 @@ public class TraverseAst{
 
     private void processVarDeclaration(Node node) {
 
+        String varType = Utils.parseName(node.jjtGetChild(0).toString());
+
+        if(!varType.equals("int") && !varType.equals("boolean") && !varType.equals("Boolean") && !varType.equals("array") && !varType.equals(this.symbolTable.getClassName()) ){
+            
+            try{
+            ClassDescriptor classDesc = (ClassDescriptor) this.symbolTable.lookup(varType).get(0);
+            }
+            catch(Exception e){
+                System.out.println("Type " + varType + " not recognized.");
+            }
+
+        }
+
         String identifier = Utils.parseName(node.jjtGetChild(1).toString());
         VarDescriptor var_descriptor = new VarDescriptor(Utils.parseName(node.jjtGetChild(0).toString()), identifier);
-
         symbolTable.add(identifier, var_descriptor);
+       
     }
 
     private void processNonStaticImport(Node node){
@@ -154,6 +166,19 @@ public class TraverseAst{
         for(int i=0; i<paramList.jjtGetNumChildren(); i++){
 
             currentNode= paramList.jjtGetChild(i); //VarDeclaration
+
+            String varType = Utils.parseName(currentNode.jjtGetChild(0).toString());
+            if(!varType.equals("int") && !varType.equals("boolean") && !varType.equals("Boolean") && !varType.equals("array") && !varType.equals(this.symbolTable.getClassName()) ){
+
+                try{
+                ClassDescriptor classDesc = (ClassDescriptor) this.symbolTable.lookup(varType).get(0);
+                }
+                catch(Exception e){
+                    System.out.println("Type " + varType + " not recognized. Method arg");
+                }
+
+            }
+
             VarDescriptor varDescriptor =new VarDescriptor(Utils.parseName(currentNode.jjtGetChild(0).toString()), Utils.parseName(currentNode.jjtGetChild(1).toString()), localIndex++);
             params.add(varDescriptor);
 
