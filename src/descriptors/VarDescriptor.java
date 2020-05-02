@@ -3,17 +3,18 @@ package descriptors;
 public class VarDescriptor extends Descriptor {
 
     protected String dataType;
-    protected Boolean isInitialized;
+    protected INITIALIZATION_TYPE isInitialized;
     protected String currValue;
     protected Scope scope;
     protected int localIndex;
 
+    
     public VarDescriptor(String dataType, String identifier){
         this.type=Type.VAR;
 
         this.identifier = identifier;
         this.dataType = getParsedDataType(dataType);
-        this.isInitialized = false;
+        this.isInitialized = INITIALIZATION_TYPE.FALSE;
         this.scope = null;
         this.localIndex = -1;
     }
@@ -35,15 +36,15 @@ public class VarDescriptor extends Descriptor {
         this.identifier = value;
     }
 
-    public void setInitialized(){
-        this.isInitialized = true;
+    public void setInitialized(INITIALIZATION_TYPE isInitialized){
+        this.isInitialized = isInitialized;
     }
 
     public void setCurrValue(String value){
         this.currValue = value;
     }
 
-    public Boolean getInitialized(){
+    public INITIALIZATION_TYPE getInitialized(){
        return this.isInitialized;
     }
 
@@ -61,4 +62,10 @@ public class VarDescriptor extends Descriptor {
 
     public int getLocalIndex() { return this.localIndex; }
     public void setLocalIndex(int localIndex) { this.localIndex = localIndex; }
+
+    public static enum INITIALIZATION_TYPE{
+        TRUE,
+        FALSE,
+        MAYBE
+    }
 }
