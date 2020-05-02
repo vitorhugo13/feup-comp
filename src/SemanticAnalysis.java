@@ -1,5 +1,8 @@
 import java.util.ArrayList;
 import java.util.HashSet;
+
+
+
 import java.util.HashMap;
 
 import descriptors.*;
@@ -46,6 +49,9 @@ class SemanticAnalysis{
             else if (node.toString().equals("Assign")) {
                 processAssign(node);
             }
+            else if(node.toString().equals("Length")){
+                processLength(node);
+            }
             else if(node.toString().equals("IfStatement")){
                 HashSet<String> toInit = processIfStatement(node);
             
@@ -73,6 +79,13 @@ class SemanticAnalysis{
         }
     }
 
+    private void processLength(Node node) throws IOException{
+        String type = getNodeDataType(node.jjtGetChild(0));
+
+        if(!type.equals("Array") && !type.equals("stringarray")){
+            throw new IOException("It is not possible to invoke length of a non array object");
+        }
+    }
     private Boolean processReturnType(Node node) throws IOException{
 
         String expected = Utils.parseName(node.jjtGetChild(0).toString());
@@ -80,6 +93,9 @@ class SemanticAnalysis{
 
         if(expected.equals("int")){
             expected = "Integer";
+        }
+        else if(expected.equals("array")){
+            expected = "Array";
         }
 
         Node body = node.jjtGetChild(2);
@@ -235,23 +251,33 @@ class SemanticAnalysis{
         
         String returnValue;
         try{
-            returnValue = compareArgsAndParams(node, classDescriptor); 
-            if(!returnValue.equals("")){
+            returnValue = compareArgsAndParams(node, classDescriptor);
+            if(!returnValue.equals("error")){
                 return returnValue; //Method exists in the class
             }
+
         }
         catch(Exception e){ //Method does not exist in first class but can still exist in parent
         }
        
         if(node.jjtGetChild(0).toString().equals("This") || classDescriptor.getIdentifier().equals(this.symbolTable.getClassName())){
-            returnValue = compareArgsAndParams(node, classDescriptor.getParentClass());
-            if(!returnValue.equals("")){
-                return returnValue; //Method exists in parent class
+
+            if(classDescriptor.getParentClass() != null){
+                returnValue = compareArgsAndParams(node, classDescriptor.getParentClass());
+
+
+                if(!returnValue.equals("error")){
+                    return returnValue; //Method exists in parent class
+                }
+                else{
+                    throw new IOException("No signature of method " + methodName + " matches list of arguments given");
+                }
             }
             else{
                 throw new IOException("No signature of method " + methodName + " matches list of arguments given");
             }
-        } else{
+        } 
+        else{
             throw new IOException("No signature of method " + methodName + " matches list of arguments given");
         }
 
@@ -260,13 +286,11 @@ class SemanticAnalysis{
     private String compareArgsAndParams(Node node, ClassDescriptor classDescriptor) throws IOException {
         String methodName = Utils.parseName(node.jjtGetChild(1).toString());
         ArrayList<MethodDescriptor> methodDescriptors = classDescriptor.getMethodsMatchingId(methodName);
-        //dado que pode ocorrer method overload temos de percorrer a lista de descritores returnados
-        //e saber se existe o certo, e se sim processar os args e o return type
         int numArgs = node.jjtGetChild(2).jjtGetNumChildren();
         Boolean correct = true;
 
         for(int method = 0; method < methodDescriptors.size(); method++){
-            correct=true;
+            correct = true;
             MethodDescriptor md = methodDescriptors.get(method);
             if(md.getParameters().size() == numArgs){
                 for(int param = 0; param < md.getParameters().size(); param++){
@@ -275,7 +299,7 @@ class SemanticAnalysis{
 
                     if(!typeArg.equals(expectedType)){
                         correct = false;
-                        // throw new IOException(Utils.parseName(node.jjtGetChild(2).jjtGetChild(param).toString())+ " does not match type " + expectedType + " in " + methodName);
+                        //throw new IOException(Utils.parseName(node.jjtGetChild(2).jjtGetChild(param).toString())+ " does not match type " + expectedType + " in " + methodName);
                     }
                 }
 
@@ -285,7 +309,9 @@ class SemanticAnalysis{
 
             }
         }
-        return "";
+
+        //TODO: antes estava aqui ""
+        return "error";
     }
 
 
@@ -359,8 +385,12 @@ class SemanticAnalysis{
         else if(node.toString().equals("Add") || node.toString().equals("Sub") || node.toString().equals("Div") || node.toString().equals("Mul")){
             for(int i = 0; i < node.jjtGetNumChildren(); i++){
                 if(!getNodeDataType(node.jjtGetChild(i)).equals(INTEGER))
-                    throw new IOException("Arithmetic operation must be done with Integer values: variable " + Utils.parseName(node.jjtGetChild(i).toString()) + " is not an Integer");
+                    throw new IOException("Arithmetic operation must be done with Integer values: " + Utils.parseName(node.jjtGetChild(i).toString()) + " is not an Integer");
             }
+            return "Integer";
+        }
+        else if(node.toString().equals("Length")){
+            processLength(node);
             return "Integer";
         }
         else if(node.toString().equals("Less")){
