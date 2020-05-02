@@ -1,5 +1,6 @@
 options {
   LOOKAHEAD = 1;
+  NODE_SCOPE_HOOK = true;
 }
 
 
@@ -8,6 +9,14 @@ PARSER_BEGIN(Parser)
 public class Parser {
 
     static int errors = 0;
+
+    void jjtreeOpenNodeScope(Node n) {
+        ((SimpleNode) n).setCoords(new SourceCoords(getToken(1)));
+    }
+
+    void jjtreeCloseNodeScope(Node n) {
+
+    }
 
 }
 

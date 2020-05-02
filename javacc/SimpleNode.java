@@ -8,6 +8,12 @@ class SimpleNode implements Node {
   protected int id;
   protected Object value;
   protected Parser parser;
+  
+
+  private SourceCoords coords;
+  public void setCoords(SourceCoords coords) { this.coords = coords; }
+  public SourceCoords getCoords() { return this.coords; }
+
 
   public SimpleNode(int i) {
     id = i;
