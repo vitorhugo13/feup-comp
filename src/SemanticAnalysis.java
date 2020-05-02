@@ -68,7 +68,7 @@ class SemanticAnalysis{
             }
         }catch (Exception e) {
             System.err.println("[SEMANTIC ERROR]: " + e.getMessage());
-            // e.printStackTrace();
+            e.printStackTrace();
             exceptionCounter++;
             if (exceptionCounter >= MAX_EXCEPTIONS) {
                 System.err.println("[PROGRAM TERMINATING] THERE ARE MORE THAN " + MAX_EXCEPTIONS + " SEMANTIC ERRORS.");
@@ -221,13 +221,29 @@ class SemanticAnalysis{
     private void processWhile(Node node)throws IOException{
 
         Node condition = node.jjtGetChild(0);
+        VarDescriptor varDescriptor;
 
         if(!getNodeDataType(condition.jjtGetChild(0)).equals("Boolean")){
-            System.out.println("WHILE: NÃO É BOOLEANO");
+            System.out.println("WHILE: Condition is not boolean");
         }
 
         for(int i = 0; i < node.jjtGetChild(1).jjtGetNumChildren(); i++){
-            execute(node.jjtGetChild(1).jjtGetChild(i));
+            if(node.jjtGetChild(1).jjtGetChild(i).toString().equals("Assign")){
+                processAssign(node.jjtGetChild(1).jjtGetChild(i));
+                varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(1).jjtGetChild(i).jjtGetChild(0).toString())).get(0);
+                varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.MAYBE);
+            }
+            else if(node.jjtGetChild(1).jjtGetChild(i).toString().equals("IfStatement")){
+                HashSet<String> toInit = processIfStatement(node.jjtGetChild(1).jjtGetChild(i));
+        
+                for(String var:toInit){
+                    varDescriptor = (VarDescriptor) symbolTable.lookup(var).get(0);
+                    varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.MAYBE);
+                }
+            }
+            else{
+                execute(node.jjtGetChild(1).jjtGetChild(i));
+            }
         }
     }
 
