@@ -47,7 +47,6 @@ public class Main {
 
         symbolTable.reset();
 
-        // TODO: get the name of the file from the args
         if (args.length == 2 && args[1].equals("-c")) {
             Generator codeGenerator = new Generator(symbolTable);
             String filename = args[0].substring(args[0].lastIndexOf("/") + 1, args[0].lastIndexOf("."));
