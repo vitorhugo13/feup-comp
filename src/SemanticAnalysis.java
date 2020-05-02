@@ -1,12 +1,10 @@
 import java.util.ArrayList;
 import java.util.HashSet;
-
 import java.util.HashMap;
 
-import descriptors.*;
 import java.io.IOException;
 
-
+import descriptors.*;
 
 //TODO: dar print as linhas de erro 
 //TODO: signatures: return several signatures in error message
@@ -77,7 +75,9 @@ class SemanticAnalysis{
         String type = getNodeDataType(node.jjtGetChild(0));
 
         if(!type.equals("Array") && !type.equals("stringarray")){
-            throw new IOException("It is not possible to invoke length of a non array object");
+
+            int line = ((SimpleNode) node).getCoords().getLine();
+            throw new IOException(String.format("It is not possible to invoke length of a non array object %d", line));
         }
     }
     private Boolean processReturnType(Node node) throws IOException{
