@@ -10,7 +10,6 @@ import java.io.IOException;
 
 
 
-//TODO: invoke.add(1,2).printIsto() -> joana
 //TODO: dar print as linhas de erro 
 //TODO: signatures: return several signatures in error message
 //TODO: nas signatures, se uma variavel nao existir, a excepção é que nao ha signature para essa chamada, inves de dizer que nao encontra a variavel
