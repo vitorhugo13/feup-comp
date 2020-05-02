@@ -1,8 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashSet;
 
-
-
 import java.util.HashMap;
 
 import descriptors.*;
@@ -203,8 +201,13 @@ class SemanticAnalysis{
     }
 
     private String processStmtAssign(Node node, HashMap<String, VarDescriptor.INITIALIZATION_TYPE> changedToTrue) throws IOException{
-
-        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
+        VarDescriptor varDescriptor;
+        if(node.jjtGetChild(0).toString().equals("Array")){
+            varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).jjtGetChild(0).toString())).get(0);
+        }
+        else{
+            varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
+        }
         VarDescriptor.INITIALIZATION_TYPE wasInitializedBefore = varDescriptor.getInitialized();
         processAssign(node);
         if(wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.FALSE) || wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
@@ -226,9 +229,18 @@ class SemanticAnalysis{
 
         for(int i = 0; i < node.jjtGetChild(1).jjtGetNumChildren(); i++){
             if(node.jjtGetChild(1).jjtGetChild(i).toString().equals("Assign")){
+                if(node.jjtGetChild(1).jjtGetChild(i).jjtGetChild(0).toString().equals("Array")){
+                    varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(1).jjtGetChild(i).jjtGetChild(0).jjtGetChild(0).toString())).get(0);
+                }
+                else{
+                    varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(1).jjtGetChild(i).jjtGetChild(0).toString())).get(0);
+                }
+                VarDescriptor.INITIALIZATION_TYPE assignmentStateBeforeWhile = varDescriptor.getInitialized();
+                
                 processAssign(node.jjtGetChild(1).jjtGetChild(i));
-                varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(1).jjtGetChild(i).jjtGetChild(0).toString())).get(0);
-                varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.MAYBE);
+                
+                if(!(assignmentStateBeforeWhile.equals(VarDescriptor.INITIALIZATION_TYPE.TRUE)))
+                    varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.MAYBE);
             }
             else if(node.jjtGetChild(1).jjtGetChild(i).toString().equals("IfStatement")){
                 HashSet<String> toInit = processIfStatement(node.jjtGetChild(1).jjtGetChild(i));
