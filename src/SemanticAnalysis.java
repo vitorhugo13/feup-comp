@@ -10,7 +10,6 @@ import java.io.IOException;
 
 
 
-//TODO: invoke.add(1,2).printIsto() -> joana
 //TODO: dar print as linhas de erro 
 //TODO: signatures: return several signatures in error message
 //TODO: nas signatures, se uma variavel nao existir, a excepção é que nao ha signature para essa chamada, inves de dizer que nao encontra a variavel
@@ -252,6 +251,13 @@ class SemanticAnalysis{
  
         if(node.jjtGetChild(0).toString().equals("This")){
             classDescriptor = (ClassDescriptor) symbolTable.lookup(symbolTable.getClassName()).get(0);
+        }
+        else if(node.jjtGetChild(0).toString().equals("MethodInvocation")){
+            String type= processInvocation(node.jjtGetChild(0));
+            if(type.equals("Integer") || type.equals("boolean")){
+                throw new IOException("Method Invocation: method cannot be invoked for primary types");
+            }
+            classDescriptor = (ClassDescriptor) symbolTable.lookup(type).get(0);
         }
         else{ //io.prinln() ou obj.add();
             id=Utils.parseName(node.jjtGetChild(0).toString());  
