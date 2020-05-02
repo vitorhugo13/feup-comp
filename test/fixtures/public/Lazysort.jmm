@@ -11,19 +11,16 @@ class Lazysort extends Quicksort {
         Lazysort q;
 
         L = new int[10];
-        L[2] = 1;
-        i = 0;
 
-        /*
+        i = 0;
         while (i < L.length) {
             L[i] = L.length - i;
             i = i + 1;
         }
-        */
 
-        q = new Quicksort();
+        q = new Lazysort();
 
-        q.quicksort(L,1,2);
+        q.quicksort(L);
         d = q.printL(L);
     }
 

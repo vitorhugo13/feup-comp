@@ -26,9 +26,9 @@ class SemanticAnalysis{
         this.exceptionCounter = 0;
     }
 
-    public void execute(Node node){
+    public void execute(Node node) throws IOException{
         
-        try {
+       // try {
             if (node.toString().equals("StaticImport") || node.toString().equals("NonStaticImport")) { 
             } 
             else if (Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])") || node.toString().equals("Method[main]") || (!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])"))) {   
@@ -61,7 +61,7 @@ class SemanticAnalysis{
             else {
                 processChildren(node);
             }
-        }catch (Exception e) {
+       /* }catch (Exception e) {
             System.err.println("[SEMANTIC ERROR]: " + e.getMessage());
             //e.printStackTrace();
             exceptionCounter++;
@@ -70,7 +70,7 @@ class SemanticAnalysis{
                 System.exit(0);
             }
             // throw new ParseException("Parse exception");
-        }
+        }*/
     }
 
     private void processLength(Node node) throws IOException{
@@ -380,6 +380,7 @@ class SemanticAnalysis{
 
     private void processObject(Node node) throws IOException {
 
+      
         //TODO: o objeto que está a ser criado tem de ser do mesmo tipo da classe onde está inserido, ou da class a que faz extends ou de uma class qql dos imports
         String obj = Utils.parseName(node.jjtGetChild(1).jjtGetChild(0).toString());
         String id = Utils.parseName(node.jjtGetChild(0).toString());
@@ -390,6 +391,7 @@ class SemanticAnalysis{
         }
 
         varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.TRUE);
+
     }
 
     private void processInitializeArray(Node node) throws IOException{
@@ -559,7 +561,7 @@ class SemanticAnalysis{
 
     }
 
-    private void processProgram(Node node){
+    private void processProgram(Node node) throws IOException{
         symbolTable.enterScopeForAnalysis(); // Enter Import Scope
         for (int i = 0; i < node.jjtGetNumChildren()-1; i++) { // Imports
             execute(node.jjtGetChild(i));
@@ -582,7 +584,7 @@ class SemanticAnalysis{
         symbolTable.exitScopeForAnalysis();
     }
 
-    private void processChildren(Node node){
+    private void processChildren(Node node) throws IOException{
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             execute(node.jjtGetChild(i));
         }
