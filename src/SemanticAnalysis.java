@@ -271,6 +271,17 @@ class SemanticAnalysis{
             }
             classDescriptor = (ClassDescriptor) symbolTable.lookup(type).get(0);
         }
+        else if(node.jjtGetChild(0).toString().equals("NewObject")){
+            
+            System.out.println("ISTO: " + node.jjtGetChild(0).toString());
+            String type = processNewObjectMethodInvoke(node.jjtGetChild(0));
+
+            if(type.equals("Integer") || type.equals("boolean")){
+                throw new IOException("Method Invocation: method cannot be invoked for primary types");
+            }
+            classDescriptor = (ClassDescriptor) symbolTable.lookup(type).get(0);
+
+        }
         else{ //io.prinln() ou obj.add();
             id=Utils.parseName(node.jjtGetChild(0).toString());  
             Descriptor descriptor =symbolTable.lookup(id).get(0);
@@ -380,8 +391,6 @@ class SemanticAnalysis{
 
     private void processObject(Node node) throws IOException {
 
-      
-        //TODO: o objeto que está a ser criado tem de ser do mesmo tipo da classe onde está inserido, ou da class a que faz extends ou de uma class qql dos imports
         String obj = Utils.parseName(node.jjtGetChild(1).jjtGetChild(0).toString());
         String id = Utils.parseName(node.jjtGetChild(0).toString());
 
@@ -393,6 +402,17 @@ class SemanticAnalysis{
         varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.TRUE);
 
     }
+
+    private String processNewObjectMethodInvoke(Node node) throws IOException {
+
+        String id = Utils.parseName(node.jjtGetChild(0).toString());
+        ClassDescriptor classDescriptor = (ClassDescriptor) symbolTable.lookup(id).get(0);
+
+        return classDescriptor.getIdentifier();
+    
+    }
+
+
 
     private void processInitializeArray(Node node) throws IOException{
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
