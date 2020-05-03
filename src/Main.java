@@ -66,17 +66,10 @@ public class Main {
             semanticAnalysis.execute(root);
         }
         catch (Exception e) {
+
             System.err.println("[SEMANTIC ERROR]: " + e.getMessage());
             throw new ParseException("[SEMANTIC ERROR]: ");
-            //e.printStackTrace();
-            /*
-            exceptionCounter++;
-            if (exceptionCounter >= MAX_EXCEPTIONS) {
-                System.err.println("[PROGRAM TERMINATING] THERE ARE MORE THAN " + MAX_EXCEPTIONS + " SEMANTIC ERRORS.");
-                System.exit(0);
-            }
-            */
-            // throw new ParseException("Parse exception");
+   
         }
         
         System.out.println("\nFINISHED SEMANTIC ANALYSIS\n");
