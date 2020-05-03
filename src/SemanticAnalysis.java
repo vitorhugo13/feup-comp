@@ -16,12 +16,14 @@ class SemanticAnalysis{
     static private int MAX_EXCEPTIONS = 10;
     private SymbolTable symbolTable;
     private int exceptionCounter;
+    private boolean isStatic;
 
 
 
     public SemanticAnalysis(SymbolTable symbolTable){
         this.symbolTable = symbolTable;
         this.exceptionCounter = 0;
+        this.isStatic = false;
     }
 
     public void execute(Node node) throws IOException{
@@ -29,7 +31,13 @@ class SemanticAnalysis{
        // try {
             if (node.toString().equals("StaticImport") || node.toString().equals("NonStaticImport")) { 
             } 
-            else if (Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])") || node.toString().equals("Method[main]") || (!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])"))) {   
+            else if(node.toString().equals("Method[main]")){
+                this.isStatic = true;
+                processNewScope(node);
+                this.isStatic = false;
+
+            }
+            else if (Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])") || (!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])"))) {   
                 processNewScope(node);
             }
             else if(node.toString().equals("MethodInvocation")){
@@ -262,6 +270,9 @@ class SemanticAnalysis{
         String methodName = Utils.parseName(node.jjtGetChild(1).toString());
  
         if(node.jjtGetChild(0).toString().equals("This")){
+            if(isStatic){
+                throw new IOException("Cannot use 'this' in a static method.");
+            }
             classDescriptor = (ClassDescriptor) symbolTable.lookup(symbolTable.getClassName()).get(0);
         }
         else if(node.jjtGetChild(0).toString().equals("MethodInvocation")){
@@ -332,7 +343,10 @@ class SemanticAnalysis{
         }
         catch(Exception e){ //Method does not exist in first class but can still exist in parent
         }
-       
+
+        if(isStatic && node.jjtGetChild(0).toString().equals("This")){
+            throw new IOException("Cannot use 'this' in a static method.");
+        }
         if(node.jjtGetChild(0).toString().equals("This") || classDescriptor.getIdentifier().equals(this.symbolTable.getClassName())){
 
             if(classDescriptor.getParentClass() != null){
@@ -520,6 +534,9 @@ class SemanticAnalysis{
             return processArrayRight(node);
         }
         else if(node.toString().equals("This")){
+            if(isStatic){
+                throw new IOException("Cannot use 'this' in a static method.");
+            }
             return this.symbolTable.getClassName();
         }
         else if(node.toString().equals("MethodInvocation")){
