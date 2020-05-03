@@ -358,7 +358,7 @@ class SemanticAnalysis{
                     int line = ((SimpleNode) node).getCoords().getLine();
 
                     for(int i = 0; i < node.jjtGetChild(2).jjtGetNumChildren(); i++){
-                        if(!Utils.getFirstPartOfName(node.jjtGetChild(2).jjtGetChild(i).toString()).equals("Integer")){
+                        if(!Utils.getFirstPartOfName(node.jjtGetChild(2).jjtGetChild(i).toString()).equals("Integer") && !Utils.getFirstPartOfName(node.jjtGetChild(2).jjtGetChild(i).toString()).equals("Boolean")){
                             String variableID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString());
                             VarDescriptor vd = (VarDescriptor) symbolTable.lookup(variableID).get(0);
                             if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
@@ -401,7 +401,7 @@ class SemanticAnalysis{
 
             for(int i = 0; i < node.jjtGetChild(2).jjtGetNumChildren(); i++){
 
-                if(!Utils.getFirstPartOfName(node.jjtGetChild(2).jjtGetChild(i).toString()).equals("Integer")){
+                if(!Utils.getFirstPartOfName(node.jjtGetChild(2).jjtGetChild(i).toString()).equals("Integer")&& !Utils.getFirstPartOfName(node.jjtGetChild(2).jjtGetChild(i).toString()).equals("Boolean")){
                     String variableID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString());
                     VarDescriptor vd = (VarDescriptor) symbolTable.lookup(variableID).get(0);
                     if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
