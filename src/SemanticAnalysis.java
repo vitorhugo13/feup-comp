@@ -584,7 +584,7 @@ class SemanticAnalysis{
             for(int i = 0; i < node.jjtGetNumChildren(); i++){
                 if(!getNodeDataType(node.jjtGetChild(i)).equals(INTEGER)){
                     int line = ((SimpleNode) node).getCoords().getLine();
-                    throw new IOException( "Line " + line + ": Arithmetic operation must be done with Integer values: " + Utils.parseName(node.jjtGetChild(i).toString()) + " is not an Integer");
+                    throw new IOException( "Line " + line + ": Arithmetic operation must be done with Integer values ");
                 }
             }
             return "Integer";
