@@ -205,10 +205,6 @@ class Generator {
                     signature += parseType(var.getDataType());
                 }
 
-                System.out.println("SIGNATURE : " + signature);
-                System.out.println("ARGLIST : " + argList);
-                System.out.println();
-
                 if (argList.equals(signature))
                     break;
             }
@@ -409,7 +405,6 @@ class Generator {
         execute(node.jjtGetChild(1), out);
 
         type = type.substring(1);
-        System.out.println("ARRAY : " +  identifier + " => " + type);
 
         out.println(String.format("    %saload", type.equals("I") || type.equals("Z") ? "i" : "a"));
         return type;
