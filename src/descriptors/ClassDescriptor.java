@@ -74,7 +74,6 @@ public class ClassDescriptor extends Descriptor {
         throw new IOException("No Method in class " + this.identifier + " matches method named " + id);
     }
 
-    //TODO: dar throw de um warning/exception se ocorrer overload
     public void addMethod(MethodDescriptor method){
 
         if(possibleToOverload(method))

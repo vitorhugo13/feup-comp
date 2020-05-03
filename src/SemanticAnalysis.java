@@ -289,7 +289,6 @@ class SemanticAnalysis{
 
             id = Utils.parseName(node.jjtGetChild(0).toString());  
             Descriptor descriptor2 =symbolTable.lookup(id).get(0);
-            //String idType = getNodeDataType(node.jjtGetChild(0)); -> dá erro no teste do david
 
             String idType = "";
             if(!descriptor2.getType().equals(Descriptor.Type.CLASS)){
@@ -329,6 +328,7 @@ class SemanticAnalysis{
         }
         
         String returnValue;
+
         try{
             returnValue = compareArgsAndParams(node, classDescriptor);
             if(!returnValue.equals("error")){
@@ -343,6 +343,7 @@ class SemanticAnalysis{
             int line = ((SimpleNode) node).getCoords().getLine();
             throw new IOException( "Line " + line + ": Cannot use 'this' in a static method.");
         }
+
         if(node.jjtGetChild(0).toString().equals("This") || classDescriptor.getIdentifier().equals(this.symbolTable.getClassName())){
 
             if(classDescriptor.getParentClass() != null){
@@ -353,23 +354,62 @@ class SemanticAnalysis{
                     return returnValue; //Method exists in parent class
                 }
                 else{
+
                     int line = ((SimpleNode) node).getCoords().getLine();
-                    throw new IOException( "Line " + line + ": No signature of method " + methodName + " matches list of arguments given");
+
+                    for(int i = 0; i < node.jjtGetChild(2).jjtGetNumChildren(); i++){
+                        String variableID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString());
+                        VarDescriptor vd = (VarDescriptor) symbolTable.lookup(variableID).get(0);
+                        if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
+                            throw new IOException("Line " + line + ": Variable " + variableID + " not initialized");
+                        }
+                        else if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
+                            throw new IOException("[WARNING]: Line " + line + ": Variable " + variableID + " may not be initialized");
+                        }
+                    }
+                    throw new IOException( "Line " + line + ": No signature of method " + methodName + " matches list of arguments given.");
                 }
             }
             else{
+
                 int line = ((SimpleNode) node).getCoords().getLine();
-                throw new IOException( "Line " + line + ": No signature of method " + methodName + " matches list of arguments given");
+
+                for(int i = 0; i < node.jjtGetChild(2).jjtGetNumChildren(); i++){
+                    String variableID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString());
+                    VarDescriptor vd = (VarDescriptor) symbolTable.lookup(variableID).get(0);
+                    if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
+                        throw new IOException("Line " + line + ": Variable " + variableID + " not initialized");
+                    }
+                    else if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
+                        throw new IOException("[WARNING]: Line " + line + ": Variable " + variableID + " may not be initialized");
+                    }
+                }
+
+                throw new IOException( "Line " + line + ": No signature of method " + methodName + " matches list of arguments given.");
             }
         } 
         else{
+
             int line = ((SimpleNode) node).getCoords().getLine();
-            throw new IOException( "Line " + line + ": No signature of method " + methodName + " matches list of arguments given");
+
+            for(int i = 0; i < node.jjtGetChild(2).jjtGetNumChildren(); i++){
+                String variableID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString());
+                VarDescriptor vd = (VarDescriptor) symbolTable.lookup(variableID).get(0);
+                if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
+                    throw new IOException("Line " + line + ": Variable " + variableID + " not initialized");
+                }
+                else if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
+                    throw new IOException("[WARNING]: Line " + line + ": Variable " + variableID + " may not be initialized");
+                }
+            }
+
+            throw new IOException( "Line " + line + ": No signature of method " + methodName + " matches list of arguments given.");
         }
 
     }
 
     private String compareArgsAndParams(Node node, ClassDescriptor classDescriptor) throws IOException {
+        
         String methodName = Utils.parseName(node.jjtGetChild(1).toString());
         ArrayList<MethodDescriptor> methodDescriptors = classDescriptor.getMethodsMatchingId(methodName);
         int numArgs = node.jjtGetChild(2).jjtGetNumChildren();
@@ -380,23 +420,21 @@ class SemanticAnalysis{
             MethodDescriptor md = methodDescriptors.get(method);
             if(md.getParameters().size() == numArgs){
                 for(int param = 0; param < md.getParameters().size(); param++){
+                    
                     String typeArg = getNodeDataType(node.jjtGetChild(2).jjtGetChild(param)); //tipo de argumento passado
                     String expectedType = md.getParameters().get(param).getDataType(); //tipo de argumento esperado
 
                     if(!typeArg.equals(expectedType)){
                         correct = false;
-                        //throw new IOException(Utils.parseName(node.jjtGetChild(2).jjtGetChild(param).toString())+ " does not match type " + expectedType + " in " + methodName);
                     }
                 }
 
                 if(correct){
                     return md.getReturnType();
                 }
-
             }
         }
 
-        //TODO: antes estava aqui ""
         return "error";
     }
 
