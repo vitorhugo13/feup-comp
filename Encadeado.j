@@ -12,16 +12,22 @@
     .limit stack 99
     .limit locals 99
 
-    new Encadeado
-    dup
-    invokespecial Encadeado/<init>()V
+    iconst_3
+    newarray int
     astore_1
 
+    iconst_3
+    newarray int
+    astore_2
 
     aload_1
-    iload_-1
-    invokevirtual Encadeado/add(I)I
-    istore_2
+    iconst_0
+    iaload
+    aload_2
+    bipush 9
+    iaload
+    iadd
+    istore_3
 
     return
 .end method

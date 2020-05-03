@@ -367,7 +367,9 @@ class SemanticAnalysis{
                             throw new IOException("[WARNING]: Line " + line + ": Variable " + variableID + " may not be initialized");
                         }
                     }
-                    throw new IOException( "Line " + line + ": No signature of method " + methodName + " matches list of arguments given.");
+
+                    String signatures = getSignatures(classDescriptor);
+                    throw new IOException( "Line " + line + ": No signature of method " + methodName + " matches list of arguments given." + signatures + "\n");
                 }
             }
             else{
@@ -385,7 +387,8 @@ class SemanticAnalysis{
                     }
                 }
 
-                throw new IOException( "Line " + line + ": No signature of method " + methodName + " matches list of arguments given.");
+                String signatures = getSignatures(classDescriptor);
+                throw new IOException( "Line " + line + ": No signature of method " + methodName + " matches list of arguments given." + signatures + "\n");
             }
         } 
         else{
@@ -403,9 +406,40 @@ class SemanticAnalysis{
                 }
             }
 
-            throw new IOException( "Line " + line + ": No signature of method " + methodName + " matches list of arguments given.");
+            String signatures = getSignatures(classDescriptor);
+            throw new IOException( "Line " + line + ": No signature of method " + methodName + " matches list of arguments given." + signatures + "\n");
         }
 
+    }
+
+    private String getSignatures(ClassDescriptor classDescriptor){
+        String signaturesSupported = "";
+        int numberSupported = classDescriptor.getMethods().size();
+
+        if(numberSupported > 0){
+            signaturesSupported = " \n\t\t  Methods supported for " + classDescriptor.getIdentifier() + ":";
+
+            for(int k = 0; k < numberSupported; k++){
+
+                String returnType = classDescriptor.getMethods().get(k).getReturnType();
+                String methName = classDescriptor.getMethods().get(k).getIdentifier();
+
+                signaturesSupported = signaturesSupported + "\n\t\t\t " + returnType + " " + methName +"(";
+
+                for(int l = 0; l < classDescriptor.getMethods().get(k).getParameters().size(); l++){
+                    if(l != 0 )
+                        signaturesSupported = signaturesSupported + ", " + classDescriptor.getMethods().get(k).getParameters().get(l).getDataType();
+                    else
+                        signaturesSupported = signaturesSupported + classDescriptor.getMethods().get(k).getParameters().get(l).getDataType();
+                }
+                signaturesSupported = signaturesSupported + ")";
+            }
+        }
+        else{
+            signaturesSupported = " \n\t    t No methods supported for " + classDescriptor.getIdentifier() + ".";
+        }
+
+        return signaturesSupported;
     }
 
     private String compareArgsAndParams(Node node, ClassDescriptor classDescriptor) throws IOException {
