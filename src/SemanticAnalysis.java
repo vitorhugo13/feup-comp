@@ -265,32 +265,60 @@ class SemanticAnalysis{
             classDescriptor = (ClassDescriptor) symbolTable.lookup(symbolTable.getClassName()).get(0);
         }
         else if(node.jjtGetChild(0).toString().equals("MethodInvocation")){
+
             String type= processInvocation(node.jjtGetChild(0));
             if(type.equals("Integer") || type.equals("boolean")){
-                throw new IOException("Method Invocation: method cannot be invoked for primary types");
+                throw new IOException("Method Invocation: method cannot be invoked for primitive types");
             }
             classDescriptor = (ClassDescriptor) symbolTable.lookup(type).get(0);
+
         }
         else if(node.jjtGetChild(0).toString().equals("NewObject")){
-            
+
             System.out.println("ISTO: " + node.jjtGetChild(0).toString());
             String type = processNewObjectMethodInvoke(node.jjtGetChild(0));
 
             if(type.equals("Integer") || type.equals("boolean")){
-                throw new IOException("Method Invocation: method cannot be invoked for primary types");
+                throw new IOException("Method Invocation: method cannot be invoked for primitive types");
             }
             classDescriptor = (ClassDescriptor) symbolTable.lookup(type).get(0);
 
         }
-        else{ //io.prinln() ou obj.add();
-            id=Utils.parseName(node.jjtGetChild(0).toString());  
-            Descriptor descriptor =symbolTable.lookup(id).get(0);
-            if(descriptor.getType().equals(Descriptor.Type.CLASS)){
-                classDescriptor = (ClassDescriptor) descriptor;
+        else{ //io.prinln() ou obj.add(); VITORHUGO
+
+            id = Utils.parseName(node.jjtGetChild(0).toString());  
+            Descriptor descriptor2 =symbolTable.lookup(id).get(0);
+            //String idType = getNodeDataType(node.jjtGetChild(0)); -> dá erro no teste do david
+
+            String idType = "";
+            if(!descriptor2.getType().equals(Descriptor.Type.CLASS)){
+                idType = ((VarDescriptor) descriptor2).getDataType();
+            }
+            
+
+            if(!idType.equals("Integer") && !idType.equals("Boolean") && !idType.equals("boolean")){
+
+                Descriptor descriptor =symbolTable.lookup(id).get(0);
+                if(descriptor.getType().equals(Descriptor.Type.CLASS)){
+                    classDescriptor = (ClassDescriptor) descriptor;
+                }
+                else{
+                    VarDescriptor.INITIALIZATION_TYPE wasInitializedBefore = ((VarDescriptor) descriptor).getInitialized();
+                    if(wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.FALSE))
+                        throw new IOException("Variable " + ((VarDescriptor) descriptor).getIdentifier() + " was not initialized");
+                    else if(wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
+                        System.out.println("[WARNING]: Variable " + ((VarDescriptor) descriptor).getIdentifier() + " may not have been initialized.");
+            }
+                    
+                    
+                    String className = ((VarDescriptor) descriptor).getDataType();
+
+                    classDescriptor = (ClassDescriptor) symbolTable.lookup(className).get(0);
+                }
+
             }
             else{
-                String className = ((VarDescriptor) descriptor).getDataType();
-                classDescriptor = (ClassDescriptor) symbolTable.lookup(className).get(0);
+                throw new IOException("Method Invocation: method cannot be invoked for primitive types");
             }
         }
         

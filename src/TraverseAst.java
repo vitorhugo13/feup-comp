@@ -175,7 +175,7 @@ public class TraverseAst{
                 ClassDescriptor classDesc = (ClassDescriptor) this.symbolTable.lookup(varType).get(0);
                 }
                 catch(Exception e){
-                    System.out.println("Type " + varType + " not recognized. Method arg");
+                    throw new IOException("Type " + varType + " not recognized.");
                 }
 
             }
