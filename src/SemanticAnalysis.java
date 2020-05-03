@@ -16,20 +16,28 @@ class SemanticAnalysis{
     static private int MAX_EXCEPTIONS = 10;
     private SymbolTable symbolTable;
     private int exceptionCounter;
+    private boolean isStatic;
 
 
 
     public SemanticAnalysis(SymbolTable symbolTable){
         this.symbolTable = symbolTable;
         this.exceptionCounter = 0;
+        this.isStatic = false;
     }
 
-    public void execute(Node node){
+    public void execute(Node node) throws IOException{
         
-        try {
+       // try {
             if (node.toString().equals("StaticImport") || node.toString().equals("NonStaticImport")) { 
             } 
-            else if (Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])") || node.toString().equals("Method[main]") || (!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])"))) {   
+            else if(node.toString().equals("Method[main]")){
+                this.isStatic = true;
+                processNewScope(node);
+                this.isStatic = false;
+
+            }
+            else if (Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])") || (!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])"))) {   
                 processNewScope(node);
             }
             else if(node.toString().equals("MethodInvocation")){
@@ -59,7 +67,7 @@ class SemanticAnalysis{
             else {
                 processChildren(node);
             }
-        }catch (Exception e) {
+       /* }catch (Exception e) {
             System.err.println("[SEMANTIC ERROR]: " + e.getMessage());
             //e.printStackTrace();
             exceptionCounter++;
@@ -68,7 +76,7 @@ class SemanticAnalysis{
                 System.exit(0);
             }
             // throw new ParseException("Parse exception");
-        }
+        }*/
     }
 
     private void processLength(Node node) throws IOException{
@@ -262,24 +270,66 @@ class SemanticAnalysis{
         String methodName = Utils.parseName(node.jjtGetChild(1).toString());
  
         if(node.jjtGetChild(0).toString().equals("This")){
+            if(isStatic){
+                throw new IOException("Cannot use 'this' in a static method.");
+            }
             classDescriptor = (ClassDescriptor) symbolTable.lookup(symbolTable.getClassName()).get(0);
         }
         else if(node.jjtGetChild(0).toString().equals("MethodInvocation")){
+
             String type= processInvocation(node.jjtGetChild(0));
             if(type.equals("Integer") || type.equals("boolean")){
-                throw new IOException("Method Invocation: method cannot be invoked for primary types");
+                throw new IOException("Method Invocation: method cannot be invoked for primitive types");
             }
             classDescriptor = (ClassDescriptor) symbolTable.lookup(type).get(0);
+
         }
-        else{ //io.prinln() ou obj.add();
-            id=Utils.parseName(node.jjtGetChild(0).toString());  
-            Descriptor descriptor =symbolTable.lookup(id).get(0);
-            if(descriptor.getType().equals(Descriptor.Type.CLASS)){
-                classDescriptor = (ClassDescriptor) descriptor;
+        else if(node.jjtGetChild(0).toString().equals("NewObject")){
+
+            System.out.println("ISTO: " + node.jjtGetChild(0).toString());
+            String type = processNewObjectMethodInvoke(node.jjtGetChild(0));
+
+            if(type.equals("Integer") || type.equals("boolean")){
+                throw new IOException("Method Invocation: method cannot be invoked for primitive types");
+            }
+            classDescriptor = (ClassDescriptor) symbolTable.lookup(type).get(0);
+
+        }
+        else{ //io.prinln() ou obj.add(); VITORHUGO
+
+            id = Utils.parseName(node.jjtGetChild(0).toString());  
+            Descriptor descriptor2 =symbolTable.lookup(id).get(0);
+            //String idType = getNodeDataType(node.jjtGetChild(0)); -> dá erro no teste do david
+
+            String idType = "";
+            if(!descriptor2.getType().equals(Descriptor.Type.CLASS)){
+                idType = ((VarDescriptor) descriptor2).getDataType();
+            }
+            
+
+            if(!idType.equals("Integer") && !idType.equals("Boolean") && !idType.equals("boolean")){
+
+                Descriptor descriptor =symbolTable.lookup(id).get(0);
+                if(descriptor.getType().equals(Descriptor.Type.CLASS)){
+                    classDescriptor = (ClassDescriptor) descriptor;
+                }
+                else{
+                    VarDescriptor.INITIALIZATION_TYPE wasInitializedBefore = ((VarDescriptor) descriptor).getInitialized();
+                    if(wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.FALSE))
+                        throw new IOException("Variable " + ((VarDescriptor) descriptor).getIdentifier() + " was not initialized");
+                    else if(wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
+                        System.out.println("[WARNING]: Variable " + ((VarDescriptor) descriptor).getIdentifier() + " may not have been initialized.");
+            }
+                    
+                    
+                    String className = ((VarDescriptor) descriptor).getDataType();
+
+                    classDescriptor = (ClassDescriptor) symbolTable.lookup(className).get(0);
+                }
+
             }
             else{
-                String className = ((VarDescriptor) descriptor).getDataType();
-                classDescriptor = (ClassDescriptor) symbolTable.lookup(className).get(0);
+                throw new IOException("Method Invocation: method cannot be invoked for primitive types");
             }
         }
         
@@ -293,7 +343,10 @@ class SemanticAnalysis{
         }
         catch(Exception e){ //Method does not exist in first class but can still exist in parent
         }
-       
+
+        if(isStatic && node.jjtGetChild(0).toString().equals("This")){
+            throw new IOException("Cannot use 'this' in a static method.");
+        }
         if(node.jjtGetChild(0).toString().equals("This") || classDescriptor.getIdentifier().equals(this.symbolTable.getClassName())){
 
             if(classDescriptor.getParentClass() != null){
@@ -380,17 +433,42 @@ class SemanticAnalysis{
 
     private void processObject(Node node) throws IOException {
 
-        //TODO: o objeto que está a ser criado tem de ser do mesmo tipo da classe onde está inserido, ou da class a que faz extends ou de uma class qql dos imports
         String obj = Utils.parseName(node.jjtGetChild(1).jjtGetChild(0).toString());
         String id = Utils.parseName(node.jjtGetChild(0).toString());
 
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0);
         if(!varDescriptor.getDataType().equals(obj)){
-            throw new IOException("Variable " + id + " does not match " + varDescriptor.getDataType());
+            try{
+            ClassDescriptor classDescriptor = (ClassDescriptor) symbolTable.lookup(obj).get(0);
+            if(obj.equals(classDescriptor.getParentClass().getIdentifier())){ // Extends: child class is initialized with constructor from parent
+                varDescriptor.setDataType(classDescriptor.getParentClass().getIdentifier());
+            }
+            }
+            catch(Exception e){
+                throw new IOException("Variable " + id + " does not match " + varDescriptor.getDataType());
+            }
+            // if(obj.equals(classDescriptor.getParentClass().getIdentifier())){ // Extends: child class is initialized with constructor from parent
+            //     varDescriptor.setDataType(classDescriptor.getParentClass().getIdentifier());
+            // }
+            // else{
+            //     throw new IOException("Variable " + id + " does not match " + varDescriptor.getDataType());
+            // }
         }
 
         varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.TRUE);
+
     }
+
+    private String processNewObjectMethodInvoke(Node node) throws IOException {
+
+        String id = Utils.parseName(node.jjtGetChild(0).toString());
+        ClassDescriptor classDescriptor = (ClassDescriptor) symbolTable.lookup(id).get(0);
+
+        return classDescriptor.getIdentifier();
+    
+    }
+
+
 
     private void processInitializeArray(Node node) throws IOException{
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
@@ -456,6 +534,9 @@ class SemanticAnalysis{
             return processArrayRight(node);
         }
         else if(node.toString().equals("This")){
+            if(isStatic){
+                throw new IOException("Cannot use 'this' in a static method.");
+            }
             return this.symbolTable.getClassName();
         }
         else if(node.toString().equals("MethodInvocation")){
@@ -559,7 +640,7 @@ class SemanticAnalysis{
 
     }
 
-    private void processProgram(Node node){
+    private void processProgram(Node node) throws IOException{
         symbolTable.enterScopeForAnalysis(); // Enter Import Scope
         for (int i = 0; i < node.jjtGetNumChildren()-1; i++) { // Imports
             execute(node.jjtGetChild(i));
@@ -582,7 +663,7 @@ class SemanticAnalysis{
         symbolTable.exitScopeForAnalysis();
     }
 
-    private void processChildren(Node node){
+    private void processChildren(Node node) throws IOException{
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             execute(node.jjtGetChild(i));
         }

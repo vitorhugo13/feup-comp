@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import descriptors.*;
+import java.io.IOException;
 
 
 @SuppressWarnings({"unchecked"})
@@ -17,7 +18,7 @@ public class TraverseAst{
     }
 
 
-    public void execute(Node node){
+    public void execute(Node node) throws IOException{
         if(node.toString().equals("Program")){
             processProgram(node);
         }
@@ -48,7 +49,7 @@ public class TraverseAst{
         }
     }
 
-    private void processProgram(Node node){
+    private void processProgram(Node node) throws IOException{
 
         symbolTable.enterScope(); // Enter Import Scope
 
@@ -66,7 +67,7 @@ public class TraverseAst{
         execute(node.jjtGetChild(node.jjtGetNumChildren()-1)); // Class
     }
 
-    private void processVarDeclaration(Node node) {
+    private void processVarDeclaration(Node node) throws IOException{
 
         String varType = Utils.parseName(node.jjtGetChild(0).toString());
 
@@ -76,7 +77,7 @@ public class TraverseAst{
             ClassDescriptor classDesc = (ClassDescriptor) this.symbolTable.lookup(varType).get(0);
             }
             catch(Exception e){
-                System.out.println("Type " + varType + " not recognized.");
+                throw new IOException("Type " + varType + " not recognized.");
             }
 
         }
@@ -155,7 +156,7 @@ public class TraverseAst{
         return returnType;
     }
 
-    private void processMethod(Node node) {
+    private void processMethod(Node node) throws IOException{
 
 
         ArrayList<VarDescriptor> params = new ArrayList<>();
@@ -174,7 +175,7 @@ public class TraverseAst{
                 ClassDescriptor classDesc = (ClassDescriptor) this.symbolTable.lookup(varType).get(0);
                 }
                 catch(Exception e){
-                    System.out.println("Type " + varType + " not recognized. Method arg");
+                    throw new IOException("Type " + varType + " not recognized.");
                 }
 
             }
@@ -202,7 +203,7 @@ public class TraverseAst{
         symbolTable.exitScope();
     }
 
-    private void processMain(Node node) {
+    private void processMain(Node node) throws IOException{
 
         ArrayList<VarDescriptor> params = new ArrayList<>();
         Node paramList= node.jjtGetChild(0);
@@ -235,21 +236,23 @@ public class TraverseAst{
         symbolTable.exitScope();
     }
 
-    private void processClass(Node node) {
+    private void processClass(Node node) throws IOException{
         symbolTable.enterScope();
         this.symbolTable.setClassName(Utils.parseName(node.toString()));
 
-        if(Utils.analyzeRegex(node.jjtGetChild(0).toString(), "(Extends\\[)(.)*(\\])")){
-            ClassDescriptor classDescriptor = new ClassDescriptor(this.symbolTable.getClassName());
-            try{
-                ClassDescriptor parentClassDescriptor = (ClassDescriptor) this.symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
-                classDescriptor.setParentClass(parentClassDescriptor);
-                symbolTable.add(this.symbolTable.getClassName(), classDescriptor);
+        if(node.jjtGetNumChildren()!=0){
+            if(Utils.analyzeRegex(node.jjtGetChild(0).toString(), "(Extends\\[)(.)*(\\])")){
+                ClassDescriptor classDescriptor = new ClassDescriptor(this.symbolTable.getClassName());
+                try{
+                    ClassDescriptor parentClassDescriptor = (ClassDescriptor) this.symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
+                    classDescriptor.setParentClass(parentClassDescriptor);
+                    symbolTable.add(this.symbolTable.getClassName(), classDescriptor);
+                }
+                catch(Exception E){
+                    System.out.println("Class " + Utils.parseName(node.jjtGetChild(0).toString()) + " that is extended by class " + this.symbolTable.getClassName() + " is not imported");
+                }
+                
             }
-            catch(Exception E){
-                System.out.println("Class " + Utils.parseName(node.jjtGetChild(0).toString()) + " that is extended by class " + this.symbolTable.getClassName() + " is not imported");
-            }
-            
         }
 
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
