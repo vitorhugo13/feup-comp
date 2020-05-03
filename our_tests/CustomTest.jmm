@@ -1,13 +1,13 @@
-// import static ioPlus.printHelloWorld(void) void;
-// import static ioPlus.printINT(String) int;
-// import static ioPlus.printINT(int) int;
-// import ioPlus;
+import static ioPlus.printHelloWorld(void) void;
+import static ioPlus.printINT(String) int;
+import static ioPlus.printINT(int) int;
+import ioPlus;
 
 class CustomTest {
-	public int f1(int val, boolean bkk) {
+	public int f1(int[] val, boolean bkk) {
         int val3;
 
-        a;
+        int a;
 
         a + 1 - 4;
         2 * 2 / 1 + 2 - 4;
@@ -15,35 +15,39 @@ class CustomTest {
         8 / 2 / 2;
         
         val[2] = 1;
-        val3.toString();
+        //val3.toString();
 
-        return val;
+        return 1;
     }
 
-// 	public static void main(String[] args) {
-//         int num;
-//         boolean star;
-//         num = 5;
-//         num = num && num;
+	public static void main(String[] args) {
+        int num;
+        boolean star;
+        num = 5;
+        num = num && num;
 
-// //        if((num < 1 && num < 1)){
-//         if((2-3+4 && 2*4-6) < !num && (2-3/45 < 34+5) < 4/4*1){
-//             num = 5;
-//         } else {
-//             num = 7;
-//         }
+        if((num < 1 && num < 1)){
+            if((2-3+4 && 2*4-6) < !num && (2-3/45 < 34+5) < 4/4*1){
+                num = 5;
+            } else {
+            num = 7;
+            }
+        }
+        else{
 
-//         while(!num){
-//             star = true;
-//             num = !star * 3+2;
-//         }
+        }
 
-//         if((2*3-4) < (num+4/2)){
-//             num = 5;
-//         } else {
-//             num = 7*3;
-//         }
+        while(!num){
+            star = true;
+            num = !star * 3+2;
+        }
 
-// 		ioPlus.printHelloWorld();
-// 	}
+        if((2*3-4) < (num+4/2)){
+            num = 5;
+        } else {
+            num = 7*3;
+        }
+
+		ioPlus.printHelloWorld();
+	}
 }

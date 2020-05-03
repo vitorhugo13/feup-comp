@@ -358,13 +358,15 @@ class SemanticAnalysis{
                     int line = ((SimpleNode) node).getCoords().getLine();
 
                     for(int i = 0; i < node.jjtGetChild(2).jjtGetNumChildren(); i++){
-                        String variableID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString());
-                        VarDescriptor vd = (VarDescriptor) symbolTable.lookup(variableID).get(0);
-                        if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
-                            throw new IOException("Line " + line + ": Variable " + variableID + " not initialized");
-                        }
-                        else if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
-                            throw new IOException("[WARNING]: Line " + line + ": Variable " + variableID + " may not be initialized");
+                        if(!Utils.getFirstPartOfName(node.jjtGetChild(2).jjtGetChild(i).toString()).equals("Integer")){
+                            String variableID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString());
+                            VarDescriptor vd = (VarDescriptor) symbolTable.lookup(variableID).get(0);
+                            if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
+                                throw new IOException("Line " + line + ": Variable " + variableID + " not initialized");
+                            }
+                            else if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
+                                throw new IOException("[WARNING]: Line " + line + ": Variable " + variableID + " may not be initialized");
+                            }
                         }
                     }
 
@@ -377,13 +379,15 @@ class SemanticAnalysis{
                 int line = ((SimpleNode) node).getCoords().getLine();
 
                 for(int i = 0; i < node.jjtGetChild(2).jjtGetNumChildren(); i++){
-                    String variableID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString());
-                    VarDescriptor vd = (VarDescriptor) symbolTable.lookup(variableID).get(0);
-                    if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
-                        throw new IOException("Line " + line + ": Variable " + variableID + " not initialized");
-                    }
-                    else if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
-                        throw new IOException("[WARNING]: Line " + line + ": Variable " + variableID + " may not be initialized");
+                    if(!Utils.getFirstPartOfName(node.jjtGetChild(2).jjtGetChild(i).toString()).equals("Integer") && !Utils.getFirstPartOfName(node.jjtGetChild(2).jjtGetChild(i).toString()).equals("Boolean")){
+                        String variableID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString());
+                        VarDescriptor vd = (VarDescriptor) symbolTable.lookup(variableID).get(0);
+                        if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
+                            throw new IOException("Line " + line + ": Variable " + variableID + " not initialized");
+                        }
+                        else if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
+                            throw new IOException("[WARNING]: Line " + line + ": Variable " + variableID + " may not be initialized");
+                        }
                     }
                 }
 
@@ -396,14 +400,18 @@ class SemanticAnalysis{
             int line = ((SimpleNode) node).getCoords().getLine();
 
             for(int i = 0; i < node.jjtGetChild(2).jjtGetNumChildren(); i++){
-                String variableID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString());
-                VarDescriptor vd = (VarDescriptor) symbolTable.lookup(variableID).get(0);
-                if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
-                    throw new IOException("Line " + line + ": Variable " + variableID + " not initialized");
+
+                if(!Utils.getFirstPartOfName(node.jjtGetChild(2).jjtGetChild(i).toString()).equals("Integer")){
+                    String variableID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString());
+                    VarDescriptor vd = (VarDescriptor) symbolTable.lookup(variableID).get(0);
+                    if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
+                        throw new IOException("Line " + line + ": Variable " + variableID + " not initialized");
+                    }
+                    else if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
+                        throw new IOException("[WARNING]: Line " + line + ": Variable " + variableID + " may not be initialized");
+                    }
                 }
-                else if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
-                    throw new IOException("[WARNING]: Line " + line + ": Variable " + variableID + " may not be initialized");
-                }
+                
             }
 
             String signatures = getSignatures(classDescriptor);
