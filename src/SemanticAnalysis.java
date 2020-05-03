@@ -424,7 +424,21 @@ class SemanticAnalysis{
 
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(id).get(0);
         if(!varDescriptor.getDataType().equals(obj)){
-            throw new IOException("Variable " + id + " does not match " + varDescriptor.getDataType());
+            try{
+            ClassDescriptor classDescriptor = (ClassDescriptor) symbolTable.lookup(obj).get(0);
+            if(obj.equals(classDescriptor.getParentClass().getIdentifier())){ // Extends: child class is initialized with constructor from parent
+                varDescriptor.setDataType(classDescriptor.getParentClass().getIdentifier());
+            }
+            }
+            catch(Exception e){
+                throw new IOException("Variable " + id + " does not match " + varDescriptor.getDataType());
+            }
+            // if(obj.equals(classDescriptor.getParentClass().getIdentifier())){ // Extends: child class is initialized with constructor from parent
+            //     varDescriptor.setDataType(classDescriptor.getParentClass().getIdentifier());
+            // }
+            // else{
+            //     throw new IOException("Variable " + id + " does not match " + varDescriptor.getDataType());
+            // }
         }
 
         varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.TRUE);
