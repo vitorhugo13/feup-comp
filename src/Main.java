@@ -5,7 +5,6 @@ import java.io.InputStream;
 
 public class Main {
 
-    private static String file = "";
     private static boolean generateCode = false;
     private static boolean displaySymbolTable = false;
     private static boolean displayAST = false;
@@ -17,7 +16,7 @@ public class Main {
             return;
         }
 
-        for (int i = 0; i < args.length; i++) {
+        for (int i = 1; i < args.length; i++) {
             if (!parseArgs(args[i])) {
                 printUsage();
                 return;
@@ -89,25 +88,20 @@ public class Main {
         
         if (arg.equals("-c")) {
             if (generateCode)
-                return false;
+            return false;
             generateCode = true;
         }
         else if (arg.equals("-t")) {
             if (displayAST)
-                return false;
+            return false;
             displayAST = true;
         }
         else if (arg.equals("-s")) {
             if (displaySymbolTable)
-                return false;
+            return false;
             displaySymbolTable = true;
         }
-        else {
-            if (!file.equals(""))
-                return false;
-            file = arg;
-        }
-
+        
         return true;
     }
 
@@ -117,5 +111,4 @@ public class Main {
         System.out.println("    -s - display the symbol table");
         System.out.println("    -c - generate code");
     }
-
 }
