@@ -5,11 +5,14 @@ import java.io.InputStream;
 
 public class Main {
 
+    
+
     public static void main(String[] args) throws ParseException {
 
         // TODO: create a flag system:
             // -t -> display the AST
             // -c -> generate code
+
 
         if (args.length <= 0 || args.length > 2) {
             System.out.println("Usage: java -jar comp2020-3h.jar <file> -c");
@@ -52,17 +55,10 @@ public class Main {
             semanticAnalysis.execute(root);
         }
         catch (Exception e) {
+
             System.err.println("[SEMANTIC ERROR]: " + e.getMessage());
             throw new ParseException("[SEMANTIC ERROR]: ");
-            //e.printStackTrace();
-            /*
-            exceptionCounter++;
-            if (exceptionCounter >= MAX_EXCEPTIONS) {
-                System.err.println("[PROGRAM TERMINATING] THERE ARE MORE THAN " + MAX_EXCEPTIONS + " SEMANTIC ERRORS.");
-                System.exit(0);
-            }
-            */
-            // throw new ParseException("Parse exception");
+   
         }
         
         System.out.println("\nFINISHED SEMANTIC ANALYSIS\n");

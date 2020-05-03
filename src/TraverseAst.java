@@ -77,7 +77,8 @@ public class TraverseAst{
             ClassDescriptor classDesc = (ClassDescriptor) this.symbolTable.lookup(varType).get(0);
             }
             catch(Exception e){
-                throw new IOException("Type " + varType + " not recognized.");
+                int line = ((SimpleNode) node).getCoords().getLine();
+                throw new IOException( "Line " + line + ": Type " + varType + " not recognized.");
             }
 
         }
@@ -175,7 +176,8 @@ public class TraverseAst{
                 ClassDescriptor classDesc = (ClassDescriptor) this.symbolTable.lookup(varType).get(0);
                 }
                 catch(Exception e){
-                    throw new IOException("Type " + varType + " not recognized.");
+                    int line = ((SimpleNode) node).getCoords().getLine();
+                    throw new IOException( "Line " + line + ": Type " + varType + " not recognized.");
                 }
 
             }
