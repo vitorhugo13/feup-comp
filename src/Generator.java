@@ -96,6 +96,8 @@ class Generator {
             ret = processThis(node, out);
         else if (nodeName.equals("Array"))
             ret = processArray(node, out);
+        else if (nodeName.equals("Length"))
+            ret = processLength(node, out);
 
         return ret;
     }
@@ -470,6 +472,12 @@ class Generator {
 
         out.println(String.format("    %saload", type.equals("I") || type.equals("Z") ? "i" : "a"));
         return type;
+    }
+
+    private String processLength(Node node, PrintWriter out) {
+        processIdentifier(node.jjtGetChild(0), out);
+        out.println(String.format("    arraylength"));
+        return "I";
     }
 
     private String processInteger(Node node, PrintWriter out) {
