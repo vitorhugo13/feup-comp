@@ -15,6 +15,7 @@ class ArrayTest {
         b[0] = 2;
         a = b[1];
         c[a] = b[a+d];
+        b.length;
     }
 
 }

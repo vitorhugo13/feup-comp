@@ -16,9 +16,14 @@ class Generator {
     private int tagIndex;
     private String mainClass;
 
+    private int ifIndex;
+    private int whileIndex;
+
     public Generator(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
         this.tagIndex = 0;
+        this.ifIndex = 0;
+        this.whileIndex = 0;
     }
     
     public void generate(Node root, String filename) {
@@ -56,6 +61,13 @@ class Generator {
         // NEW INT ARRAY
         else if (nodeName.equals("NewIntArray"))
             ret = processNewIntArray(node, out);
+
+        // IF STATEMENT
+        else if (nodeName.equals("IfStatement"))
+            processIf(node, out);
+        // WHILE LOOP
+        else if (nodeName.equals("While"))
+            processWhile(node, out);
 
         // OPERATORS
         else if (nodeName.equals("And"))
@@ -303,6 +315,56 @@ class Generator {
         out.println(String.format("    %s", instruction));
     }
 
+
+    // ==========================================
+    //             CONTROL STRUCTURES
+    // ==========================================
+
+    private void processIf(Node node, PrintWriter out) {
+        // condition
+        processCondition(node.jjtGetChild(0), out);
+        out.println(String.format("    ifeq else_%d", this.ifIndex));
+
+        // if
+        processScope(node.jjtGetChild(1), out);
+        out.println(String.format("    goto endif_%d", this.ifIndex));
+        
+        // else
+        out.println(String.format("else_%d:", this.ifIndex));
+        processScope(node.jjtGetChild(2), out);
+
+        out.println(String.format("endif_%d:", this.ifIndex));
+
+        this.ifIndex++;
+    }
+
+    private void processWhile(Node node, PrintWriter out) {
+        // condition
+        processCondition(node.jjtGetChild(0), out);
+        out.println(String.format("    ifeq end_while_%d", this.whileIndex));
+        out.println(String.format("start_while_%d:", this.whileIndex));
+        
+        // scope
+        processScope(node.jjtGetChild(1), out);
+        
+        // check condition as to minimize the amount of jumps
+        processCondition(node.jjtGetChild(0), out);
+        out.println(String.format("    ifne start_while_%d", this.whileIndex));
+
+        out.println(String.format("end_while_%d:", this.whileIndex));
+
+        this.whileIndex++;
+    }
+
+    private void processCondition(Node node, PrintWriter out) {
+        execute(node.jjtGetChild(0), out);
+    }
+
+    private void processScope(Node node, PrintWriter out) {
+        for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+            execute(node.jjtGetChild(i), out);
+        }
+    }
 
     // ==========================================
     //                 OPERATORS
