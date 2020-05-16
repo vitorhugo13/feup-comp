@@ -24,7 +24,7 @@ class CustomTest {
         int num;
         boolean star;
         num = 5;
-        num = num && num;
+        // num = num && num;
 
         if((num < 1 && num < 1)){
             if((2-3+4 && 2*4-6) < !num && (2-3/45 < 34+5) < 4/4*1){
