@@ -97,7 +97,7 @@ class Test2{
                         found = true;
                     }
                     else{
-                        rightValue = true;
+                        rightValue = false;
                     }
 
                     if(!rightValue){
