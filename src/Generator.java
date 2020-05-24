@@ -27,6 +27,8 @@ class Generator {
     private int ifIndex;        // if statement tags
     private int whileIndex;     // while loop tags
 
+    private boolean doPop;
+
 
     public Generator(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
@@ -37,6 +39,8 @@ class Generator {
 
         this.maxStackSize = 0;
         this.stackSize = 0;
+
+        this.doPop = true;
     }
     
     public void generate(Node root, String filename) {
@@ -189,8 +193,10 @@ class Generator {
         Node lastInstruction = body.jjtGetChild(body.jjtGetNumChildren() - 1);
         tmpOut.println();
         if (lastInstruction.toString().equals("Return")) {
+            this.doPop = false;
             for (int i = 0; i < lastInstruction.jjtGetNumChildren(); i++)
                 execute(lastInstruction.jjtGetChild(i), tmpOut);
+            this.doPop = true;
         }
         
         // return
@@ -230,39 +236,54 @@ class Generator {
     // ==========================================
 
     private String processMethodInvocation(Node node, PrintWriter out) {
+        boolean pop = this.doPop;
+
+        this.doPop = false;
 
         String className = execute(node.jjtGetChild(0), out);
         String methodName = Utils.parseName(node.jjtGetChild(1).toString());
         String argList = processArgList(node.jjtGetChild(2), out);
         int numArgs = node.jjtGetChild(2).jjtGetNumChildren();
-        String type = "";
-        boolean isStatic = false;
 
+        ClassDescriptor classDescriptor = null;
+        ArrayList<MethodDescriptor> methods = null;
         try {
-            ClassDescriptor classDescriptor = (ClassDescriptor) symbolTable.lookup(className).get(0);
+            classDescriptor = (ClassDescriptor) symbolTable.lookup(className).get(0);
+            methods = classDescriptor.getMethodsMatchingId(methodName);
+        } catch (Exception e1) {
+            try {
+                methods = classDescriptor.getParentClass().getMethodsMatchingId(methodName);
+            } catch (Exception e2) {
+                e2.printStackTrace();
+            }
+        }
+        
+        MethodDescriptor method = methods.get(0);
+        for (int i = 0; i < methods.size(); i++) {
+            method = methods.get(i);
 
-            ArrayList<MethodDescriptor> methods = classDescriptor.getMethodsMatchingId(methodName);
-            MethodDescriptor method = methods.get(0);
-
-            for (int i = 1; i < methods.size(); i++) {
-                String signature = "";
-                for (VarDescriptor var : method.getParameters()) {
-                    signature += parseType(var.getDataType());
-                }
-
-                if (argList.equals(signature))
-                    break;
+            String signature = "";
+            for (VarDescriptor var : method.getParameters()) {
+                signature += parseType(var.getDataType());
             }
 
-            type = parseType(method.getReturnType());
-            isStatic = method.isStatic();
-        } catch (Exception e) {}
-        
+            if (argList.equals(signature))
+                break;
+        }
+        System.out.println("TYPE : " + method.getReturnType());
+        String type = parseType(method.getReturnType());
+        boolean isStatic = method.isStatic();
+
         if (isStatic) 
             out.println(instruction.invokestatic(className, methodName, argList, numArgs, type));
         else
             out.println(instruction.invokevirtual(className, methodName, argList, numArgs, type));
-            
+        
+        if (pop && !type.equals("V"))
+            out.println(instruction._pop());
+
+        this.doPop = true;
+
         return type;
     }
 
@@ -282,13 +303,17 @@ class Generator {
         out.println(instruction._new(className));
         out.println(instruction.dup());
         out.println(instruction.invokespecial(className));
-        
+
         return "V";
     }
 
     private String processNewIntArray(Node node, PrintWriter out) {
+        this.doPop = false;
+
         execute(node.jjtGetChild(0), out);
         out.println(instruction.newarray());
+
+        this.doPop = true;
 
         return "[I";
     }
@@ -299,8 +324,8 @@ class Generator {
     // ==========================================
 
     public void processAssignment(Node node, PrintWriter out) {
+        this.doPop = false;
         String nodeName = node.jjtGetChild(0).toString();
-        // String strInstruction = ""; 
         String identifier = "";
 
         if (nodeName.equals("Array"))
@@ -319,10 +344,7 @@ class Generator {
             if (nodeName.equals("Array")) {
                 out.println(instruction.getfield(mainClass, identifier, parseType2(var.getDataType())));
                 execute(node.jjtGetChild(0).jjtGetChild(1), out);
-                // strInstruction = instruction.iastore();
             }
-            // else
-            //     strInstruction = instruction.putfield(mainClass, identifier, parseType2(var.getDataType()));
         }
         // local variables
         else {
@@ -334,10 +356,7 @@ class Generator {
             if (nodeName.equals("Array")) {
                 out.println(load(parseType(var.getDataType()), var.getLocalIndex()));
                 execute(node.jjtGetChild(0).jjtGetChild(1), out);        // element index
-                // strInstruction = instruction.iastore();
             }
-            // else
-                // strInstruction = store(type, var.getLocalIndex());
         }
 
         // process the right side of the expression, push value to stack
@@ -356,7 +375,7 @@ class Generator {
                 out.println(store(parseType(var.getDataType()), var.getLocalIndex()));
         }
 
-        // out.println(strInstruction);
+        this.doPop = true;
     }
 
 
@@ -407,7 +426,9 @@ class Generator {
     }
 
     private void processCondition(Node node, PrintWriter out) {
+        this.doPop = false;
         execute(node.jjtGetChild(0), out);
+        this.doPop = true;
     }
 
     private void processScope(Node node, PrintWriter out) {
@@ -421,15 +442,20 @@ class Generator {
     // ==========================================
 
     private String processAnd(Node node, PrintWriter out) {
+        this.doPop = false;
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
         
         out.println(instruction.iand());
 
+        this.doPop = true;
+
         return "I";
     }
     
     private String processLess(Node node, PrintWriter out) {
+        this.doPop = false;
+
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
 
@@ -445,51 +471,73 @@ class Generator {
 
         tagIndex++;
 
+        this.doPop = true;
+        
         return "Z";
     }
 
     private String processNot(Node node, PrintWriter out) {
+        this.doPop = false;
+
         execute(node.jjtGetChild(0), out);
 
         out.println(instruction.iconst(1));
         out.println(instruction.ixor());
 
+        this.doPop = true;
+
         return "Z";
     }
         
     private String processAdd(Node node, PrintWriter out) {
+        this.doPop = false;
+
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
         
         out.println(instruction.iadd());
         
+        this.doPop = true;
+
         return "I";
     }
 
     private String processSub(Node node, PrintWriter out) {
+        this.doPop = false;
+
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
         
         out.println(instruction.isub());
      
+        this.doPop = true;
+
         return "I";
     }
     
     private String processMul(Node node, PrintWriter out) {
+        this.doPop = false;
+        
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
         
         out.println(instruction.imul());
      
+        this.doPop = true;
+
         return "I";
     }
 
     private String processDiv(Node node, PrintWriter out) {
+        this.doPop = false;
+
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
         
         out.println(instruction.idiv());
      
+        this.doPop = true;
+        
         return "I";
     }
     
