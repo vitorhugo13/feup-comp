@@ -1,0 +1,29 @@
+import StringToInt;
+import StringToInt.getInt(String) int;
+
+class RecursiveFactorial{
+
+    public static void main(String[] args) {
+        int factorial;
+        int num;
+        StringToInt stringToInt;
+        RecursiveFactorial recursiveFactorial;
+
+        stringToInt = new StringToInt();
+        recursiveFactorial = new RecursiveFactorial();
+
+        num = stringToInt.getInt(args[0]);
+        factorial = recursiveFactorial.multiplyNumbers(num);
+    }
+
+    public int multiplyNumbers(int num){
+        if (0 < num) {
+            num = num * this.multiplyNumbers(num - 1);
+        }
+        else{
+            num = 1;
+        }
+
+        return num;
+    }
+}

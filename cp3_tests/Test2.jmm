@@ -65,7 +65,7 @@ class Test2{
                 closestValue = values[mid];
                 midValue = true;
                 found = true;
-                i = j;
+                i = 21;
             }
             else{
                 midValue = false;
@@ -87,7 +87,7 @@ class Test2{
                         j = mid;
                     }
                     else{
-                        i = j;
+                        i = 21;
                     }
                 }
                 else{
@@ -97,14 +97,14 @@ class Test2{
                         found = true;
                     }
                     else{
-                        rightValue = true;
+                        rightValue = false;
                     }
 
                     if(!rightValue){
                         i = mid + 1;
                     }
                     else{
-                        i = j;
+                        i = 21;
                     }
                 }
             }
@@ -127,7 +127,7 @@ class Test2{
     public int getClosest(int val1, int val2, int target){
         int ret;
 
-        if(val2 - target < target - val1){
+        if((val2 - target) < (target - val1)){
             ret = val2;
         }
         else{

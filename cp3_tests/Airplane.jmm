@@ -1,0 +1,65 @@
+import Transport;
+import Transport.getMaxSpeed() int;
+import Transport.isNew() boolean;
+import Transport.getYears() int;
+import Transport.start(int);
+import Transport.run();
+
+class Airplane extends Transport {
+    boolean isFlying;
+
+    public static void main(String[] a) {
+        int maxSpeedSupportAirplane;
+        Transport supportAirplane;
+        Airplane airplane;
+        supportAirplane = new Airplane();
+        airplane = new Airplane();
+        isFlying = false;
+
+        maxSpeedSupportAirplane = supportAirplane.getMaxSpeed();
+        supportAirplane.start(maxSpeedSupportAirplane);
+        airplane.start();
+    }
+
+    public int getMaxSpeed() {
+        int maxSpeed;
+        if(isFlying){
+            maxSpeed = 300;
+        }
+        else{
+            maxSpeed = 0;
+        }
+        return maxSpeed;
+    }
+
+    public int getMaxSpeed() {
+        int maxSpeed;
+        if(isFlying){
+            maxSpeed = 300;
+        }
+        else{
+            maxSpeed = 0;
+        }
+        return maxSpeed;
+    }
+
+    public int getPrice(int initialPrice) {
+        int finalPrice;
+
+        if(this.isNew()){
+            finalPrice = initialPrice;
+        }
+        else{
+            finalPrice = initialPrice - this.getYears();
+
+        }
+        return finalPrice;
+    }
+
+    public boolean start(){
+        while(true){
+            this.run();
+        }
+        return true;
+    }
+}
