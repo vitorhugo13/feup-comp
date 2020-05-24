@@ -9,4 +9,8 @@ public class SourceCoords {
     public int getLine() {
         return this.token.beginLine;
     }
+
+    public int getColumn() {
+        return this.token.beginColumn;
+    }
 }

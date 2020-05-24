@@ -2,6 +2,7 @@
 /build/
 /generated/
 *.jar
+!jasmin.jar
 bin/*
 our_tests/
 # Ignore Gradle GUI config
