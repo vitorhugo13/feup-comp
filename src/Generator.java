@@ -300,7 +300,7 @@ class Generator {
 
     public void processAssignment(Node node, PrintWriter out) {
         String nodeName = node.jjtGetChild(0).toString();
-        String strInstruction = ""; 
+        // String strInstruction = ""; 
         String identifier = "";
 
         if (nodeName.equals("Array"))
@@ -319,12 +319,11 @@ class Generator {
             if (nodeName.equals("Array")) {
                 out.println(instruction.getfield(mainClass, identifier, parseType2(var.getDataType())));
                 execute(node.jjtGetChild(0).jjtGetChild(1), out);
-                strInstruction = instruction.iastore();
+                // strInstruction = instruction.iastore();
             }
-            else
-                strInstruction = instruction.putfield(mainClass, identifier, parseType2(var.getDataType()));
+            // else
+            //     strInstruction = instruction.putfield(mainClass, identifier, parseType2(var.getDataType()));
         }
-        
         // local variables
         else {
             if (var.getLocalIndex() == -1)
@@ -335,16 +334,29 @@ class Generator {
             if (nodeName.equals("Array")) {
                 out.println(load(parseType(var.getDataType()), var.getLocalIndex()));
                 execute(node.jjtGetChild(0).jjtGetChild(1), out);        // element index
-                strInstruction = instruction.iastore();
+                // strInstruction = instruction.iastore();
             }
-            else
-                strInstruction = store(type, var.getLocalIndex());
+            // else
+                // strInstruction = store(type, var.getLocalIndex());
         }
 
         // process the right side of the expression, push value to stack
         execute(node.jjtGetChild(1), out);
 
-        out.println(strInstruction);
+        if (var.getScope() == Descriptor.Scope.GLOBAL) {
+            if (nodeName.equals("Array"))
+                out.println(instruction.iastore());
+            else
+                out.println(instruction.putfield(mainClass, identifier, parseType2(var.getDataType())));
+        }
+        else {
+            if (nodeName.equals("Array"))
+                out.println(instruction.iastore());
+            else 
+                out.println(store(parseType(var.getDataType()), var.getLocalIndex()));
+        }
+
+        // out.println(strInstruction);
     }
 
 

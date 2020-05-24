@@ -141,6 +141,9 @@ class Test2{
         int[] values;
         int target;
         int closest;
+        Test2 test;
+
+        test = new Test2();
 
         values = new int[20];
         values[0] = 0;
@@ -164,9 +167,10 @@ class Test2{
         values[18] = 18;
         values[19] = 19;
 
-        target = MathUtils.random(0-20, 20);
+        target = MathUtils.random(0 - 5, 25);
+        ioPlus.printResult(target);
 
-        closest = Test2.closestElement(values, target);
+        closest = test.closestElement(values, target);
 		ioPlus.printResult(closest);
     }
 
