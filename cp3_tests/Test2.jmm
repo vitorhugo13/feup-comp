@@ -1,0 +1,210 @@
+/* find in a sorted array the closest element of target */
+import static MathUtils.random(int, int) int;
+import static ioPlus.printResult(int) void;
+
+class Test2{
+
+    public int closestElement(int[] values, int target){
+        int n;
+        int closestValue;
+        boolean corner;
+
+        n = values.length;
+        
+
+        if(this.minorEquals(target, values[0])){
+            closestValue = values[0];
+            corner = true;
+        }
+        else{
+            if(values[n - 1] < target){
+                closestValue = values[n-1];
+                corner = true;
+            }
+            else{
+                closestValue = 0; //only to compile without warning
+                corner = false;
+            }
+        }
+
+        if(corner){
+            closestValue = closestValue;
+        }
+        else{
+            closestValue = this.binarySearch(values, target);
+        }
+
+        return closestValue;
+    }
+
+    public int binarySearch(int[] values, int target){
+        int closestValue;
+        int i;
+        int mid;
+        int n;
+        int j;
+        boolean found;
+        boolean midValue;
+        boolean leftValue;
+        boolean rightValue;
+
+        closestValue = 0;
+        i = 0;
+        mid = 0;
+        n = values.length;
+        j = n;
+        found = false;
+        midValue = false;
+        leftValue = false;
+        rightValue = false;
+
+        while(i < j){
+            mid = (i + j) / 2;
+
+            if(this.equals(values[mid], target)){
+                closestValue = values[mid];
+                midValue = true;
+                found = true;
+                i = j;
+            }
+            else{
+                midValue = false;
+            }
+
+            if(!midValue){
+                if(target < values[mid]){
+
+                    if(this.minorEquals(0, mid) && this.minorEquals(values[mid - 1], target)){
+                        closestValue = this.getClosest(values[mid-1], values[mid], target);
+                        leftValue = true;
+                        found = true;
+                    }
+                    else{
+                        leftValue = false;
+                    }
+
+                    if(!leftValue){
+                        j = mid;
+                    }
+                    else{
+                        i = j;
+                    }
+                }
+                else{
+                    if((mid < n - 1) && target < values[mid+1]){
+                        closestValue = this.getClosest(values[mid], values[mid + 1],target);
+                        rightValue = true;
+                        found = true;
+                    }
+                    else{
+                        rightValue = true;
+                    }
+
+                    if(!rightValue){
+                        i = mid + 1;
+                    }
+                    else{
+                        i = j;
+                    }
+                }
+            }
+            else{
+
+            }
+
+        }
+
+        if(!found){
+            closestValue = values[mid];
+        }
+        else{
+
+        }
+
+        return closestValue;
+    }
+
+    public int getClosest(int val1, int val2, int target){
+        int ret;
+
+        if(val2 - target < target - val1){
+            ret = val2;
+        }
+        else{
+            ret = val1;
+        }
+
+        return ret;
+    }
+
+    public static void main(String[] args){
+        int[] values;
+        int target;
+        int closest;
+        Test2 test;
+
+        test = new Test2();
+
+        values = new int[20];
+        values[0] = 0;
+        values[1] = 1;
+        values[2] = 2;
+        values[3] = 3;
+        values[4] = 4;
+        values[5] = 5;
+        values[6] = 6;
+        values[7] = 7;
+        values[8] = 8;
+        values[9] = 9;
+        values[10] = 10;
+        values[11] = 11;
+        values[12] = 12;
+        values[13] = 13;
+        values[14] = 14;
+        values[15] = 15;
+        values[16] = 16;
+        values[17] = 17;
+        values[18] = 18;
+        values[19] = 19;
+
+        target = MathUtils.random(0-20, 20);
+
+        closest = test.closestElement(values, target);
+		ioPlus.printResult(closest);
+    }
+
+    public boolean equals(int a, int b){
+        boolean same;
+        
+        if(a < b){
+            same = false;
+        }
+        else{
+            if(b < a){
+                same = false;
+            }
+            else{
+                same = true;
+            }
+        }
+        return same;
+    }
+
+    public boolean minorEquals(int a, int b){
+        boolean equalsMinor;
+
+        if(a < b){
+            equalsMinor = true;
+        }
+        else{
+            if(this.equals(a, b)){
+                equalsMinor = true;
+            }
+            else{
+                equalsMinor = false;
+            }
+        }
+
+        return equalsMinor;
+    }
+}
