@@ -1,24 +1,26 @@
-import StringToInt;
-import StringToInt.getInt(String) int;
+import io.println(int);
+import io.println(String);
 
 class RecursiveFactorial{
 
     public static void main(String[] args) {
         int factorial;
         int num;
-        StringToInt stringToInt;
         RecursiveFactorial recursiveFactorial;
 
-        stringToInt = new StringToInt();
+        num =3;
         recursiveFactorial = new RecursiveFactorial();
 
-        num = stringToInt.getInt(args[0]);
         factorial = recursiveFactorial.multiplyNumbers(num);
+        io.println(factorial);
+
     }
 
+
     public int multiplyNumbers(int num){
+
         if (0 < num) {
-            num = num * this.multiplyNumbers(num - 1);
+           num = num * this.multiplyNumbers(num - 1);
         }
         else{
             num = 1;
