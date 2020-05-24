@@ -1,5 +1,4 @@
 import io.println(int);
-import io.println(String);
 
 class RecursiveFactorial{
 

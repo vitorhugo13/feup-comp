@@ -1,47 +1,41 @@
 import Transport;
-import Transport.getMaxSpeed() int;
 import Transport.isNew() boolean;
 import Transport.getYears() int;
 import Transport.start(int);
-import Transport.run();
+import static ioPlus.printResult(int) void;
 
 class Airplane extends Transport {
     boolean isFlying;
+    boolean isUpdated;
 
     public static void main(String[] a) {
         int maxSpeedSupportAirplane;
+        int price;
         Transport supportAirplane;
         Airplane airplane;
         supportAirplane = new Airplane();
         airplane = new Airplane();
         isFlying = false;
+        isUpdated = true;
 
         maxSpeedSupportAirplane = supportAirplane.getMaxSpeed();
+        price = airplane.getPrice(100);
+        ioPlus.printResult(price);
         supportAirplane.start(maxSpeedSupportAirplane);
         airplane.start();
     }
 
     public int getMaxSpeed() {
         int maxSpeed;
-        if(isFlying){
+        if(isUpdated){
             maxSpeed = 300;
         }
         else{
-            maxSpeed = 0;
+            maxSpeed = 150;
         }
         return maxSpeed;
     }
 
-    public int getMaxSpeed() {
-        int maxSpeed;
-        if(isFlying){
-            maxSpeed = 300;
-        }
-        else{
-            maxSpeed = 0;
-        }
-        return maxSpeed;
-    }
 
     public int getPrice(int initialPrice) {
         int finalPrice;
@@ -56,10 +50,9 @@ class Airplane extends Transport {
         return finalPrice;
     }
 
-    public boolean start(){
-        while(true){
-            this.run();
-        }
-        return true;
+
+    public int start(){
+        ioPlus.printResult(0);
+        return 0;
     }
 }
