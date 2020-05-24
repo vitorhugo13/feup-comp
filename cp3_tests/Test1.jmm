@@ -1,0 +1,132 @@
+import static MathUtils.random(int, int) int;
+import static ioPlus.printResult(int) void;
+
+/*Check if square generated is  magic or not*/
+
+/*
+0|1
+2|3
+*/
+class Test1{
+	public static void main(String[] args){
+        Test1 test;
+        int[] magic;
+        boolean isMagic;
+        int result; //0 - not magic square | 1 - magic square
+
+        test = new Test1();
+        magic = test.initializeSquare();
+        
+        if(test.verifySquare(magic)){
+            result = 1;
+        }
+        else{
+            result = 0;
+        }
+
+		ioPlus.printResult(result);
+
+    }
+
+    public int[] initializeSquare(){
+        int[] temp;
+        
+        temp = new int[4];
+        temp[0] = MathUtils.random(0-9, 9);
+        temp[1] = MathUtils.random(0-9, 9);
+        temp[2] = MathUtils.random(0-9, 9);
+        temp[3] = MathUtils.random(0-9, 9);
+
+        return temp;
+    }
+
+    public boolean verifySquare(int[] sqr){
+        Boolean magic;
+        Boolean line;
+        Boolean col;
+        Boolean diagonal;
+       
+        if(this.verifyCol(sqr) && this.verifyDiagonal(sqr) && this.verifyLines(sqr)){
+            magic = true;
+        }
+        else{
+            magic = false;
+        }
+        
+
+        return magic;
+    }
+
+    public boolean verifyLines(int[] sqr){
+        Boolean magic;
+        int s1;
+        int s2;
+
+        s1 = sqr[0] + sqr[1];
+        s2 = sqr[2] + sqr[3];
+       
+        if(s1 < s2){
+            magic = false;
+        }
+        else{
+            if(s2 < s1){
+                magic = false;
+            }
+            else{
+                magic = true;
+            }
+        }
+
+
+        return magic;
+    }
+
+    public boolean verifyCol(int[] sqr){
+        Boolean magic;
+        int s1;
+        int s2;
+
+        s1 = sqr[0] + sqr[2];
+        s2 = sqr[1] + sqr[3];
+       
+        if(s1 < s2){
+            magic = false;
+        }
+        else{
+            if(s2 < s1){
+                magic = false;
+            }
+            else{
+                magic = true;
+            }
+        }
+
+
+        return magic;
+    }
+
+    public boolean verifyDiagonal(int[] sqr){
+        Boolean magic;
+        int s1;
+        int s2;
+
+        s1 = sqr[0] + sqr[3];
+        s2 = sqr[2] + sqr[1];
+       
+        if(s1 < s2){
+            magic = false;
+        }
+        else{
+            if(s2 < s1){
+                magic = false;
+            }
+            else{
+                magic = true;
+            }
+        }
+
+
+        return magic;
+    }
+
+}

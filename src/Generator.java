@@ -1,5 +1,8 @@
 import java.io.PrintWriter;
 import java.io.File;
+import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayList;
 
@@ -12,13 +15,28 @@ import descriptors.VarDescriptor;
 class Generator {
 
     private SymbolTable symbolTable;
-    private int localIndex;
-    private int tagIndex;
-    private String mainClass;
+    
+    private String mainClass;   // main class identifier
+    private Instruction instruction;
+
+    private int localIndex;     // index of local variables
+    private int maxStackSize;   // maximum size the stack has reached
+    private int stackSize;      // current stack size
+    
+    private int tagIndex;       // less than tags
+    private int ifIndex;        // if statement tags
+    private int whileIndex;     // while loop tags
+
 
     public Generator(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
+        
         this.tagIndex = 0;
+        this.ifIndex = 0;
+        this.whileIndex = 0;
+
+        this.maxStackSize = 0;
+        this.stackSize = 0;
     }
     
     public void generate(Node root, String filename) {
@@ -57,6 +75,13 @@ class Generator {
         else if (nodeName.equals("NewIntArray"))
             ret = processNewIntArray(node, out);
 
+        // IF STATEMENT
+        else if (nodeName.equals("IfStatement"))
+            processIf(node, out);
+        // WHILE LOOP
+        else if (nodeName.equals("While"))
+            processWhile(node, out);
+
         // OPERATORS
         else if (nodeName.equals("And"))
             ret = processAnd(node, out);
@@ -84,6 +109,8 @@ class Generator {
             ret = processThis(node, out);
         else if (nodeName.equals("Array"))
             ret = processArray(node, out);
+        else if (nodeName.equals("Length"))
+            ret = processLength(node, out);
 
         return ret;
     }
@@ -134,6 +161,11 @@ class Generator {
     // ==========================================
 
     private void processMethod(Node node, PrintWriter out) {
+        ByteArrayOutputStream tmpStream = new ByteArrayOutputStream();
+        PrintWriter tmpOut = new PrintWriter(tmpStream, true);
+
+        instruction = new Instruction();
+
         symbolTable.enterScopeForAnalysis();
 
         String name = Utils.parseName(node.toString());
@@ -145,28 +177,40 @@ class Generator {
         String params = processParamList(node.jjtGetChild(childNum));
         localIndex = node.jjtGetChild(childNum).jjtGetNumChildren() + childNum;
 
-        out.println();
-        out.println(String.format(".method public %s(%s)%s", name, params, type));
-        out.println(String.format("    .limit stack 99"));
-        out.println(String.format("    .limit locals 99"));
-
         Node body = node.jjtGetChild(node.jjtGetNumChildren() - 1); 
         for (int i = 0; i < body.jjtGetNumChildren(); i++) {
             if (body.jjtGetChild(i).toString().equals("VarDeclaration"))
                 continue;
 
-            out.println();
-            execute(body.jjtGetChild(i), out);
+            tmpOut.println();
+            execute(body.jjtGetChild(i), tmpOut);
         }
 
         Node lastInstruction = body.jjtGetChild(body.jjtGetNumChildren() - 1);
-        out.println();
+        tmpOut.println();
         if (lastInstruction.toString().equals("Return")) {
             for (int i = 0; i < lastInstruction.jjtGetNumChildren(); i++)
-                execute(lastInstruction.jjtGetChild(i), out);
+                execute(lastInstruction.jjtGetChild(i), tmpOut);
         }
         
-        out.println(String.format("    %sreturn", (type.equals("V") ? "" : (type.equals("I") || type.equals("Z") ? "i" : "a"))));
+        // return
+        if (type.equals("I") || type.equals("Z"))
+            tmpOut.println(instruction.ireturn());
+        else if (type.equals("V"))
+            tmpOut.println(instruction._return());
+        else 
+            tmpOut.println(instruction.areturn());
+
+        out.println();
+        out.format(".method public %s(%s)%s\n", name, params, type);
+        out.println(instruction.limitStack());
+        out.println(instruction.limitLocals(this.localIndex));
+        // out.format("    .limit stack %d\n", this.maxStackSize);
+        // out.format("    .limit locals %d\n", this.localIndex);
+
+        // write method body
+        out.println(tmpStream.toString(StandardCharsets.UTF_8));
+
         out.println(String.format(".end method"));
 
         symbolTable.exitScopeForAnalysis();
@@ -190,6 +234,7 @@ class Generator {
         String className = execute(node.jjtGetChild(0), out);
         String methodName = Utils.parseName(node.jjtGetChild(1).toString());
         String argList = processArgList(node.jjtGetChild(2), out);
+        int numArgs = node.jjtGetChild(2).jjtGetNumChildren();
         String type = "";
         boolean isStatic = false;
 
@@ -214,10 +259,10 @@ class Generator {
         } catch (Exception e) {}
         
         if (isStatic) 
-            out.println(String.format("    invokestatic %s/%s(%s)%s", className, methodName, argList, type));
+            out.println(instruction.invokestatic(className, methodName, argList, numArgs, type));
         else
-            out.println(String.format("    invokevirtual %s/%s(%s)%s", className, methodName, argList, type));
-
+            out.println(instruction.invokevirtual(className, methodName, argList, numArgs, type));
+            
         return type;
     }
 
@@ -234,16 +279,16 @@ class Generator {
     private String processConstructorInvocation(Node node, PrintWriter out) {
         String className = processIdentifier(node.jjtGetChild(0), out);
 
-        out.println(String.format("    new %s", className));
-        out.println(String.format("    dup"));
-        out.println(String.format("    invokespecial %s/<init>()V", className)); 
-
+        out.println(instruction._new(className));
+        out.println(instruction.dup());
+        out.println(instruction.invokespecial(className));
+        
         return "V";
     }
 
     private String processNewIntArray(Node node, PrintWriter out) {
         execute(node.jjtGetChild(0), out);
-        out.println(String.format("    newarray int"));
+        out.println(instruction.newarray());
 
         return "[I";
     }
@@ -255,7 +300,7 @@ class Generator {
 
     public void processAssignment(Node node, PrintWriter out) {
         String nodeName = node.jjtGetChild(0).toString();
-        String instruction = ""; 
+        // String strInstruction = ""; 
         String identifier = "";
 
         if (nodeName.equals("Array"))
@@ -270,17 +315,15 @@ class Generator {
 
         // class atributes
         if (var.getScope() == Descriptor.Scope.GLOBAL) {
-            out.println("    aload_0");
+            out.println(instruction.aload(0));
             if (nodeName.equals("Array")) {
-                out.println(String.format("    getfield %s/%s %s", mainClass, identifier, parseType2(var.getDataType())));
+                out.println(instruction.getfield(mainClass, identifier, parseType2(var.getDataType())));
                 execute(node.jjtGetChild(0).jjtGetChild(1), out);
-                instruction = "iastore";
+                // strInstruction = instruction.iastore();
             }
-            else
-                instruction = String.format("putfield %s/%s %s", mainClass, identifier, parseType2(var.getDataType()));
-            
+            // else
+            //     strInstruction = instruction.putfield(mainClass, identifier, parseType2(var.getDataType()));
         }
-        
         // local variables
         else {
             if (var.getLocalIndex() == -1)
@@ -289,20 +332,89 @@ class Generator {
             String type = parseType(var.getDataType());
 
             if (nodeName.equals("Array")) {
-                out.println(String.format("    %s", load(parseType(var.getDataType()), var.getLocalIndex())));
+                out.println(load(parseType(var.getDataType()), var.getLocalIndex()));
                 execute(node.jjtGetChild(0).jjtGetChild(1), out);        // element index
-                instruction = String.format("iastore");
+                // strInstruction = instruction.iastore();
             }
-            else
-                instruction = store(type, var.getLocalIndex());
+            // else
+                // strInstruction = store(type, var.getLocalIndex());
         }
 
         // process the right side of the expression, push value to stack
         execute(node.jjtGetChild(1), out);
 
-        out.println(String.format("    %s", instruction));
+        if (var.getScope() == Descriptor.Scope.GLOBAL) {
+            if (nodeName.equals("Array"))
+                out.println(instruction.iastore());
+            else
+                out.println(instruction.putfield(mainClass, identifier, parseType2(var.getDataType())));
+        }
+        else {
+            if (nodeName.equals("Array"))
+                out.println(instruction.iastore());
+            else 
+                out.println(store(parseType(var.getDataType()), var.getLocalIndex()));
+        }
+
+        // out.println(strInstruction);
     }
 
+
+    // ==========================================
+    //             CONTROL STRUCTURES
+    // ==========================================
+
+    private void processIf(Node node, PrintWriter out) {
+        String elseTag = String.format("else_%d", this.ifIndex);
+        String endTag = String.format("endif_%d", this.ifIndex);
+
+        // condition
+        processCondition(node.jjtGetChild(0), out);
+        out.println(instruction.ifeq(elseTag));
+
+        // if
+        processScope(node.jjtGetChild(1), out);
+        out.println(instruction._goto(endTag));
+        
+        // else
+        out.println(instruction.tag(elseTag));
+        processScope(node.jjtGetChild(2), out);
+
+        out.println(instruction.tag(endTag));
+
+        this.ifIndex++;
+    }
+
+    private void processWhile(Node node, PrintWriter out) {
+        String startTag = String.format("start_while_%d", this.whileIndex);
+        String endTag = String.format("end_while_%d", this.whileIndex);
+
+        // condition
+        processCondition(node.jjtGetChild(0), out);
+        out.println(instruction.ifeq(endTag));
+        out.println(instruction.tag(startTag));
+        
+        // scope
+        processScope(node.jjtGetChild(1), out);
+        
+        // check condition as to minimize the amount of jumps
+        processCondition(node.jjtGetChild(0), out);
+        out.println(instruction.ifne(startTag));
+
+        out.println(instruction.tag(endTag));
+
+        this.whileIndex++;
+    }
+
+    private void processCondition(Node node, PrintWriter out) {
+        execute(node.jjtGetChild(0), out);
+    }
+
+    private void processScope(Node node, PrintWriter out) {
+        for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+            execute(node.jjtGetChild(i), out);
+        }
+    }
 
     // ==========================================
     //                 OPERATORS
@@ -312,7 +424,7 @@ class Generator {
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
         
-        out.println(String.format("    iand"));
+        out.println(instruction.iand());
 
         return "I";
     }
@@ -320,13 +432,16 @@ class Generator {
     private String processLess(Node node, PrintWriter out) {
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
+
+        String tagTrue = String.format("lt_true_%d", tagIndex);
+        String tagFalse = String.format("lt_false_%d", tagIndex);
         
-        out.println(String.format("    if_icmplt ltTrue%d", tagIndex));
-        out.println(String.format("    iconst_0"));
-        out.println(String.format("    goto ltFalse%d", tagIndex));
-        out.println(String.format("  ltTrue%d:", tagIndex));
-        out.println(String.format("    iconst_1"));
-        out.println(String.format("  ltFalse%d:", tagIndex));
+        out.println(instruction.if_icmplt(tagTrue));
+        out.println(instruction.iconst(0));
+        out.println(instruction._goto(tagFalse));
+        out.println(instruction.tag(tagTrue));
+        out.println(instruction.iconst(1));
+        out.println(instruction.tag(tagFalse));
 
         tagIndex++;
 
@@ -336,8 +451,8 @@ class Generator {
     private String processNot(Node node, PrintWriter out) {
         execute(node.jjtGetChild(0), out);
 
-        out.println(String.format("    iconst_1"));
-        out.println(String.format("    ixor"));
+        out.println(instruction.iconst(1));
+        out.println(instruction.ixor());
 
         return "Z";
     }
@@ -346,7 +461,7 @@ class Generator {
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
         
-        out.println(String.format("    iadd"));
+        out.println(instruction.iadd());
         
         return "I";
     }
@@ -355,7 +470,7 @@ class Generator {
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
         
-        out.println(String.format("    isub"));
+        out.println(instruction.isub());
      
         return "I";
     }
@@ -364,7 +479,7 @@ class Generator {
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
         
-        out.println(String.format("    imul"));
+        out.println(instruction.imul());
      
         return "I";
     }
@@ -373,7 +488,7 @@ class Generator {
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
         
-        out.println(String.format("    idiv"));
+        out.println(instruction.idiv());
      
         return "I";
     }
@@ -392,22 +507,29 @@ class Generator {
 
             // global variables
             if (var.getScope() == Descriptor.Scope.GLOBAL) {
-                out.println(String.format("    aload_0"));
-                out.println(String.format("    getfield %s/%s %s", mainClass, identifier, parseType2(var.getDataType())));
+                out.println(instruction.aload(0));
+                out.println(instruction.getfield(mainClass, identifier, parseType2(var.getDataType())));
             }
             // local variables
             else {
-                out.println(String.format("    %s", load(type, var.getLocalIndex())));
+                out.println(load(type, var.getLocalIndex()));
             }
-                // pushInteger(var.getLocalIndex(), out);
         } catch (Exception e) {}
         
         execute(node.jjtGetChild(1), out);
 
         type = type.substring(1);
-
-        out.println(String.format("    %saload", type.equals("I") || type.equals("Z") ? "i" : "a"));
+        if (type.equals("I") || type.equals("Z"))
+            out.println(instruction.iaload());
+        else
+            out.println(instruction.aaload());
         return type;
+    }
+
+    private String processLength(Node node, PrintWriter out) {
+        processIdentifier(node.jjtGetChild(0), out);
+        out.println(instruction.arraylength());
+        return "I";
     }
 
     private String processInteger(Node node, PrintWriter out) {
@@ -433,12 +555,12 @@ class Generator {
             
             // for global variables AKA class atributes
             if (var.getScope() == Descriptor.Scope.GLOBAL) {
-                out.println(String.format("    aload_0"));
-                out.println(String.format("    getfield %s/%s %s", mainClass, nodeName, parseType2(var.getDataType())));
+                out.println(instruction.aload(0));
+                out.println(instruction.getfield(mainClass, nodeName, parseType2(var.getDataType())));
             }
             // for local variables
             else
-                out.println(String.format("    %s", load(type, var.getLocalIndex())));
+                out.println(load(type, var.getLocalIndex()));
         }
 
         return type;
@@ -447,13 +569,13 @@ class Generator {
     private String processBoolean(Node node, PrintWriter out) {
         String value = Utils.parseName(node.toString());
         
-        out.println(String.format("    iconst_%d", value.equals("true") ? 1 : 0));
+        out.println(instruction.iconst(value.equals("true") ? 1 : 0));
 
         return "Z";
     }
 
     private String processThis(Node node, PrintWriter out) {
-        out.println(String.format("    aload_0"));
+        out.println(instruction.aload(0));
 
         return mainClass;
     }
@@ -511,30 +633,26 @@ class Generator {
     // ==========================================
 
     private void pushInteger(int value, PrintWriter out) {
-        String instruction = "";
-
         if (value >= 0 && value <= 5)
-            instruction = "iconst_";
+            out.println(instruction.iconst(value));
         else if (value <= 127)
-            instruction = "bipush ";
+            out.println(instruction.bipush(value));
         else if (value <= 32767)
-            instruction = "ldc ";
-        
-        out.println(String.format("    %s%d", instruction, value));
+            out.println(instruction.ldc(value));
     }
 
     private String load(String type, int index) {
-        return String.format("%sload%s%d", 
-            type.equals("I") || type.equals("Z") ? "i" : "a",
-            index < 4 ? "_" : " ",
-            index);
+        if (type.equals("I") || type.equals("Z"))
+            return instruction.iload(index);
+        else
+            return instruction.aload(index);
     }
 
     private String store(String type, int index) {
-        return String.format("%sstore%s%d", 
-            type.equals("I") || type.equals("Z") ? "i" : "a",
-            index < 4 ? "_" : " ",
-            index);
+        if (type.equals("I") || type.equals("Z"))
+            return instruction.istore(index);
+        else 
+            return instruction.astore(index);
     }
 }
 
