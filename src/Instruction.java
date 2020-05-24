@@ -5,8 +5,6 @@ class Instruction {
     private int maxStack;
 
     public Instruction() {
-        
-
         this.stack = 0;
         this.maxStack = 0;
     }
@@ -15,8 +13,6 @@ class Instruction {
         stack += value;
         if (stack > maxStack)
             maxStack = stack;
-
-      
     }
 
 
@@ -127,6 +123,7 @@ class Instruction {
 
     public String invokevirtual(String className, String methodName, String argList, int numArgs, String type) {
         updateStack(-numArgs);
+        System.out.println("type : " + type);
         return String.format("    invokevirtual %s/%s(%s)%s", className, methodName, argList, type);
     }
 
@@ -225,6 +222,11 @@ class Instruction {
     // ==========================================
     //                RANDOM STUFF
     // ==========================================
+
+    public String _pop() {
+        updateStack(-1);
+        return "    pop";
+    }
 
     public String dup() {
         updateStack(1);
