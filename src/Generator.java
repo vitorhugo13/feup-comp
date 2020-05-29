@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Stack;
 
 import java.util.ArrayList;
 
@@ -27,7 +28,7 @@ class Generator {
     private int ifIndex;        // if statement tags
     private int whileIndex;     // while loop tags
 
-    private boolean doPop;
+    private Stack<Boolean> popScope;
 
 
     public Generator(SymbolTable symbolTable) {
@@ -40,7 +41,20 @@ class Generator {
         this.maxStackSize = 0;
         this.stackSize = 0;
 
-        this.doPop = true;
+        this.popScope = new Stack<Boolean>();
+        this.popScope.push(true);
+    }
+
+    public void enterPopScope() {
+        this.popScope.push(false);
+    }
+
+    public void exitPopScope() {
+        this.popScope.pop();
+    }
+
+    public boolean getPop() {
+        return this.popScope.peek();
     }
     
     public void generate(Node root, String filename) {
@@ -138,7 +152,8 @@ class Generator {
         ArrayList<VarDescriptor> attributes = symbolTable.getClassAtributes();
         for (int i = attributes.size() - 1; i >= 0; i--) {
             VarDescriptor var = attributes.get(i);
-            out.println(String.format(".field public %s %s", var.getIdentifier(), parseType2(var.getDataType())));
+            out.println(Instruction._field(var.getIdentifier(), parseType2(var.getDataType())));
+            // out.println(String.format(".field public %s %s", var.getIdentifier(), parseType2(var.getDataType())));
         }
 
         out.println();
@@ -175,6 +190,8 @@ class Generator {
         String name = Utils.parseName(node.toString());
         name = name.equals("main") ? "static main" : name;
 
+        // System.out.println("method : " + name);
+
         String type = node.jjtGetChild(0).toString().contains("Type") ? parseType(Utils.parseName(node.jjtGetChild(0).toString())) : "V";
         int childNum = type.equals("V") ? 0 : 1;
         
@@ -193,10 +210,12 @@ class Generator {
         Node lastInstruction = body.jjtGetChild(body.jjtGetNumChildren() - 1);
         tmpOut.println();
         if (lastInstruction.toString().equals("Return")) {
-            this.doPop = false;
+            System.out.println("in --- Return");
+            this.enterPopScope();
             for (int i = 0; i < lastInstruction.jjtGetNumChildren(); i++)
                 execute(lastInstruction.jjtGetChild(i), tmpOut);
-            this.doPop = true;
+            this.exitPopScope();
+            System.out.println("out -- Return");
         }
         
         // return
@@ -236,11 +255,13 @@ class Generator {
     // ==========================================
 
     private String processMethodInvocation(Node node, PrintWriter out) {
-        boolean pop = this.doPop;
 
-        this.doPop = false;
+        System.out.println("in --- MethodInvocation");
+        this.enterPopScope();
 
+        // System.out.println(node.jjtGetChild(0).toString() + " " + node.jjtGetChild(1).toString());
         String className = execute(node.jjtGetChild(0), out);
+        // System.out.println(className);
         String methodName = Utils.parseName(node.jjtGetChild(1).toString());
         String argList = processArgList(node.jjtGetChild(2), out);
         int numArgs = node.jjtGetChild(2).jjtGetNumChildren();
@@ -270,7 +291,7 @@ class Generator {
             if (argList.equals(signature))
                 break;
         }
-        System.out.println("TYPE : " + method.getReturnType());
+        // System.out.println("TYPE : " + method.getReturnType());
         String type = parseType(method.getReturnType());
         boolean isStatic = method.isStatic();
 
@@ -279,21 +300,28 @@ class Generator {
         else
             out.println(instruction.invokevirtual(className, methodName, argList, numArgs, type));
         
-        if (pop && !type.equals("V"))
+        this.exitPopScope();
+        System.out.println("out -- MethodInvocation");
+        
+        if (this.getPop() && !type.equals("V")) {
+            System.out.println("Popped : " + methodName);
             out.println(instruction._pop());
-
-        this.doPop = true;
-
+        }
+        
         return type;
     }
 
     private String processArgList(Node node, PrintWriter out) {
+        // System.out.println("in --- ArgList");
+        // this.enterPopScope();
         String ret = "";
 
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             ret += parseType2(execute(node.jjtGetChild(i), out));
         }
 
+        // this.exitPopScope();
+        // System.out.println("in --- ArgList");
         return ret;
     }
 
@@ -308,12 +336,12 @@ class Generator {
     }
 
     private String processNewIntArray(Node node, PrintWriter out) {
-        this.doPop = false;
+        this.enterPopScope();
 
         execute(node.jjtGetChild(0), out);
         out.println(instruction.newarray());
 
-        this.doPop = true;
+        this.exitPopScope();
 
         return "[I";
     }
@@ -324,7 +352,9 @@ class Generator {
     // ==========================================
 
     public void processAssignment(Node node, PrintWriter out) {
-        this.doPop = false;
+        System.out.println("in --- Assignment");
+        this.enterPopScope();
+
         String nodeName = node.jjtGetChild(0).toString();
         String identifier = "";
 
@@ -375,7 +405,8 @@ class Generator {
                 out.println(store(parseType(var.getDataType()), var.getLocalIndex()));
         }
 
-        this.doPop = true;
+        this.exitPopScope();
+        System.out.println("out -- Assignment");
     }
 
 
@@ -386,6 +417,7 @@ class Generator {
     private void processIf(Node node, PrintWriter out) {
         String elseTag = String.format("else_%d", this.ifIndex);
         String endTag = String.format("endif_%d", this.ifIndex);
+        this.ifIndex++;
 
         // condition
         processCondition(node.jjtGetChild(0), out);
@@ -400,13 +432,12 @@ class Generator {
         processScope(node.jjtGetChild(2), out);
 
         out.println(instruction.tag(endTag));
-
-        this.ifIndex++;
     }
 
     private void processWhile(Node node, PrintWriter out) {
         String startTag = String.format("start_while_%d", this.whileIndex);
         String endTag = String.format("end_while_%d", this.whileIndex);
+        this.whileIndex++;
 
         // condition
         processCondition(node.jjtGetChild(0), out);
@@ -421,14 +452,14 @@ class Generator {
         out.println(instruction.ifne(startTag));
 
         out.println(instruction.tag(endTag));
-
-        this.whileIndex++;
     }
 
     private void processCondition(Node node, PrintWriter out) {
-        this.doPop = false;
+        System.out.println("in --- Condition");
+        this.enterPopScope();
         execute(node.jjtGetChild(0), out);
-        this.doPop = true;
+        this.exitPopScope();
+        System.out.println("out -- Condition");
     }
 
     private void processScope(Node node, PrintWriter out) {
@@ -442,19 +473,22 @@ class Generator {
     // ==========================================
 
     private String processAnd(Node node, PrintWriter out) {
-        this.doPop = false;
+        System.out.println("in --- AndOperator");
+        this.enterPopScope();
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
         
         out.println(instruction.iand());
 
-        this.doPop = true;
+        this.exitPopScope();
+        System.out.println("out -- AndOperator");
 
         return "I";
     }
     
     private String processLess(Node node, PrintWriter out) {
-        this.doPop = false;
+        System.out.println("in --- LessOperator");
+        this.enterPopScope();
 
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
@@ -471,73 +505,79 @@ class Generator {
 
         tagIndex++;
 
-        this.doPop = true;
+        this.exitPopScope();
+        System.out.println("out -- LessOperator");
         
         return "Z";
     }
 
     private String processNot(Node node, PrintWriter out) {
-        this.doPop = false;
+        System.out.println("in --- NotOperator");
+        this.enterPopScope();
 
         execute(node.jjtGetChild(0), out);
 
         out.println(instruction.iconst(1));
         out.println(instruction.ixor());
-
-        this.doPop = true;
-
+        
+        this.exitPopScope();
+        System.out.println("out -- NotOperator");
         return "Z";
     }
         
     private String processAdd(Node node, PrintWriter out) {
-        this.doPop = false;
+        System.out.println("in --- AddOperator");
+        this.enterPopScope();
 
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
         
         out.println(instruction.iadd());
         
-        this.doPop = true;
-
+        this.exitPopScope();
+        System.out.println("out -- AddOperator");
         return "I";
     }
 
     private String processSub(Node node, PrintWriter out) {
-        this.doPop = false;
+        System.out.println("in --- SubOperator");
+        this.enterPopScope();
 
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
         
         out.println(instruction.isub());
      
-        this.doPop = true;
-
+        this.exitPopScope();
+        System.out.println("out -- SubOperator");
         return "I";
     }
     
     private String processMul(Node node, PrintWriter out) {
-        this.doPop = false;
+        System.out.println("in --- MultOperator");
+        this.enterPopScope();
         
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
         
         out.println(instruction.imul());
      
-        this.doPop = true;
-
+        this.exitPopScope();
+        System.out.println("out -- MultOperator");
         return "I";
     }
 
     private String processDiv(Node node, PrintWriter out) {
-        this.doPop = false;
+        System.out.println("in --- DivOperator");
+        this.enterPopScope();
 
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute(node.jjtGetChild(i), out);
         
         out.println(instruction.idiv());
      
-        this.doPop = true;
-        
+        this.exitPopScope();
+        System.out.println("out -- DivOperator");
         return "I";
     }
     
@@ -587,16 +627,24 @@ class Generator {
     }
 
     private String processIdentifier(Node node, PrintWriter out) {
+        // System.out.println(node.toString());
+
         String nodeName = Utils.parseName(node.toString());
         Descriptor descriptor = null;
         String type = nodeName;
 
         try {
             descriptor = symbolTable.lookup(nodeName).get(0);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // in case the identifier represents a variable
         // there is the need to load the value onto the stack
+
+        // System.out.println(nodeName);
+        // System.out.println(descriptor.getType());
+        
         if (descriptor.getType() == Descriptor.Type.VAR) {
             VarDescriptor var = (VarDescriptor) descriptor;
             type = parseType(var.getDataType());

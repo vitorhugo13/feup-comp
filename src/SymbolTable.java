@@ -160,9 +160,12 @@ public class SymbolTable{
                 else if(entry.getValue().get(0).getType().equals(Descriptor.Type.CLASS)){
                     if(((ClassDescriptor)entry.getValue().get(0)).getParentClass()!= null)
                         System.out.println(entry.getKey() +" EXTENDS: " + ((ClassDescriptor)entry.getValue().get(0)).getParentClass().getIdentifier() + " " + ((ClassDescriptor)entry.getValue().get(0)).getMethods()); 
-                    System.out.println(entry.getKey() + " " + ((ClassDescriptor)entry.getValue().get(0)).getMethods());  
+                    System.out.println(entry.getKey());
+
+                    ((ClassDescriptor) entry.getValue().get(0)).getMethods().forEach(method ->
+                        System.out.println(" " + method.getIdentifier()));
                 }
-                });
+            });
 
             //  all_hashes.get(i).getHash().entrySet().forEach(entry->{
             //     System.out.println(entry.getKey() + entry.getValue());

@@ -53,13 +53,17 @@ class Instruction {
     //                   FIELDS 
     // ==========================================
 
+    public static String _field(String name, String type) {
+        return String.format(".field public _%s %s", name, type);
+    }
+
     public String getfield(String className, String fieldName, String type) {
-        return String.format("    getfield %s/%s %s", className, fieldName, type);
+        return String.format("    getfield %s/_%s %s", className, fieldName, type);
     }
 
     public String putfield(String className, String fieldName, String type) {
         updateStack(-2);
-        return String.format("    putfield %s/%s %s", className, fieldName, type);
+        return String.format("    putfield %s/_%s %s", className, fieldName, type);
     }
 
 
@@ -123,7 +127,6 @@ class Instruction {
 
     public String invokevirtual(String className, String methodName, String argList, int numArgs, String type) {
         updateStack(-numArgs);
-        System.out.println("type : " + type);
         return String.format("    invokevirtual %s/%s(%s)%s", className, methodName, argList, type);
     }
 
