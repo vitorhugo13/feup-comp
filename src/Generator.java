@@ -734,6 +734,8 @@ class Generator {
         else if (value <= 127)
             out.println(instruction.bipush(value));
         else if (value <= 32767)
+            out.println(instruction.sipush(value));
+        else
             out.println(instruction.ldc(value));
     }
 

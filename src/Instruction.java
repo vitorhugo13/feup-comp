@@ -158,6 +158,11 @@ class Instruction {
         return String.format("    bipush %d", value);
     }
 
+    public String sipush(int value) {
+        updateStack(1);
+        return String.format("    sipush %d", value);
+    }
+
     public String ldc(int value) {
         updateStack(1);
         return String.format("    ldc %d", value);
