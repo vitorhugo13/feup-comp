@@ -20,10 +20,8 @@ public class JmmCompiler {
 		// This method needs to be implemented before the tests can run
 		// Below there is an example implementation, that assumes that the .j file is generated in the repository root
 		// Adapt the code according to your implementation.
-		throw new RuntimeException("Implement JmmCompiler.compile() in order to test the execution of .jmm files");			
+		// throw new RuntimeException("Implement JmmCompiler.compile() in order to test the execution of .jmm files");			
 
-
-		/*
 		// Executes J-- compiler		
 		try {
             // Get class with main
@@ -33,7 +31,7 @@ public class JmmCompiler {
             Method mainMethod = mainClass.getMethod("main", String[].class);
 
             // Invoke main method with file as argument
-            String[] mainArgs = { jmm.getAbsolutePath() };
+            String[] mainArgs = { jmm.getAbsolutePath(), "-c" };
             Object[] invokeArgs = { mainArgs };
             mainMethod.invoke(null, invokeArgs);
 
@@ -51,7 +49,6 @@ public class JmmCompiler {
 		}
 
 		return SpecsIo.read(jFile);		
-		*/
 				
 	}
 	
