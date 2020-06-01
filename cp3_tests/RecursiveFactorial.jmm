@@ -1,0 +1,30 @@
+import io.println(int);
+
+class RecursiveFactorial{
+
+    public static void main(String[] args) {
+        int factorial;
+        int num;
+        RecursiveFactorial recursiveFactorial;
+
+        num =3;
+        recursiveFactorial = new RecursiveFactorial();
+
+        factorial = recursiveFactorial.multiplyNumbers(num);
+        io.println(factorial);
+
+    }
+
+
+    public int multiplyNumbers(int num){
+
+        if (0 < num) {
+           num = num * this.multiplyNumbers(num - 1);
+        }
+        else{
+            num = 1;
+        }
+
+        return num;
+    }
+}

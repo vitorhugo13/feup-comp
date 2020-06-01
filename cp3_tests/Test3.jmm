@@ -1,0 +1,70 @@
+import static MathUtils.random(int, int) int;
+import static ioPlus.printResult(int) void;
+
+class Test3{
+
+    public static void main(String[] args){
+
+        int rand;
+        int r;
+        int i;
+        int j;
+        int finalValue;
+        int a;
+        int c;
+        int v;
+        Test3 t3;
+        
+        t3 = new Test3();
+        a = 34;
+        rand = MathUtils.random(0-5, 25);
+        
+        if(rand < 20){
+
+            r = 0;
+
+            if( 15 < rand){
+
+                i = 12;
+
+                if(rand < 17 ){
+                    a = 12;
+                    v = 1;
+                }
+                else{
+                  c = 1; 
+                  v = 2; 
+                }
+
+            }
+            else{
+
+                i = 0;
+                v = 3;
+
+            }
+
+        }
+        else{
+            i = 2;
+            v = 4;
+        }
+
+        finalValue = r + i + c + a + v + t3.getValue() ;
+
+        ioPlus.printResult(finalValue);
+    }
+
+    public int getValue(){
+        int val;
+        int i; 
+        i = MathUtils.random(0, 25);
+
+        while(i < 10){
+            val = 2;
+            i = i + 1;
+        }
+        return val;
+    }
+
+}

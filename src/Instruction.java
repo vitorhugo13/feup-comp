@@ -5,10 +5,6 @@ class Instruction {
     private int maxStack;
 
     public Instruction() {
-        System.out.println("");
-        System.out.println(" NEW METHOD ");
-        System.out.println("");
-
         this.stack = 0;
         this.maxStack = 0;
     }
@@ -17,10 +13,6 @@ class Instruction {
         stack += value;
         if (stack > maxStack)
             maxStack = stack;
-
-        System.out.println("value : " + value);
-        System.out.println("stack : " + stack);
-        System.out.println("max : " + maxStack);
     }
 
 
@@ -47,13 +39,11 @@ class Instruction {
     }
 
     public String ifeq(String tag) {
-        System.out.println("ifeq");
         updateStack(-1);
         return String.format("    ifeq %s", tag);
     }
 
     public String ifne(String tag) {
-        System.out.println("ifne");
         updateStack(-1);
         return String.format("    ifne %s", tag);
     }
@@ -63,13 +53,17 @@ class Instruction {
     //                   FIELDS 
     // ==========================================
 
+    public static String _field(String name, String type) {
+        return String.format(".field public _%s %s", name, type);
+    }
+
     public String getfield(String className, String fieldName, String type) {
-        return String.format("    getfield %s/%s %s", className, fieldName, type);
+        return String.format("    getfield %s/_%s %s", className, fieldName, type);
     }
 
     public String putfield(String className, String fieldName, String type) {
         updateStack(-2);
-        return String.format("    putfield %s/%s %s", className, fieldName, type);
+        return String.format("    putfield %s/_%s %s", className, fieldName, type);
     }
 
 
@@ -102,13 +96,11 @@ class Instruction {
     // ==========================================
 
     public String istore(int value) {
-        System.out.println("istore");
         updateStack(-1);
         return String.format("    istore%s%d", value < 4 ? "_" : " ", value);
     }
 
     public String astore(int value) {
-        System.out.println("astore " + value);
         updateStack(-1);
         return String.format("    astore%s%d", value < 4 ? "_" : " ", value);
     }
@@ -124,19 +116,16 @@ class Instruction {
     // ==========================================
 
     public String invokespecial(String className) {
-        System.out.println("invokespecial");
         // updateStack(-numArgs);
         return String.format("    invokespecial %s/<init>()V", className);
     }
 
     public String invokestatic(String className, String methodName, String argList, int numArgs, String type) {
-        System.out.println("invokestatic");
         updateStack(1 - numArgs);
         return String.format("    invokestatic %s/%s(%s)%s", className, methodName, argList, type);
     }
 
     public String invokevirtual(String className, String methodName, String argList, int numArgs, String type) {
-        System.out.println("invokevirtual");
         updateStack(-numArgs);
         return String.format("    invokevirtual %s/%s(%s)%s", className, methodName, argList, type);
     }
@@ -147,7 +136,6 @@ class Instruction {
     // ==========================================
 
     public String newarray() {
-        System.out.println("newarray");
         return "    newarray int";
     }
 
@@ -161,7 +149,6 @@ class Instruction {
     // ==========================================
     
     public String iconst(int value) {
-        System.out.println("iconst " + value);
         updateStack(1);
         return String.format("    iconst_%d", value);
     }
@@ -169,6 +156,11 @@ class Instruction {
     public String bipush(int value) {
         updateStack(1);
         return String.format("    bipush %d", value);
+    }
+
+    public String sipush(int value) {
+        updateStack(1);
+        return String.format("    sipush %d", value);
     }
 
     public String ldc(int value) {
@@ -182,13 +174,11 @@ class Instruction {
     // ==========================================
     
     public String isub() {
-        System.out.println("isub");
         updateStack(-1);
         return "    isub";
     }
 
     public String imul() {
-        System.out.println("imul");
         updateStack(-1);
         return "    imul";
     }
@@ -198,25 +188,21 @@ class Instruction {
     }
 
     public String idiv() {
-        System.out.println("idiv");
         updateStack(-1);
         return "    idiv";
     }
 
     public String iadd() {
-        System.out.println("iadd");
         updateStack(-1);
         return "    iadd";
     }
 
     public String iand() {
-        System.out.println("iand");
         updateStack(-1);
         return "    iand";
     }
 
     public String ixor() {
-        System.out.println("ixor");
         updateStack(-1);
         return "    ixor";
     }
@@ -231,13 +217,11 @@ class Instruction {
     }
 
     public String ireturn() {
-        System.out.println("ireturn");
         updateStack(-1);
         return "    ireturn";
     }
 
     public String areturn() {
-        System.out.println("areturn");
         updateStack(-1);
         return "    areturn";
     }
@@ -246,6 +230,11 @@ class Instruction {
     // ==========================================
     //                RANDOM STUFF
     // ==========================================
+
+    public String _pop() {
+        updateStack(-1);
+        return "    pop";
+    }
 
     public String dup() {
         updateStack(1);

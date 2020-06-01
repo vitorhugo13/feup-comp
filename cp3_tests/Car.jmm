@@ -1,0 +1,15 @@
+import io.println(int);
+import Transport;
+import Transport.getYears() int;
+
+class Car extends Transport{
+     public static void main(String[] a) {
+        Car littleCar;
+        int age;
+
+        littleCar = new Car();
+
+        age = littleCar.getYears();
+        io.println(age);
+     }
+}

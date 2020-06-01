@@ -221,7 +221,7 @@ void Statement() #void: {}
 {
     WhileLoop()
     | IfStatement()
-    | Scope()
+    // | Scope()
     | TerminalId() IdStatement() <SEMICOLON>
     | NonIdentifierExpression() <SEMICOLON>
 }
@@ -239,17 +239,18 @@ void Assignment() #Assign(2) : {}
 
 void WhileLoop() #While : {}
 {
-    <WHILE> WhileCondition() Statement()
+    <WHILE> WhileCondition() Scope()
 }
 
 void IfStatement() : {}
 {
-    <IF> <LPAR> Expression() #Condition <RPAR> Statement() <ELSE> Statement()
+    <IF> <LPAR> Expression() #Condition <RPAR> Scope() <ELSE> Scope()
 }
 
 void Scope(): {}
 {
-    <LBRACKET> (Statement())* <RBRACKET>
+    <LBRACKET> (Statement())* <RBRACKET> 
+    | Statement()
 }
 
 void DotExpression() #void: {}

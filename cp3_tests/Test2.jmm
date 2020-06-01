@@ -1,210 +1,104 @@
-/* find in a sorted array the closest element of target */
+/* find limits of int array(maximum, minimum) */
 import static MathUtils.random(int, int) int;
 import static ioPlus.printResult(int) void;
 
 class Test2{
 
-    public int closestElement(int[] values, int target){
-        int n;
-        int closestValue;
-        boolean corner;
-
-        n = values.length;
-        
-
-        if(this.minorEquals(target, values[0])){
-            closestValue = values[0];
-            corner = true;
-        }
-        else{
-            if(values[n - 1] < target){
-                closestValue = values[n-1];
-                corner = true;
-            }
-            else{
-                closestValue = 0; //only to compile without warning
-                corner = false;
-            }
-        }
-
-        if(corner){
-            closestValue = closestValue;
-        }
-        else{
-            closestValue = this.binarySearch(values, target);
-        }
-
-        return closestValue;
-    }
-
-    public int binarySearch(int[] values, int target){
-        int closestValue;
-        int i;
-        int mid;
-        int n;
-        int j;
-        boolean found;
-        boolean midValue;
-        boolean leftValue;
-        boolean rightValue;
-
-        closestValue = 0;
-        i = 0;
-        mid = 0;
-        n = values.length;
-        j = n;
-        found = false;
-        midValue = false;
-        leftValue = false;
-        rightValue = false;
-
-        while(i < j){
-            mid = (i + j) / 2;
-
-            if(this.equals(values[mid], target)){
-                closestValue = values[mid];
-                midValue = true;
-                found = true;
-                i = j;
-            }
-            else{
-                midValue = false;
-            }
-
-            if(!midValue){
-                if(target < values[mid]){
-
-                    if(this.minorEquals(0, mid) && this.minorEquals(values[mid - 1], target)){
-                        closestValue = this.getClosest(values[mid-1], values[mid], target);
-                        leftValue = true;
-                        found = true;
-                    }
-                    else{
-                        leftValue = false;
-                    }
-
-                    if(!leftValue){
-                        j = mid;
-                    }
-                    else{
-                        i = j;
-                    }
-                }
-                else{
-                    if((mid < n - 1) && target < values[mid+1]){
-                        closestValue = this.getClosest(values[mid], values[mid + 1],target);
-                        rightValue = true;
-                        found = true;
-                    }
-                    else{
-                        rightValue = false;
-                    }
-
-                    if(!rightValue){
-                        i = mid + 1;
-                    }
-                    else{
-                        i = j;
-                    }
-                }
-            }
-            else{
-
-            }
-
-        }
-
-        if(!found){
-            closestValue = values[mid];
-        }
-        else{
-
-        }
-
-        return closestValue;
-    }
-
-    public int getClosest(int val1, int val2, int target){
-        int ret;
-
-        if(val2 - target < target - val1){
-            ret = val2;
-        }
-        else{
-            ret = val1;
-        }
-
-        return ret;
-    }
 
     public static void main(String[] args){
         int[] values;
         int target;
         int closest;
         Test2 test;
+        int[] limits;
+        int i;
 
         test = new Test2();
+        limits = new int[2];
+        i = 0;
 
         values = new int[20];
-        values[0] = 0;
-        values[1] = 1;
-        values[2] = 2;
-        values[3] = 3;
-        values[4] = 4;
-        values[5] = 5;
-        values[6] = 6;
-        values[7] = 7;
-        values[8] = 8;
-        values[9] = 9;
-        values[10] = 10;
-        values[11] = 11;
-        values[12] = 12;
-        values[13] = 13;
-        values[14] = 14;
-        values[15] = 15;
-        values[16] = 16;
-        values[17] = 17;
-        values[18] = 18;
-        values[19] = 19;
+        values[0] = MathUtils.random(0 - 5, 25);
+        values[1] = MathUtils.random(0 - 5, 25);
+        values[2] = MathUtils.random(0 - 5, 25);
+        values[3] = MathUtils.random(0 - 5, 25);
+        values[4] = MathUtils.random(0 - 5, 25);
+        values[5] = MathUtils.random(0 - 5, 25);
+        values[6] = MathUtils.random(0 - 5, 25);
+        values[7] = MathUtils.random(0 - 5, 25);
+        values[8] = MathUtils.random(0 - 5, 25);
+        values[9] = MathUtils.random(0 - 5, 25);
+        values[10] = MathUtils.random(0 - 5, 25);
+        values[11] = MathUtils.random(0 - 5, 25);
+        values[12] = MathUtils.random(0 - 5, 25);
+        values[13] = MathUtils.random(0 - 5, 25);
+        values[14] = MathUtils.random(0 - 5, 25);
+        values[15] = MathUtils.random(0 - 5, 25);
+        values[16] = MathUtils.random(0 - 5, 25);
+        values[17] = MathUtils.random(0 - 5, 25);
+        values[18] = MathUtils.random(0 - 5, 25);
+        values[19] = MathUtils.random(0 - 5, 25);
 
-        target = MathUtils.random(0-20, 20);
 
-        closest = test.closestElement(values, target);
-		ioPlus.printResult(closest);
-    }
+        limits = test.findLimits(values);
 
-    public boolean equals(int a, int b){
-        boolean same;
+		ioPlus.printResult(limits[0]); //minimum
+        ioPlus.printResult(limits[1]); //maximum
+        ioPlus.printResult(test.findAverage(values)); //average
         
-        if(a < b){
-            same = false;
-        }
-        else{
-            if(b < a){
-                same = false;
-            }
-            else{
-                same = true;
-            }
-        }
-        return same;
     }
 
-    public boolean minorEquals(int a, int b){
-        boolean equalsMinor;
+    public int[] findLimits(int[] values){
+        int[] lim;
+        int min;
+        int max;
+        int i;
 
-        if(a < b){
-            equalsMinor = true;
-        }
-        else{
-            if(this.equals(a, b)){
-                equalsMinor = true;
+        lim = new int[2];
+        min = 100;
+        max = 0-100;
+        i = 0;
+
+        while(i < values.length){
+
+            if(values[i] < min){
+                min = values[i];
             }
             else{
-                equalsMinor = false;
+
             }
+
+            if(max < values[i]){
+                max = values[i];
+            }
+            else{
+
+            }
+
+            i = i + 1;
         }
 
-        return equalsMinor;
+
+        lim[0] = min;
+        lim[1] = max;
+        return lim;
     }
+
+    public int findAverage(int[] values){
+        int n;
+        int i;
+        int sum;
+
+        n = values.length;
+        i = 0;
+        sum = 0;
+
+        while(i < n){
+            sum = sum + values[i];
+            i = i + 1;
+        }
+
+        return sum/n;
+    }
+
 }
