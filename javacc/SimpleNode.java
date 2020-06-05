@@ -24,6 +24,12 @@ class SimpleNode implements Node {
     parser = p;
   }
 
+  public SimpleNode(int id, Object value, Node parent) {
+    this.id = id;
+    this.value = value;
+    this.parent = parent;
+  }
+
   public void jjtOpen() {
   }
 
@@ -59,6 +65,10 @@ class SimpleNode implements Node {
     System.arraycopy(children, i + 1, children, i, children.length - 1 - i);
     System.arraycopy(children, 0, c, 0, children.length - 1);
     children = c;
+  }
+
+  public void jjtRemoveChildren() {
+    children = null;
   }
 
   public Node jjtGetChild(int i) {
@@ -109,6 +119,10 @@ class SimpleNode implements Node {
 
   public int getId() {
     return id;
+  }
+
+  public void setId(int id) {
+    this.id = id;
   }
 }
 

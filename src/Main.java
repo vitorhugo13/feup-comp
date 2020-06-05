@@ -8,6 +8,7 @@ public class Main {
     private static boolean generateCode = false;
     private static boolean displaySymbolTable = false;
     private static boolean displayAST = false;
+    private static boolean optimize = false;
 
     public static void main(String[] args) throws ParseException {
 
@@ -75,6 +76,13 @@ public class Main {
 
         symbolTable.reset();
 
+        if (optimize) {
+            ConstantOptimization optimizer = new ConstantOptimization();
+            optimizer.init(root);
+            System.out.println(" -----=====  Optimized AST  =====----- ");
+            root.dump("");
+        }
+
         if (generateCode) {
             Generator codeGenerator = new Generator(symbolTable);
             String filename = args[0].substring(args[0].lastIndexOf("/") + 1, args[0].lastIndexOf("."));
@@ -101,6 +109,11 @@ public class Main {
             return false;
             displaySymbolTable = true;
         }
+        else if (arg.equals("-o")) {
+            if (optimize)
+                return false;
+            optimize = true;
+        }
         
         return true;
     }
@@ -110,5 +123,6 @@ public class Main {
         System.out.println("    -t - display the AST");
         System.out.println("    -s - display the symbol table");
         System.out.println("    -c - generate code");
+        System.out.println("    -o - optimizations");
     }
 }
