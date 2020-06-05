@@ -11,133 +11,92 @@ import java.util.HashSet;
 
 public class LivenessAnalysis {
 
-    HashMap<Integer, InstructionNode> instructionHashMap;
-    SymbolTable symbolTable;
+    private HashMap<Integer, InstructionNode> instructionHashMap;
+    private SymbolTable symbolTable;
+    private int instructionIndex;
 
     public LivenessAnalysis(SymbolTable symbolTable){
         this.symbolTable = symbolTable;
         this.instructionHashMap = new HashMap<>();
+        this.instructionIndex = 0;
     }
 
-    
-    public void traverseTree(Node node){
 
-        if (node.toString().equals("StaticImport") || node.toString().equals("NonStaticImport")) {
-        }
-        else if(node.toString().equals("Method[main]")){
-            processNewScope(node);
-        }
-        else if (Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])") || (!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])"))) {
-            processNewScope(node);
-        }
-        else if(node.toString().equals("MethodInvocation")){
-            processInvocation(node);
-        }
-        else if (node.toString().equals("Program")) {
+    //TODO: work with scopes should be a good option when an assignment is complicated
+    public void execute(Node node) throws IOException{
+
+        System.out.println("Node name: " + node.toString());
+
+        if(node.toString().equals("Program")){
             processProgram(node);
         }
-        else if (node.toString().equals("Assign")) {
+        else if(node.toString().equals("Assign")){
             processAssign(node);
         }
-        else if(node.toString().equals("Length")){
-            processLength(node);
+        else if(node.toString().equals("VarDeclaration")){
         }
-        else if(node.toString().equals("IfStatement")){
-            
+        else if(Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])")){
+            processClass(node);
         }
-        else if(node.toString().equals("While")){
-            processWhile(node);
+        else if(node.toString().equals("Method[main]")){
+            processMain(node);
         }
-        else {
-            processChildren(node);
+        else if(!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])")){
+            processMethod(node);
         }
-
-    }
-
-
-
-    private HashSet<String> processIfStatement(Node node)throws IOException{
-
-    }
-
-    private String processStmtAssign(Node node, HashMap<String, VarDescriptor.INITIALIZATION_TYPE> changedToTrue) throws IOException{
-
-    }
-
-    private void processWhile(Node node)throws IOException{
-
-
-    }
-
-    private String processInvocation(Node node) throws IOException{
-
-
-    }
-
-    private String getSignatures(ClassDescriptor classDescriptor){
-
-    }
-
-    private String compareArgsAndParams(Node node, ClassDescriptor classDescriptor) throws IOException {
-
-    }
-
-
-    private void processAssign(Node node) throws IOException{
-
-    }
-
-    private void processObject(Node node) throws IOException {
-
-    }
-
-    private String processNewObjectMethodInvoke(Node node) throws IOException {
-
-    }
-
-
-
-    private void processInitializeArray(Node node) throws IOException{
-
-    }
-
-    private String getNodeDataType(Node node) throws IOException{
-
-    }
-
-    private String processArrayRight(Node node) throws IOException{
-    }
-
-    private void processArrayLeft(Node node) throws IOException{
-
-    }
-
-    private void processArrayBoth(Node node) throws IOException{
-
+        else{
+            for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+                execute(node.jjtGetChild(i));
+            }
+        }
     }
 
     private void processProgram(Node node) throws IOException{
+        execute(node.jjtGetChild(node.jjtGetNumChildren()-1)); 
+    }
 
+  
+    private void processAssign(Node node) throws IOException{
+        updateIndex();
+        InstructionNode instructionNode = new InstructionNode();
+        String varDefiniton = Utils.parseName(node.jjtGetChild(0).toString());
+
+        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(varDefiniton).get(0);
+        instructionNode.setDef(varDescriptor);
+
+        System.out.println("============================\n");
+        System.out.println("index: " + instructionIndex);
+        System.out.println("Name of def: " + varDefiniton);
+
+        //TODO: process right side of assignment to complete instructionNode
+        instructionHashMap.put(instructionIndex, instructionNode);
     }
 
 
-    private void processNewScope(Node node) throws IOException{
 
-        processChildren(node);
-        if(!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])") && !node.toString().equals("Method[main]")){
-            if(!processReturnType(node)){
-                int line = ((SimpleNode) node).getCoords().getLine();
-                throw new IOException( "Line " + line + ": Method " + Utils.parseName(node.toString()) + " does not return expected type " + Utils.parseName(node.jjtGetChild(0).toString()));
-            }
-        }
-        symbolTable.exitScopeForAnalysis();
-    }
-
-    private void processChildren(Node node) throws IOException{
+    private void processMethod(Node node) throws IOException{
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             execute(node.jjtGetChild(i));
         }
     }
 
+    private void processMain(Node node) throws IOException{
+        for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+            execute(node.jjtGetChild(i));
+        }
+    }
 
+    private void processClass(Node node) throws IOException{
+        for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+            execute(node.jjtGetChild(i));
+        }
+    }
+
+    public SymbolTable getSymbolTable() {
+        return this.symbolTable;
+    }
+
+    private void updateIndex(){
+        this.instructionIndex = this.instructionIndex + 1;
+    }
 }

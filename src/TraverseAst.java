@@ -270,10 +270,4 @@ public class TraverseAst{
 }
 
 
-//return type nao tem nada a ver
-//add(boolean, int)
-//add(int, int)
-//add(boolean, bolean)
-//add(int, boolean)
-
 

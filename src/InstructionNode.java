@@ -5,14 +5,13 @@ public class InstructionNode {
 
     protected ArrayList<VarDescriptor> liveIn;
     protected ArrayList<VarDescriptor> liveOut;
-    protected ArrayList<VarDescriptor> def;
+    protected VarDescriptor def;
     protected ArrayList<VarDescriptor> use;
     protected ArrayList<InstructionNode> successors;
 
     public InstructionNode(){
         this.liveIn = new ArrayList<>();
         this.liveOut = new ArrayList<>();
-        this.def = new ArrayList<>();
         this.use = new ArrayList<>();
         this.successors = new ArrayList<>();
     }
@@ -25,7 +24,7 @@ public class InstructionNode {
         return successors;
     }
 
-    public ArrayList<VarDescriptor> getDef() {
+    public descriptors.VarDescriptor getDef() {
         return def;
     }
 
@@ -37,7 +36,7 @@ public class InstructionNode {
         return liveOut;
     }
 
-    public void setDef(ArrayList<VarDescriptor> def) {
+    public void setDef(VarDescriptor def) {
         this.def = def;
     }
 
@@ -55,5 +54,9 @@ public class InstructionNode {
 
     public void setSuccessors(ArrayList<InstructionNode> successors) {
         this.successors = successors;
+    }
+
+    public void addUse(VarDescriptor use){
+        this.use.add(use);
     }
 }

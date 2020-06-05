@@ -81,7 +81,12 @@ public class Main {
         
         if(optimizeRegister){
             LivenessAnalysis livenessAnalysis = new LivenessAnalysis(symbolTable);
-            livenessAnalysis.traverseAst(root);
+
+            try{
+                livenessAnalysis.execute(root);
+            }catch(Exception e){
+                e.getMessage();
+            }
             System.out.println("REGISTER OPTIMIZATION COMPLETE");
         }
 
