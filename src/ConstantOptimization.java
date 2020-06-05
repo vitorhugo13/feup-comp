@@ -102,7 +102,15 @@ class ConstantOptimization {
         }
 
         if (count == 0) {
+            // checks if expression is an arithmetic expression with one integer child
+            if (child_count < 1) {
+                return 1;
+            }
 
+            // TODO: 
+            // ((a + 2) + b) + 1
+
+            return 0;
         }
         // in case the outer expression has an integer
         // example:  (a + 2) + 1 -> a + 3
@@ -118,8 +126,9 @@ class ConstantOptimization {
             String nodeName = node.jjtGetName();
             String expName = expression.jjtGetName();
 
-            if ((nodeName.equals("Add") || nodeName.equals("Sub")) && (expName.equals("Sub") || expName.equals("Add"))) {
-                
+            if ((nodeName.equals("Add") || nodeName.equals("Sub")) && (expName.equals("Sub") || expName.equals("Add"))
+                || (nodeName.equals("Mul") && expName.equals("Mul"))) {
+
                 SimpleNode[] children = new SimpleNode[2];
                 children[0] = (SimpleNode) expression.jjtGetChild(0);
                 children[1] = (SimpleNode) expression.jjtGetChild(1);
@@ -136,16 +145,16 @@ class ConstantOptimization {
                 node.setId(expression.getId());
             }
             else if (nodeName.equals("Mul") && expName.equals("Mul")) {
-
+                // TODO:
             }
             else if (nodeName.equals("Mul") && expName.equals("Div")) {
-
+                // TODO:
             }
             else if (nodeName.equals("Div") && expName.equals("Mul")) {
-
+                // TODO:
             }
             else if (nodeName.equals("Div") && expName.equals("Div")) {
-
+                // TODO:
             }
 
             return 1;
@@ -180,20 +189,5 @@ class ConstantOptimization {
             value = value1 / value2;
         
         return value;
-    }
-    /**
-     * Returns the number of child Integer nodes
-     */
-    public int processOperation(SimpleNode node) {
-        int count = 0;
-
-        for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-            SimpleNode child = (SimpleNode) node.jjtGetChild(i);
-            execute(child);
-            if (child.jjtGetName().equals("Integer"))
-                count++;
-        }
-
-        return count;
     }
 }
