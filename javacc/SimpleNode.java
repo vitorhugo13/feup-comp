@@ -44,6 +44,23 @@ class SimpleNode implements Node {
     children[i] = n;
   }
 
+  public void jjtAddChildAt(Node n, int i) {
+    // TODO: add error conditions
+    Node c[] = new Node[children.length + 1];
+    System.arraycopy(children, 0, c, 0, i);
+    System.arraycopy(children, i, c, i + 1, children.length - i);
+    c[i] = n;
+    children = c;
+  }
+
+  public void jjtRemoveChild(int i) {
+    // TODO: add error conditions
+    Node c[] = new Node[children.length - 1];
+    System.arraycopy(children, i + 1, children, i, children.length - 1 - i);
+    System.arraycopy(children, 0, c, 0, children.length - 1);
+    children = c;
+  }
+
   public Node jjtGetChild(int i) {
     return children[i];
   }
@@ -54,6 +71,10 @@ class SimpleNode implements Node {
 
   public void jjtSetValue(Object value) { this.value = value; }
   public Object jjtGetValue() { return value; }
+
+  public String jjtGetName() {
+    return ParserTreeConstants.jjtNodeName[id];
+  }
 
   /* You can override these two methods in subclasses of SimpleNode to
      customize the way the node appears when the tree is dumped.  If
