@@ -10,13 +10,16 @@ import java.util.HashSet;
 
 
 public class LivenessAnalysis {
+
     HashMap<Integer, InstructionNode> instructionHashMap;
     SymbolTable symbolTable;
 
     public LivenessAnalysis(SymbolTable symbolTable){
         this.symbolTable = symbolTable;
+        this.instructionHashMap = new HashMap<>();
     }
 
+    
     public void traverseTree(Node node){
 
         if (node.toString().equals("StaticImport") || node.toString().equals("NonStaticImport")) {
@@ -24,7 +27,6 @@ public class LivenessAnalysis {
         else if(node.toString().equals("Method[main]")){
             processNewScope(node);
         }
-
         else if (Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])") || (!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])"))) {
             processNewScope(node);
         }
@@ -41,13 +43,7 @@ public class LivenessAnalysis {
             processLength(node);
         }
         else if(node.toString().equals("IfStatement")){
-            HashSet<String> toInit = processIfStatement(node);
-
-            VarDescriptor varDescriptor;
-            for(String var:toInit){
-                varDescriptor = (VarDescriptor) symbolTable.lookup(var).get(0);
-                varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.TRUE);
-            }
+            
         }
         else if(node.toString().equals("While")){
             processWhile(node);

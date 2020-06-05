@@ -6,12 +6,14 @@ import java.io.InputStream;
 public class Main {
 
     private static boolean generateCode = false;
+    private static boolean optimizeRegister = false;
     private static boolean displaySymbolTable = false;
     private static boolean displayAST = false;
+    private static int registers = -1;
 
     public static void main(String[] args) throws ParseException {
 
-        if (args.length <= 0 || args.length > 4) {
+        if (args.length <= 0 || args.length > 5) {
             printUsage();
             return;
         }
@@ -75,6 +77,14 @@ public class Main {
 
         symbolTable.reset();
 
+
+        
+        if(optimizeRegister){
+            LivenessAnalysis livenessAnalysis = new LivenessAnalysis(symbolTable);
+            livenessAnalysis.traverseAst(root);
+            System.out.println("REGISTER OPTIMIZATION COMPLETE");
+        }
+
         if (generateCode) {
             Generator codeGenerator = new Generator(symbolTable);
             String filename = args[0].substring(args[0].lastIndexOf("/") + 1, args[0].lastIndexOf("."));
@@ -101,6 +111,13 @@ public class Main {
             return false;
             displaySymbolTable = true;
         }
+        else if(arg.contains("-r=")){
+            if(optimizeRegister)
+            return false;
+            optimizeRegister = true;
+            String[] nmr = arg.split("=",2);
+            registers = Integer.parseInt(nmr[1]);
+        }
         
         return true;
     }
@@ -110,5 +127,6 @@ public class Main {
         System.out.println("    -t - display the AST");
         System.out.println("    -s - display the symbol table");
         System.out.println("    -c - generate code");
+        System.out.println("    -r=n - generate code optimizing number of registers up to a maximum of n");
     }
 }
