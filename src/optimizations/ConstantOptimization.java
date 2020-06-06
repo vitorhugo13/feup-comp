@@ -36,12 +36,14 @@ class ConstantOptimization {
             if (childName.equals("VarDeclaration")) {
                 if (processVarDeclaration(child)) {
                     body.jjtRemoveChild(i);
+                    System.out.println("Removed var declaration");
                     continue;
                 }
             }
             else if (childName.equals("Assign")) {
-                if (processAssigment(child)) {
+                if (processAssignment(child)) {
                     body.jjtRemoveChild(i);
+                    System.out.println("Removed assignment");
                     continue;
                 }
                 else {
@@ -100,7 +102,7 @@ class ConstantOptimization {
         else if (nodeName.equals("Boolean"))
             return;
         else if (nodeName.equals("Identifier"))
-            return;
+            processIdentifier(node);
         else if (nodeName.equals("This"))
             return;
         else if (nodeName.equals("Array"))
@@ -127,7 +129,7 @@ class ConstantOptimization {
         return true;
     }
 
-    private boolean processAssigment(SimpleNode node) {
+    private boolean processAssignment(SimpleNode node) {
         String identifier = (String) ((SimpleNode) node.jjtGetChild(0)).jjtGetValue();
         
         for (int i = 1; i < node.jjtGetNumChildren(); i++){
@@ -135,11 +137,17 @@ class ConstantOptimization {
             execute(child);
         }
         
-        if (node.jjtGetNumChildren() != 1) {
-
+        String expression = ((SimpleNode) node.jjtGetChild(1)).jjtGetName();
+        if (!expression.equals("Integer") && !expression.equals("Boolean")) {
+            return false;
         }
+
+        Object value = ((SimpleNode) node.jjtGetChild(1)).jjtGetValue();
+        VarInfo info = vars.get(identifier);
+        info.setValue(value);
+        vars.replace(identifier, info);
             
-        return false;
+        return true;
     }
 
     private boolean isArithmetic(SimpleNode node) {
@@ -240,6 +248,22 @@ class ConstantOptimization {
         return 0;
     }
 
+    private void processIdentifier(SimpleNode node) {
+        String varName = (String) node.jjtGetValue();
+
+        if (!vars.containsKey(varName))
+            return;
+        
+        VarInfo info = vars.get(varName);
+        if (info.getType().equals("int")) {
+            node.setId(ParserTreeConstants.JJTINTEGER);
+            node.jjtSetValue((Integer) info.getValue());
+        }
+        else if (info.getType().equals("boolean")) {
+            node.setId(ParserTreeConstants.JJTBOOLEAN);
+            node.jjtSetValue((Boolean) info.getValue());
+        }
+    }
         
     private int calculate(SimpleNode operand1, String operation, SimpleNode operand2) {
         int value1 = (Integer) operand1.jjtGetValue();
