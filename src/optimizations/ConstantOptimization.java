@@ -23,10 +23,18 @@ class ConstantOptimization {
     public void optimize(SimpleNode method) {
         this.vars = new HashMap<String, VarInfo>();
 
-        SimpleNode paramList = (SimpleNode) method.jjtGetChild(0);
-        SimpleNode body = (SimpleNode) method.jjtGetChild(1);
+        SimpleNode paramList, body;
+        if (((String) method.jjtGetValue()).equals("main")) {
+            paramList = (SimpleNode) method.jjtGetChild(0);
+            body = (SimpleNode) method.jjtGetChild(1);
+        }
+        else {
+            paramList = (SimpleNode) method.jjtGetChild(1);
+            body = (SimpleNode) method.jjtGetChild(2);
+        }
 
         // TODO: process ParamList
+
 
         // process Body
         for (int i = 0; i < body.jjtGetNumChildren(); ) {
@@ -36,14 +44,12 @@ class ConstantOptimization {
             if (childName.equals("VarDeclaration")) {
                 if (processVarDeclaration(child)) {
                     body.jjtRemoveChild(i);
-                    System.out.println("Removed var declaration");
                     continue;
                 }
             }
             else if (childName.equals("Assign")) {
                 if (processAssignment(child)) {
                     body.jjtRemoveChild(i);
-                    System.out.println("Removed assignment");
                     continue;
                 }
                 else {
@@ -68,6 +74,7 @@ class ConstantOptimization {
 
             i++;
         }
+
     }
 
     public void execute(SimpleNode node) {
@@ -78,7 +85,7 @@ class ConstantOptimization {
         else if (nodeName.equals("NewObject"))
             return;
         else if (nodeName.equals("NewIntArray"))
-            return;
+            executeChildren(node);
         else if (nodeName.equals("IfStatement"))
             return;
         else if (nodeName.equals("While"))
@@ -117,7 +124,6 @@ class ConstantOptimization {
     }
 
     private void processArray(SimpleNode node) {
-        System.out.println(node);
         execute((SimpleNode) node.jjtGetChild(1));
     }
 

@@ -190,8 +190,6 @@ class Generator {
         String name = Utils.parseName(node.toString());
         name = name.equals("main") ? "static main" : name;
 
-        // System.out.println("method : " + name);
-
         String type = node.jjtGetChild(0).toString().contains("Type") ? parseType(Utils.parseName(node.jjtGetChild(0).toString())) : "V";
         int childNum = type.equals("V") ? 0 : 1;
         
@@ -207,15 +205,16 @@ class Generator {
             execute(body.jjtGetChild(i), tmpOut);
         }
 
-        Node lastInstruction = body.jjtGetChild(body.jjtGetNumChildren() - 1);
         tmpOut.println();
-        if (lastInstruction.toString().equals("Return")) {
-            // System.out.println("in --- Return");
-            this.enterPopScope();
-            for (int i = 0; i < lastInstruction.jjtGetNumChildren(); i++)
-                execute(lastInstruction.jjtGetChild(i), tmpOut);
-            this.exitPopScope();
-            // System.out.println("out -- Return");
+
+        if (body.jjtGetNumChildren() - 1 >= 0) {
+            Node lastInstruction = body.jjtGetChild(body.jjtGetNumChildren() - 1);
+            if (lastInstruction.toString().equals("Return")) {
+                this.enterPopScope();
+                for (int i = 0; i < lastInstruction.jjtGetNumChildren(); i++)
+                    execute(lastInstruction.jjtGetChild(i), tmpOut);
+                this.exitPopScope();
+            }
         }
         
         // return
