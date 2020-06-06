@@ -728,6 +728,7 @@ class Generator {
     //         OPTIMIZATION UTILITIES
     // ==========================================
 
+    // TODO: IMPORTANT!! handle negative numbers
     private void pushInteger(int value, PrintWriter out) {
         if (value >= 0 && value <= 5)
             out.println(instruction.iconst(value));

@@ -1,10 +1,12 @@
+import java.util.HashMap;
 
 
 class ConstantOptimization {
 
+    private HashMap<String, VarInfo> vars;
 
     public ConstantOptimization() {
-
+        this.vars = new HashMap<String, VarInfo>();
     }
 
     public void init(SimpleNode root) {
@@ -19,21 +21,57 @@ class ConstantOptimization {
     }
 
     public void optimize(SimpleNode method) {
+        this.vars = new HashMap<String, VarInfo>();
+
         SimpleNode paramList = (SimpleNode) method.jjtGetChild(0);
         SimpleNode body = (SimpleNode) method.jjtGetChild(1);
 
-        executeChildren(body);
+        // TODO: process ParamList
+
+        // process Body
+        for (int i = 0; i < body.jjtGetNumChildren(); ) {
+            SimpleNode child = (SimpleNode) body.jjtGetChild(i);
+            String childName = child.jjtGetName();
+
+            if (childName.equals("VarDeclaration")) {
+                if (processVarDeclaration(child)) {
+                    body.jjtRemoveChild(i);
+                    continue;
+                }
+            }
+            else if (childName.equals("Assign")) {
+                if (processAssigment(child)) {
+                    body.jjtRemoveChild(i);
+                    continue;
+                }
+                else {
+                    String varName = (String) ((SimpleNode) child.jjtGetChild(0)).jjtGetValue();
+                    if (varName != null && vars.containsKey(varName)) {
+                        SimpleNode declaration = new SimpleNode(ParserTreeConstants.JJTVARDECLARATION, body);
+                        SimpleNode type = new SimpleNode(ParserTreeConstants.JJTTYPE, vars.get(varName).getType(), declaration);
+                        SimpleNode identifier = new SimpleNode(ParserTreeConstants.JJTIDENTIFIER, varName, declaration);
+                        
+                        declaration.jjtAppendChild(type);
+                        declaration.jjtAppendChild(identifier);
+                        
+                        body.jjtAddChildAt(declaration, 0);
+                        vars.remove(varName);
+                        i++;
+                    }
+                }
+            }
+            else {
+                execute(child);
+            }
+
+            i++;
+        }
     }
 
     public void execute(SimpleNode node) {
         String nodeName = node.jjtGetName();
 
-        if (nodeName.equals("VarDeclaration"))
-            return;
-
-        else if (nodeName.equals("MethodInvocation"))
-            return;
-        else if (nodeName.equals("Assign"))
+        if (nodeName.equals("MethodInvocation"))
             return;
         else if (nodeName.equals("NewObject"))
             return;
@@ -43,6 +81,8 @@ class ConstantOptimization {
             return;
         else if (nodeName.equals("While"))
             return;
+        else if (nodeName.equals("Return"))
+            executeChildren(node);
 
         // OPERATORS
         else if (isArithmetic(node))    // +, -, * and /
@@ -69,12 +109,40 @@ class ConstantOptimization {
             return;
     }
 
-    public void executeChildren(SimpleNode node) {
+    private void executeChildren(SimpleNode node) {
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute((SimpleNode) node.jjtGetChild(i));
     }
 
-    public boolean isArithmetic(SimpleNode node) {
+    private boolean processVarDeclaration(SimpleNode node) {
+        String type = (String) ((SimpleNode) node.jjtGetChild(0)).jjtGetValue();
+
+        if (!type.equals("int") && !type.equals("boolean"))
+            return false;
+
+        String name = (String) ((SimpleNode) node.jjtGetChild(1)).jjtGetValue();
+
+        vars.put(name, new VarInfo(type));
+
+        return true;
+    }
+
+    private boolean processAssigment(SimpleNode node) {
+        String identifier = (String) ((SimpleNode) node.jjtGetChild(0)).jjtGetValue();
+        
+        for (int i = 1; i < node.jjtGetNumChildren(); i++){
+            SimpleNode child = (SimpleNode) node.jjtGetChild(i);
+            execute(child);
+        }
+        
+        if (node.jjtGetNumChildren() != 1) {
+
+        }
+            
+        return false;
+    }
+
+    private boolean isArithmetic(SimpleNode node) {
         String nodeName = node.jjtGetName();
         return nodeName.equals("Add") || nodeName.equals("Sub") || nodeName.equals("Mul") || nodeName.equals("Div");
     }
@@ -82,7 +150,7 @@ class ConstantOptimization {
     /**
      * Returns the number of children that are Integers
      */
-    public int processArithmeticOperation(SimpleNode node) {
+    private int processArithmeticOperation(SimpleNode node) {
         int count = 0;
         int index = 0;
         int child_count = 0;
@@ -126,7 +194,7 @@ class ConstantOptimization {
             String nodeName = node.jjtGetName();
             String expName = expression.jjtGetName();
 
-            if ((nodeName.equals("Add") || nodeName.equals("Sub")) && (expName.equals("Sub") || expName.equals("Add"))
+            if (((nodeName.equals("Add") || nodeName.equals("Sub")) && expName.equals("Add"))
                 || (nodeName.equals("Mul") && expName.equals("Mul"))) {
 
                 SimpleNode[] children = new SimpleNode[2];
@@ -144,8 +212,8 @@ class ConstantOptimization {
 
                 node.setId(expression.getId());
             }
-            else if (nodeName.equals("Mul") && expName.equals("Mul")) {
-                // TODO:
+            else if ((nodeName.equals("Add") || nodeName.equals("Sub")) && expName.equals("Sub")) {
+
             }
             else if (nodeName.equals("Mul") && expName.equals("Div")) {
                 // TODO:
@@ -173,7 +241,7 @@ class ConstantOptimization {
     }
 
         
-    public int calculate(SimpleNode operand1, String operation, SimpleNode operand2) {
+    private int calculate(SimpleNode operand1, String operation, SimpleNode operand2) {
         int value1 = (Integer) operand1.jjtGetValue();
         int value2 = (Integer) operand2.jjtGetValue();
 
