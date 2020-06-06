@@ -97,23 +97,28 @@ class ConstantOptimization {
             return;
 
         // TERMINALS
-        else if (nodeName.equals("Integer"))
-            return;
-        else if (nodeName.equals("Boolean"))
-            return;
+        // else if (nodeName.equals("Integer"))
+        //     return;
+        // else if (nodeName.equals("Boolean"))
+        //     return;
         else if (nodeName.equals("Identifier"))
             processIdentifier(node);
-        else if (nodeName.equals("This"))
-            return;
+        // else if (nodeName.equals("This"))
+        //     return;
         else if (nodeName.equals("Array"))
-            return;
-        else if (nodeName.equals("Length"))
-            return;
+            processArray(node);
+        // else if (nodeName.equals("Length"))
+        //     return;
     }
 
     private void executeChildren(SimpleNode node) {
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute((SimpleNode) node.jjtGetChild(i));
+    }
+
+    private void processArray(SimpleNode node) {
+        System.out.println(node);
+        execute((SimpleNode) node.jjtGetChild(1));
     }
 
     private boolean processVarDeclaration(SimpleNode node) {
@@ -130,6 +135,13 @@ class ConstantOptimization {
     }
 
     private boolean processAssignment(SimpleNode node) {
+        String nodeType = ((SimpleNode) node.jjtGetChild(0)).jjtGetName();
+        
+        if (!nodeType.equals("Identifier")) {
+            execute((SimpleNode) node.jjtGetChild(0));
+            return false;
+        }
+
         String identifier = (String) ((SimpleNode) node.jjtGetChild(0)).jjtGetValue();
         
         for (int i = 1; i < node.jjtGetNumChildren(); i++){
@@ -138,9 +150,8 @@ class ConstantOptimization {
         }
         
         String expression = ((SimpleNode) node.jjtGetChild(1)).jjtGetName();
-        if (!expression.equals("Integer") && !expression.equals("Boolean")) {
+        if (!expression.equals("Integer") && !expression.equals("Boolean"))
             return false;
-        }
 
         Object value = ((SimpleNode) node.jjtGetChild(1)).jjtGetValue();
         VarInfo info = vars.get(identifier);
