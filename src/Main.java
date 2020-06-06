@@ -43,7 +43,7 @@ public class Main {
             root.dump("");
         }
 
-        System.out.println("\nCREATING SYMBOL TABLE\n");        
+        System.out.println("\nCREATING SYMBOL TABLE");        
         SymbolTable symbolTable = new SymbolTable();
         TraverseAst traverseAst = new TraverseAst(root, symbolTable);
         try{
@@ -58,9 +58,9 @@ public class Main {
             symbolTable.print_all();
         }
         
-        System.out.println("\nSYMBOL TABLE CREATED\n\n");        
+        System.out.println("SYMBOL TABLE CREATED\n");        
         
-        System.out.println("SEMANTIC ANALYSIS\n");
+        System.out.println("SEMANTIC ANALYSIS");
         SemanticAnalysis semanticAnalysis = new SemanticAnalysis(symbolTable);
         try{
             semanticAnalysis.execute(root);
@@ -72,22 +72,25 @@ public class Main {
    
         }
         
-        System.out.println("\nFINISHED SEMANTIC ANALYSIS\n");
+        System.out.println("FINISHED SEMANTIC ANALYSIS\n");
 
         symbolTable.reset();
 
         if (optimize) {
+            System.out.println("OPTIMIZING AST");
             ConstantOptimization optimizer = new ConstantOptimization();
             optimizer.init(root);
             System.out.println(" -----=====  Optimized AST  =====----- ");
             root.dump("");
+            System.out.println("FINISHED OPTIMIZING AST");
         }
 
         if (generateCode) {
+            System.out.println("GENERATING CODE");
             Generator codeGenerator = new Generator(symbolTable);
             String filename = args[0].substring(args[0].lastIndexOf("/") + 1, args[0].lastIndexOf("."));
             codeGenerator.generate(root, filename);
-            System.out.println("CODE GENERATION COMPLETE");
+            System.out.println("FINISHED GENERATING CODE\n");
         }
 
     }
