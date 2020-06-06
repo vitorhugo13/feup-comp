@@ -81,9 +81,9 @@ class ConstantOptimization {
         String nodeName = node.jjtGetName();
 
         if (nodeName.equals("MethodInvocation"))
-            return;
-        else if (nodeName.equals("NewObject"))
-            return;
+            processMethodInvocation(node);
+        // else if (nodeName.equals("NewObject"))
+            // return;
         else if (nodeName.equals("NewIntArray"))
             executeChildren(node);
         else if (nodeName.equals("IfStatement"))
@@ -121,6 +121,12 @@ class ConstantOptimization {
     private void executeChildren(SimpleNode node) {
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
             execute((SimpleNode) node.jjtGetChild(i));
+    }
+
+    private void processMethodInvocation(SimpleNode node) {
+        SimpleNode argList = (SimpleNode) node.jjtGetChild(node.jjtGetNumChildren() - 1);
+        System.out.println(argList);
+        executeChildren(argList);
     }
 
     private void processArray(SimpleNode node) {

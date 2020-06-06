@@ -258,7 +258,7 @@ class Generator {
         // System.out.println("in --- MethodInvocation");
         this.enterPopScope();
 
-        System.out.println(node.jjtGetChild(0).toString() + " " + node.jjtGetChild(1).toString());
+        // System.out.println(node.jjtGetChild(0).toString() + " " + node.jjtGetChild(1).toString());
         String className = execute(node.jjtGetChild(0), out);
         // System.out.println(className);
         String methodName = Utils.parseName(node.jjtGetChild(1).toString());
