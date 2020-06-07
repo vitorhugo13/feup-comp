@@ -279,8 +279,8 @@ public class LivenessAnalysis {
                 for(InstructionNode instructionNode : instructionHashMap.get(i).getSuccessors()){
                     instructionHashMap.get(i).getLiveOut().addAll(instructionNode.getLiveIn());
                 }
-
                  */
+
                 //TODO: uncomment the previous lines
                 if(i==instructionHashMap.size())
                     instructionHashMap.get(i).getLiveOut().addAll(instructionHashMap.get(1).getLiveIn());
