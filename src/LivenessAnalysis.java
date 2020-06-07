@@ -25,7 +25,7 @@ public class LivenessAnalysis {
     //TODO: work with scopes should be a good option when an assignment is complicated
     public void execute(Node node) throws IOException{
 
-        System.out.println("Node name: " + node.toString());
+        //System.out.println("Node name: " + node.toString());
 
         if(node.toString().equals("Program")){
             processProgram(node);
@@ -60,6 +60,7 @@ public class LivenessAnalysis {
         updateIndex();
         InstructionNode instructionNode = new InstructionNode();
         String varDefiniton = Utils.parseName(node.jjtGetChild(0).toString());
+        //TODO: a[i]=2;
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(varDefiniton).get(0);
         instructionNode.setDef(varDescriptor);
 
@@ -68,10 +69,49 @@ public class LivenessAnalysis {
         System.out.println("Name of def: " + varDefiniton);
 
         //TODO: process right side of assignment to complete instructionNode
+        HashSet<VarDescriptor> usedVariables = getUsedVariables(node.jjtGetChild(1));
+
+        for(VarDescriptor var : usedVariables){
+            System.out.println("Var: " + var.getIdentifier());
+        }
         instructionHashMap.put(instructionIndex, instructionNode);
     }
 
+    private HashSet<VarDescriptor> getUsedVariables(Node node) throws IOException{
+        //TODO: new int
+        HashSet<VarDescriptor> usedVariables = new HashSet<>();
+        if(Utils.analyzeRegex(node.toString(), "(Identifier\\[)(.)*(\\])")){ //IDENTIFIER[a]
+            VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.toString())).get(0);
+            usedVariables.add(varDescriptor);
+        }
+        else if(node.toString().equals("Add") || node.toString().equals("Sub") || node.toString().equals("Div") || node.toString().equals("Mul") || node.toString().equals("Less") || node.toString().equals("Not") || node.toString().equals("And")){
+            for(int i = 0; i < node.jjtGetNumChildren(); i++){
+                usedVariables.addAll(getUsedVariables(node.jjtGetChild(i)));
+            }
+        }
+        else if(node.toString().equals("Array")){
+            VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
+            usedVariables.add(varDescriptor);
+            for(int i = 0; i < node.jjtGetChild(1).jjtGetNumChildren(); i++){
+                usedVariables.addAll(getUsedVariables(node.jjtGetChild(1).jjtGetChild(i)));
+            }
+        }
+        else if(node.toString().equals("This")){
+            //TODO: return correct class
+        }
+        else if(node.toString().equals("MethodInvocation")){
+            VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
+            usedVariables.add(varDescriptor);
+            for(int i = 0; i < node.jjtGetChild(2).jjtGetNumChildren(); i++){
+                usedVariables.addAll(getUsedVariables(node.jjtGetChild(2).jjtGetChild(i)));
+            }
+        }
+        else{ // INTEGER[2]
 
+        }
+
+        return usedVariables;
+    }
 
     private void processMethod(Node node) throws IOException{
         symbolTable.enterScopeForAnalysis();

@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.HashSet;
+
 import descriptors.*;
 
 public class InstructionNode {
@@ -6,13 +8,13 @@ public class InstructionNode {
     protected ArrayList<VarDescriptor> liveIn;
     protected ArrayList<VarDescriptor> liveOut;
     protected VarDescriptor def;
-    protected ArrayList<VarDescriptor> use;
+    protected HashSet<VarDescriptor> use;
     protected ArrayList<InstructionNode> successors;
 
     public InstructionNode(){
         this.liveIn = new ArrayList<>();
         this.liveOut = new ArrayList<>();
-        this.use = new ArrayList<>();
+        this.use = new HashSet<>();
         this.successors = new ArrayList<>();
     }
 
@@ -40,7 +42,7 @@ public class InstructionNode {
         this.def = def;
     }
 
-    public void setUse(ArrayList<VarDescriptor> use) {
+    public void setUse(HashSet<VarDescriptor> use) {
         this.use = use;
     }
 
@@ -48,7 +50,7 @@ public class InstructionNode {
         this.liveOut = liveOut;
     }
 
-    public ArrayList<VarDescriptor> getUse() {
+    public HashSet<VarDescriptor> getUse() {
         return use;
     }
 
