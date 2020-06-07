@@ -146,4 +146,58 @@ public class LivenessAnalysis {
     private void updateIndex(){
         this.instructionIndex = this.instructionIndex + 1;
     }
+
+    public void calculateLivenessAnalysis(){
+        HashSet<VarDescriptor> newLiveIn = new HashSet();
+        HashSet<VarDescriptor> newLiveOut = new HashSet();
+        HashSet<VarDescriptor> outNotDef = new HashSet();
+
+        boolean isFinished;
+
+        do{
+            isFinished = true;
+            for(int i=1; i<=instructionHashMap.size(); i++){
+
+                newLiveIn = instructionHashMap.get(i).getLiveIn();
+                newLiveOut = instructionHashMap.get(i).getLiveOut();
+
+                //Update Live In
+                instructionHashMap.get(i).getLiveIn().addAll(instructionHashMap.get(i).getUse());
+                outNotDef = new HashSet<>(instructionHashMap.get(i).getLiveOut());
+                outNotDef.remove(instructionHashMap.get(i).getDef());
+                instructionHashMap.get(i).getLiveIn().addAll(outNotDef);
+
+                //Update Live Out
+                /*
+                for(InstructionNode instructionNode : instructionHashMap.get(i).getSuccessors()){
+                    instructionHashMap.get(i).getLiveOut().addAll(instructionNode.getLiveIn());
+                }
+
+                 */
+                //TODO: uncomment the previous lines
+                if(i==instructionHashMap.size())
+                    instructionHashMap.get(i).getLiveOut().addAll(instructionHashMap.get(1).getLiveIn());
+                else
+                    instructionHashMap.get(i).getLiveOut().addAll(instructionHashMap.get(i+1).getLiveIn());
+
+                if(!(newLiveIn.equals(instructionHashMap.get(i).getLiveIn()) && newLiveOut.equals(instructionHashMap.get(i).getLiveOut()))){
+                    isFinished=false;
+                }
+            }
+        }
+        while(!isFinished);
+
+        for(int i=1; i<=instructionHashMap.size(); i++){
+
+            System.out.println("Live in: ");
+            for(VarDescriptor var: instructionHashMap.get(i).getLiveIn()){
+                System.out.println(var.getIdentifier());
+            }
+            System.out.println("Live out: " + instructionHashMap.get(i).getLiveOut());
+            for(VarDescriptor var: instructionHashMap.get(i).getLiveOut()){
+                System.out.println(var.getIdentifier());
+            }
+
+        }
+    }
 }
