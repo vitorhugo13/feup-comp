@@ -25,23 +25,3 @@ class Stmt{
     }
 }
 
-
-
-
-/* 
-
-WARNINGS - Variavéis podem não estar inicializadas
-
-a) se um variavel estiver inicializada no if e no else não deve haver warning
-b) uma variavel inicializada no if não pode ser usada no else (isso é erro)
-c) se uma variavel só for inicializada num dos scopes(if ou else), e se for usada dps deve dar warning
-d) se uma variavel só for inicializada num dos scopes(if ou else), e se nunca for usada dps não deve retornar nada
-
-
-TIP:na consulta registar o que é inicializado em cada parte e 
-    ao passar para "cima", verificar se de facto as variaveis que foram inicializadas 
-    foram iniciadas nos 2 lados ou só num.
-
-TIP:provavelmente será preciso fazer uma estrutura de dados nova
-
-*/
