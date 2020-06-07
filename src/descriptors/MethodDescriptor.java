@@ -2,6 +2,9 @@ package descriptors;
 
 import java.util.ArrayList;
 
+/**
+ * Descriptor for methods that saves the method type, if it is static, return type and it's return parameters
+ */
 public class MethodDescriptor extends Descriptor {
 
     protected String identifier;

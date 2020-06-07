@@ -3,6 +3,10 @@ package descriptors;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * Descriptor for classes.
+ * Stores: class methods and the class parent if the class extends another
+ */
 public class ClassDescriptor extends Descriptor {
     ArrayList<MethodDescriptor> methods;
     ClassDescriptor parentClass;
@@ -31,6 +35,11 @@ public class ClassDescriptor extends Descriptor {
         return false;
     }
 
+    /**
+     *
+     * @param method - method to check if it is possible to overload
+     * @return false if there exists a method within the class with the same nubmer and type of parameters
+     */
     private Boolean possibleToOverload(MethodDescriptor method){
 
         Boolean argsAllSame = true;
@@ -62,6 +71,12 @@ public class ClassDescriptor extends Descriptor {
         return true;
     }
 
+    /**
+     *
+     * @param id - identifier of the method to search
+     * @return an Array list of all methods matching the identifier provided
+     * @throws IOException - if no method with the same name exists in class
+     */
     public ArrayList<MethodDescriptor> getMethodsMatchingId(String id) throws IOException{
         ArrayList<MethodDescriptor> methodsMatchingId = new ArrayList<>();
         if(existsMethod(id)){
@@ -74,6 +89,11 @@ public class ClassDescriptor extends Descriptor {
         throw new IOException("No Method in class " + this.identifier + " matches method named " + id);
     }
 
+    /**
+     *
+     * @param method to add to the class.
+     *               Only adds the method a method with this identifier doesn't exist already or if it is a possible overload
+     */
     public void addMethod(MethodDescriptor method){
 
         if(possibleToOverload(method))

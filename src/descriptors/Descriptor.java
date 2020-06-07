@@ -1,10 +1,16 @@
 package descriptors;
 
+/**
+ * Descriptors are used to store information about symbols
+ */
 abstract public class Descriptor {
 
     protected Type type;
     protected String identifier;
 
+    /**
+     * Type of descriptors
+     */
     public static enum Type{
         CLASS,
         METHOD,
@@ -12,6 +18,11 @@ abstract public class Descriptor {
         IMPORT
     }
 
+    /**
+     *
+     * @param dataType
+     * @return a standardized form of the the data type name
+     */
     protected String getParsedDataType(String dataType){
         if(dataType.equals("int"))
             return "Integer";

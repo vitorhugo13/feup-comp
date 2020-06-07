@@ -1,5 +1,9 @@
 package descriptors;
 
+/**
+ * Descriptor to be used for variables
+ * It stores a var scope in the program, as well as if it is initialize (this will change), current value
+ */
 public class VarDescriptor extends Descriptor {
 
     protected String dataType;
@@ -63,6 +67,11 @@ public class VarDescriptor extends Descriptor {
     public int getLocalIndex() { return this.localIndex; }
     public void setLocalIndex(int localIndex) { this.localIndex = localIndex; }
 
+    /**
+     * TRUE if the var is initialized
+     * FALSE it it isn't
+     * MAYBE if there is a change it may or may not have been initialized (if it is initialized in one branch of a if/while statement for instance)
+     */
     public static enum INITIALIZATION_TYPE{
         TRUE,
         FALSE,
