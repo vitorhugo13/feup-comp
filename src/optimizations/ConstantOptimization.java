@@ -238,6 +238,34 @@ class ConstantOptimization {
             node.jjtRemoveChildren();
         }
         else if (nodeName.equals("And")) {
+            if (count < 1)
+                return;
+            else if (count == 1) {
+                SimpleNode expression = (SimpleNode) node.jjtGetChild((index + 1) % 2);
+                boolean value = (Boolean) ((SimpleNode) node.jjtGetChild(index)).jjtGetValue();
+
+
+                if (value) {
+                    node.setId(expression.getId());
+                    node.jjtSetValue(expression.jjtGetValue());
+                    node.jjtRemoveChildren();
+                    for (int i = 0; i < expression.jjtGetNumChildren(); i++)
+                        node.jjtAppendChild(expression.jjtGetChild(i));
+                }
+                else {
+                    node.setId(ParserTreeConstants.JJTBOOLEAN);
+                    node.jjtSetValue(false);
+                    node.jjtRemoveChildren();
+                }
+            }
+            else if (count == 2) {
+                boolean value1 = (Boolean) ((SimpleNode) node.jjtGetChild(0)).jjtGetValue();
+                boolean value2 = (Boolean) ((SimpleNode) node.jjtGetChild(1)).jjtGetValue();
+
+                node.setId(ParserTreeConstants.JJTBOOLEAN);
+                node.jjtSetValue(value1 && value2);
+                node.jjtRemoveChildren();
+            }
 
         }
         else if (nodeName.equals("Not")) {
