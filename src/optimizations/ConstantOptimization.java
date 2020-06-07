@@ -55,26 +55,6 @@ class ConstantOptimization {
             }
             else if (childName.equals("IfStatement")) {
                 i = handleIfStatement(child, i, body);
-                /*SimpleNode scope = processIfStatement(child);
-
-                if (scope == null) {
-                    i++;
-                    continue;
-                }
-
-                body.jjtRemoveChild(i);
-                int scopeLength = scope.jjtGetNumChildren();
-                
-                if (scopeLength < 1)
-                    continue;
-                
-                body.jjtAddChildAt(scope.jjtGetChild(0), i);
-                for (int j = 1; j < scopeLength; j++) {
-                    SimpleNode instruction = (SimpleNode) scope.jjtGetChild(j);
-                    instruction.jjtSetParent(body);
-
-                    body.jjtAddChildAt(instruction, i + j);
-                }*/
             }
             else {
                 execute(child);
@@ -151,9 +131,26 @@ class ConstantOptimization {
             }
         }
 
-        // scope
+        for (int j = 1; j < 3; j++) {
+            SimpleNode scope = (SimpleNode) node.jjtGetChild(j);
 
-        // scope
+            for (int i = 0; i < scope.jjtGetNumChildren(); ) {
+                SimpleNode child = (SimpleNode) scope.jjtGetChild(i);
+                String childName = child.jjtGetName();
+    
+                if (childName.equals("Assign")) {
+                    i = handleAssignment(child, i, body);
+                }
+                else if (childName.equals("IfStatement")) {
+                    i = handleIfStatement(child, i, body);
+                }
+                else {
+                    execute(child);
+                }
+    
+                i++;
+            }
+        }
 
         return null;
     }
@@ -254,6 +251,11 @@ class ConstantOptimization {
             String type = expression.equals("Integer") ? "int" : "boolean";
             Object value = ((SimpleNode) node.jjtGetChild(1)).jjtGetValue();
             vars.put(identifier, new VarInfo(type, value, false, true));
+        }
+
+        if (((SimpleNode) node.jjtGetParent()).jjtGetName().equals("Scope")) {
+            vars.get(identifier).setConstant(false);
+            return false;
         }
             
         return true;
