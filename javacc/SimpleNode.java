@@ -77,6 +77,14 @@ class SimpleNode implements Node {
     }
   }
 
+  public Node[] jjtGetChildren() {
+    return this.children;
+  }
+
+  public void jjtSetChildren(Node[] children) {
+    this.children = children;
+  }
+
   public void jjtRemoveChild(int i) {
     // TODO: add error conditions
     Node c[] = new Node[children.length - 1];

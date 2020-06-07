@@ -727,8 +727,10 @@ class Generator {
     //         OPTIMIZATION UTILITIES
     // ==========================================
 
-    // TODO: IMPORTANT!! handle negative numbers
     private void pushInteger(int value, PrintWriter out) {
+        boolean neg = value < 0;
+        value = neg ? -value : value;
+        
         if (value >= 0 && value <= 5)
             out.println(instruction.iconst(value));
         else if (value <= 127)
@@ -737,6 +739,9 @@ class Generator {
             out.println(instruction.sipush(value));
         else
             out.println(instruction.ldc(value));
+
+        if (neg)
+            out.println(instruction.ineg());
     }
 
     private String load(String type, int index) {

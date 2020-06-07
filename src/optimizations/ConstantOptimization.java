@@ -90,6 +90,28 @@ class ConstantOptimization {
                     i++;
                 }
             }
+            else if (childName.equals("IfStatement")) {
+                SimpleNode scope = processIfStatement(child);
+
+                if (scope == null) {
+                    i++;
+                    continue;
+                }
+
+                body.jjtRemoveChild(i);
+                int scopeLength = scope.jjtGetNumChildren();
+                
+                if (scopeLength < 1)
+                    continue;
+                
+                body.jjtAddChildAt(scope.jjtGetChild(0), i);
+                for (int j = 1; j < scopeLength; j++) {
+                    SimpleNode instruction = (SimpleNode) scope.jjtGetChild(j);
+                    instruction.jjtSetParent(body);
+
+                    body.jjtAddChildAt(instruction, i + j);
+                }
+            }
             else {
                 execute(child);
             }
@@ -106,9 +128,6 @@ class ConstantOptimization {
             processMethodInvocation(node);
         else if (nodeName.equals("NewIntArray"))
             executeChildren(node);
-        // TODO:
-        else if (nodeName.equals("IfStatement"))
-            return;
         // TODO:
         else if (nodeName.equals("While"))
             return;
@@ -163,6 +182,26 @@ class ConstantOptimization {
         vars.put(name, new VarInfo(type, local, false));
 
         return true;
+    }
+
+    private SimpleNode processIfStatement(SimpleNode node) {
+        // condition
+        SimpleNode condition = (SimpleNode) node.jjtGetChild(0);
+        executeChildren(condition);
+
+        if (condition.jjtGetNumChildren() == 1) {
+            SimpleNode valueNode = (SimpleNode) condition.jjtGetChild(0);
+            if (valueNode.jjtGetName().equals("Boolean")) {
+                int index = ((Boolean) valueNode.jjtGetValue()) ? 1 : 2;
+                return (SimpleNode) node.jjtGetChild(index);
+            }
+        }
+
+        // scope
+
+        // scope
+
+        return null;
     }
 
     /**
