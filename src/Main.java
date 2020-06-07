@@ -5,11 +5,28 @@ import java.io.InputStream;
 
 public class Main {
 
+    /**
+     * if true we have to generate code
+     */
     private static boolean generateCode = false;
+
+    /**
+     * if true symbol table state must be printed
+     */
     private static boolean displaySymbolTable = false;
+
+    /**
+     * if true ast must be printed
+     */
     private static boolean displayAST = false;
     private static boolean optimize = false;
 
+    /**
+     * @brief Main function that controls the entire execution
+     * 
+     * @param args Arguments received that show what we should show the user
+     * @throws ParseException If there are exceptions when running the program
+     */
     public static void main(String[] args) throws ParseException {
 
         if (args.length <= 0 || args.length > 4) {
@@ -94,7 +111,12 @@ public class Main {
         }
 
     }
-
+    
+    /**
+     * @brief Responsible for processing the options received as an argument
+     * @param arg Option to see at the moment
+     * @return Success or failure
+     */
     private static boolean parseArgs(String arg) {
         
         if (arg.equals("-c")) {
@@ -121,6 +143,9 @@ public class Main {
         return true;
     }
 
+    /**
+     * @brief If the user makes mistakes when passing the arguments, this menu is printed to facilitate
+     */
     private static void printUsage() {
         System.out.println("Usage: java -jar comp2020-3h.jar <file>");
         System.out.println("    -t - display the AST");

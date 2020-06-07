@@ -28,6 +28,10 @@ public class Utils {
         return name.substring(0, finalChar);
     }
 
+    /**
+     * @param name 
+     * @return last part of name. Ex: given IDENTIFIER[compiler] returns compiler
+     */
     public static String parseName(String name) {
         String id ="";
         int state = 0;
@@ -56,6 +60,12 @@ public class Utils {
         return id;
     }
 
+    /**
+     * 
+     * @param s string to analyze
+     * @param pattern pattern with which we will compare
+     * @return true if the string respects the pattern, false otherwise
+     */
     public static Boolean analyzeRegex(String s, String pattern){
 
         Pattern p = Pattern.compile(pattern);
