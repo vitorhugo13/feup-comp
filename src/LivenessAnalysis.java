@@ -33,6 +33,15 @@ public class LivenessAnalysis {
         else if(node.toString().equals("Assign")){
             processAssign(node);
         }
+        else if(node.toString().equals("IfStatement")){
+            processIfStmt(node);
+        }
+        else if(node.toString().equals("While")){
+            processWhile(node);
+        }
+        else if(node.toString().equals("Return")){
+            processReturn(node);
+        }
         else if(node.toString().equals("VarDeclaration")){
         }
         else if(Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])")){
@@ -55,34 +64,125 @@ public class LivenessAnalysis {
         execute(node.jjtGetChild(node.jjtGetNumChildren()-1)); 
     }
 
-  
-    private void processAssign(Node node) throws IOException{
+    private void processWhile(Node node) throws IOException{
+        //condition
         updateIndex();
-        InstructionNode instructionNode = new InstructionNode();
-        String varDefiniton = Utils.parseName(node.jjtGetChild(0).toString());
-        //TODO: a[i]=2;
-        VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(varDefiniton).get(0);
-        instructionNode.setDef(varDescriptor);
 
-        System.out.println("============================\n");
+        System.out.println("============================");
         System.out.println("index: " + instructionIndex);
-        System.out.println("Name of def: " + varDefiniton);
+        InstructionNode instructionCondition = new InstructionNode();
 
-        //TODO: process right side of assignment to complete instructionNode
-        HashSet<VarDescriptor> usedVariables = getUsedVariables(node.jjtGetChild(1));
+        HashSet<VarDescriptor> usedVariables = getUsedVariables(node.jjtGetChild(0).jjtGetChild(0));
+
+        if(usedVariables.size() > 0)
+            System.out.println("Used Variables");
 
         for(VarDescriptor var : usedVariables){
             System.out.println("Var: " + var.getIdentifier());
         }
+        instructionCondition.setUse(usedVariables);
+        instructionHashMap.put(instructionIndex, instructionCondition);
+
+        for(int i = 1; i < node.jjtGetNumChildren();i++){
+            execute(node.jjtGetChild(i));
+        }
+    }
+
+    private void processIfStmt(Node node) throws IOException{
+
+        //condition
+        updateIndex();
+
+        System.out.println("============================");
+        System.out.println("index: " + instructionIndex);
+        InstructionNode instructionCondition = new InstructionNode();
+
+        HashSet<VarDescriptor> usedVariables1 = getUsedVariables(node.jjtGetChild(0).jjtGetChild(0));
+
+        if(usedVariables1.size() > 0)
+            System.out.println("Used Variables");
+
+        for(VarDescriptor var : usedVariables1){
+            System.out.println("Var: " + var.getIdentifier());
+        }
+        instructionCondition.setUse(usedVariables1);
+        instructionHashMap.put(instructionIndex, instructionCondition);
+
+        for(int i = 1; i < node.jjtGetNumChildren();i++){
+            execute(node.jjtGetChild(i));
+        }
+    }
+
+    private void processReturn(Node node) throws IOException{
+
+        updateIndex();
+
+        System.out.println("============================");
+        System.out.println("index: " + instructionIndex);
+        InstructionNode instructionNode = new InstructionNode();
+
+        HashSet<VarDescriptor> usedVariables = getUsedVariables(node.jjtGetChild(0));
+
+        if(usedVariables.size() > 0)
+            System.out.println("Used Variables");
+
+        for(VarDescriptor var : usedVariables){
+            System.out.println("Var: " + var.getIdentifier());
+        }
+
+        instructionNode.setUse(usedVariables);
+        instructionHashMap.put(instructionIndex, instructionNode);
+
+    }
+
+    private void processAssign(Node node) throws IOException{
+
+        updateIndex();
+
+        System.out.println("============================");
+        System.out.println("index: " + instructionIndex);
+        InstructionNode instructionNode = new InstructionNode();
+        HashSet<VarDescriptor> usedLeftVariables = new HashSet<>();
+
+        //LeftSide
+        if(node.jjtGetChild(0).toString().equals("Array")){
+            usedLeftVariables = getUsedVariables(node.jjtGetChild(0));
+        }
+        else{
+            String varDefiniton = Utils.parseName(node.jjtGetChild(0).toString());
+            VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(varDefiniton).get(0);
+            instructionNode.setDef(varDescriptor);
+            
+            System.out.println("Name of def: " + varDefiniton);
+        }
+
+        
+        //RightSide
+        HashSet<VarDescriptor> usedVariables = getUsedVariables(node.jjtGetChild(1));
+        usedVariables.addAll(usedLeftVariables);
+
+        if(usedVariables.size() > 0)
+            System.out.println("Used Variables");
+
+        for(VarDescriptor var : usedVariables){
+            System.out.println("Var: " + var.getIdentifier());
+        }
+
+        instructionNode.setUse(usedVariables);
         instructionHashMap.put(instructionIndex, instructionNode);
     }
 
     private HashSet<VarDescriptor> getUsedVariables(Node node) throws IOException{
-        //TODO: new int
+
         HashSet<VarDescriptor> usedVariables = new HashSet<>();
         if(Utils.analyzeRegex(node.toString(), "(Identifier\\[)(.)*(\\])")){ //IDENTIFIER[a]
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.toString())).get(0);
             usedVariables.add(varDescriptor);
+        }
+        else if(node.toString().equals("NewIntArray")){
+            for(int i = 0; i < node.jjtGetNumChildren(); i++){
+                usedVariables.addAll(getUsedVariables(node.jjtGetChild(i)));
+            }
         }
         else if(node.toString().equals("Add") || node.toString().equals("Sub") || node.toString().equals("Div") || node.toString().equals("Mul") || node.toString().equals("Less") || node.toString().equals("Not") || node.toString().equals("And")){
             for(int i = 0; i < node.jjtGetNumChildren(); i++){
@@ -97,11 +197,16 @@ public class LivenessAnalysis {
             }
         }
         else if(node.toString().equals("This")){
-            //TODO: return correct class
+            
         }
         else if(node.toString().equals("MethodInvocation")){
-            VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
-            usedVariables.add(varDescriptor);
+            try{
+                VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
+                usedVariables.add(varDescriptor);
+            }catch(Exception e){
+
+            }
+
             for(int i = 0; i < node.jjtGetChild(2).jjtGetNumChildren(); i++){
                 usedVariables.addAll(getUsedVariables(node.jjtGetChild(2).jjtGetChild(i)));
             }
@@ -132,6 +237,8 @@ public class LivenessAnalysis {
     private void processClass(Node node) throws IOException{
         symbolTable.enterScopeForAnalysis(); //Scope Imports does not matter for this analysis
         symbolTable.exitScopeForAnalysis();
+
+
         symbolTable.enterScopeForAnalysis();
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             execute(node.jjtGetChild(i));
