@@ -54,7 +54,8 @@ class ConstantOptimization {
                 i = handleAssignment(child, i, body);
             }
             else if (childName.equals("IfStatement")) {
-                SimpleNode scope = processIfStatement(child);
+                i = handleIfStatement(child, i, body);
+                /*SimpleNode scope = processIfStatement(child);
 
                 if (scope == null) {
                     i++;
@@ -73,7 +74,7 @@ class ConstantOptimization {
                     instruction.jjtSetParent(body);
 
                     body.jjtAddChildAt(instruction, i + j);
-                }
+                }*/
             }
             else {
                 execute(child);
@@ -137,7 +138,7 @@ class ConstantOptimization {
         return true;
     }
 
-    private SimpleNode processIfStatement(SimpleNode node) {
+    private SimpleNode processIfStatement(SimpleNode node, SimpleNode body) {
         // condition
         SimpleNode condition = (SimpleNode) node.jjtGetChild(0);
         executeChildren(condition);
@@ -158,7 +159,26 @@ class ConstantOptimization {
     }
 
     private int handleIfStatement(SimpleNode node, int index, SimpleNode body) {
+        SimpleNode scope = processIfStatement(node, body);
+
+        if (scope == null)
+            return index;
+
+        SimpleNode parent = (SimpleNode) node.jjtGetParent();
         
+        parent.jjtRemoveChild(index);
+        int scopeLength = scope.jjtGetNumChildren();
+                
+        if (scopeLength < 1)
+            return index - 1;
+                
+        parent.jjtAddChildAt(scope.jjtGetChild(0), index);
+        for (int i = 1; i < scopeLength; i++) {
+            SimpleNode instruction = (SimpleNode) scope.jjtGetChild(i);
+            instruction.jjtSetParent(parent);
+            parent.jjtAddChildAt(instruction, index + i);
+        }
+
         return index;
     }
 
