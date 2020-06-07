@@ -36,6 +36,9 @@ public class LivenessAnalysis {
         else if(node.toString().equals("IfStatement")){
             processIfStmt(node);
         }
+        else if(node.toString().equals("While")){
+            processWhile(node);
+        }
         else if(node.toString().equals("Return")){
             processReturn(node);
         }
@@ -59,6 +62,30 @@ public class LivenessAnalysis {
 
     private void processProgram(Node node) throws IOException{
         execute(node.jjtGetChild(node.jjtGetNumChildren()-1)); 
+    }
+
+    private void processWhile(Node node) throws IOException{
+        //condition
+        updateIndex();
+
+        System.out.println("============================");
+        System.out.println("index: " + instructionIndex);
+        InstructionNode instructionCondition = new InstructionNode();
+
+        HashSet<VarDescriptor> usedVariables = getUsedVariables(node.jjtGetChild(0).jjtGetChild(0));
+
+        if(usedVariables.size() > 0)
+            System.out.println("Used Variables");
+
+        for(VarDescriptor var : usedVariables){
+            System.out.println("Var: " + var.getIdentifier());
+        }
+        instructionCondition.setUse(usedVariables);
+        instructionHashMap.put(instructionIndex, instructionCondition);
+
+        for(int i = 1; i < node.jjtGetNumChildren();i++){
+            execute(node.jjtGetChild(i));
+        }
     }
 
     private void processIfStmt(Node node) throws IOException{
