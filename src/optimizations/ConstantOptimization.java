@@ -1,12 +1,15 @@
 import java.util.HashMap;
+import java.util.ArrayList;
 
 
 class ConstantOptimization {
 
     private HashMap<String, VarInfo> vars;
+    private ArrayList<String> fields;
 
     public ConstantOptimization() {
         this.vars = new HashMap<String, VarInfo>();
+        this.fields = new ArrayList<String>();
     }
 
     public void init(SimpleNode root) {
@@ -14,9 +17,17 @@ class ConstantOptimization {
 
         for (int i = 0; i < classNode.jjtGetNumChildren(); i++) {
             SimpleNode child = (SimpleNode) classNode.jjtGetChild(i);
-            if (!child.jjtGetName().equals("Method"))
+            String childName = child.jjtGetName();
+            
+            if (childName.equals("Method")){
+                optimize(child);
+            }
+            else if (childName.equals("VarDeclaration")) {
+                fields.add((String) ((SimpleNode) child.jjtGetChild(1)).jjtGetValue());
+            }
+            else {
                 continue;
-            optimize(child);
+            }
         }
     }
 
@@ -258,8 +269,9 @@ class ConstantOptimization {
      */
     private int handleAssignment(SimpleNode node, int index, SimpleNode body) {
         if (processAssignment(node)) {
-            ((SimpleNode) node.jjtGetParent()).jjtRemoveChild(index);
-            return index - 1;
+            // ((SimpleNode) node.jjtGetParent()).jjtRemoveChild(index);
+            // return index - 1;
+            return index;
         }
 
         String nodeName = ((SimpleNode) node.jjtGetChild(0)).jjtGetName();
@@ -289,6 +301,8 @@ class ConstantOptimization {
         info.setLocal(false);
         info.setConstant(false);
 
+        // insertAssignment((SimpleNode) node.jjtGetParent(), index, varName);
+
         return index;
     }
 
@@ -309,6 +323,9 @@ class ConstantOptimization {
             SimpleNode child = (SimpleNode) node.jjtGetChild(i);
             execute(child);
         }
+
+        if (fields.contains(identifier)) 
+            return false;
         
         String expression = ((SimpleNode) node.jjtGetChild(1)).jjtGetName();
         if (!expression.equals("Integer") && !expression.equals("Boolean")) {
@@ -539,5 +556,33 @@ class ConstantOptimization {
             value = value1 / value2;
         
         return value;
+    }
+
+    private void insertAssignment(SimpleNode node, int index, String varName) {
+        if (!vars.containsKey(varName))
+            return;
+
+        VarInfo info = vars.get(varName);
+        if (info.getValue() == null)
+            return;
+
+        SimpleNode assignment, identifier, expression;
+        assignment = new SimpleNode(ParserTreeConstants.JJTASSIGN, node);
+        identifier = new SimpleNode(ParserTreeConstants.JJTIDENTIFIER, varName, assignment);
+        
+        
+        if (info.getType().equals("int")) {
+            expression = new SimpleNode(ParserTreeConstants.JJTINTEGER, (Integer) info.getValue(), assignment);
+            System.out.println(varName + " " + (Integer) info.getValue());
+        }
+        else{
+            expression = new SimpleNode(ParserTreeConstants.JJTBOOLEAN, (Boolean) info.getValue(), assignment);
+
+        }
+
+        assignment.jjtAppendChild(identifier);
+        assignment.jjtAppendChild(expression);
+
+        node.jjtAddChildAt(assignment, index);
     }
 }

@@ -377,13 +377,9 @@
     .limit stack 17
     .limit locals 4
 
-    iconst_1
-    ineg
-    istore_1
-
     iconst_3
     newarray int
-    astore_2
+    astore_1
 
     aload_0
     getfield TicTacToe/_row0 [I
@@ -405,7 +401,7 @@
     getfield TicTacToe/_row0 [I
     iconst_0
     iaload
-    istore_1
+    istore_2
     goto endif_10
   else_10:
     aload_0
@@ -428,7 +424,7 @@
     getfield TicTacToe/_row1 [I
     iconst_0
     iaload
-    istore_1
+    istore_2
     goto endif_11
   else_11:
     aload_0
@@ -451,12 +447,12 @@
     getfield TicTacToe/_row2 [I
     iconst_0
     iaload
-    istore_1
+    istore_2
     goto endif_12
   else_12:
     iconst_0
     istore_3
-    iload_1
+    iload_2
     iconst_1
     if_icmplt lt_true_16
     iconst_0
@@ -475,31 +471,31 @@
     iand
     ifeq end_while_0
   start_while_0:
-    aload_2
+    aload_1
     iconst_0
     aload_0
     getfield TicTacToe/_row0 [I
     iload_3
     iaload
     iastore
-    aload_2
+    aload_1
     iconst_1
     aload_0
     getfield TicTacToe/_row1 [I
     iload_3
     iaload
     iastore
-    aload_2
+    aload_1
     iconst_2
     aload_0
     getfield TicTacToe/_row2 [I
     iload_3
     iaload
     iastore
-    aload_2
+    aload_1
     invokestatic BoardBase/sameArray([I)Z
     iconst_0
-    aload_2
+    aload_1
     iconst_0
     iaload
     if_icmplt lt_true_18
@@ -510,10 +506,10 @@
   lt_false_18:
     iand
     ifeq else_13
-    aload_2
+    aload_1
     iconst_0
     iaload
-    istore_1
+    istore_2
     goto endif_13
   else_13:
   endif_13:
@@ -521,7 +517,7 @@
     iconst_1
     iadd
     istore_3
-    iload_1
+    iload_2
     iconst_1
     if_icmplt lt_true_19
     iconst_0
@@ -540,7 +536,7 @@
     iand
     ifne start_while_0
   end_while_0:
-    iload_1
+    iload_2
     iconst_1
     if_icmplt lt_true_21
     iconst_0
@@ -549,31 +545,31 @@
     iconst_1
   lt_false_21:
     ifeq else_14
-    aload_2
+    aload_1
     iconst_0
     aload_0
     getfield TicTacToe/_row0 [I
     iconst_0
     iaload
     iastore
-    aload_2
+    aload_1
     iconst_1
     aload_0
     getfield TicTacToe/_row1 [I
     iconst_1
     iaload
     iastore
-    aload_2
+    aload_1
     iconst_2
     aload_0
     getfield TicTacToe/_row2 [I
     iconst_2
     iaload
     iastore
-    aload_2
+    aload_1
     invokestatic BoardBase/sameArray([I)Z
     iconst_0
-    aload_2
+    aload_1
     iconst_0
     iaload
     if_icmplt lt_true_22
@@ -584,37 +580,37 @@
   lt_false_22:
     iand
     ifeq else_15
-    aload_2
+    aload_1
     iconst_0
     iaload
-    istore_1
+    istore_2
     goto endif_15
   else_15:
-    aload_2
+    aload_1
     iconst_0
     aload_0
     getfield TicTacToe/_row0 [I
     iconst_2
     iaload
     iastore
-    aload_2
+    aload_1
     iconst_1
     aload_0
     getfield TicTacToe/_row1 [I
     iconst_1
     iaload
     iastore
-    aload_2
+    aload_1
     iconst_2
     aload_0
     getfield TicTacToe/_row2 [I
     iconst_0
     iaload
     iastore
-    aload_2
+    aload_1
     invokestatic BoardBase/sameArray([I)Z
     iconst_0
-    aload_2
+    aload_1
     iconst_0
     iaload
     if_icmplt lt_true_23
@@ -625,10 +621,10 @@
   lt_false_23:
     iand
     ifeq else_16
-    aload_2
+    aload_1
     iconst_0
     iaload
-    istore_1
+    istore_2
     goto endif_16
   else_16:
   endif_16:
@@ -640,7 +636,7 @@
   endif_11:
   endif_10:
 
-    iload_1
+    iload_2
     iconst_1
     if_icmplt lt_true_24
     iconst_0
@@ -674,13 +670,13 @@
     iand
     ifeq else_17
     iconst_0
-    istore_1
+    istore_2
     goto endif_17
   else_17:
   endif_17:
 
 
-    iload_1
+    iload_2
     ireturn
 
 .end method
