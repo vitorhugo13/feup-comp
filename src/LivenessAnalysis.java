@@ -18,7 +18,7 @@ public class LivenessAnalysis {
     public LivenessAnalysis(SymbolTable symbolTable){
         this.symbolTable = symbolTable;
         this.instructionHashMap = new HashMap<>();
-        this.instructionIndex = 0;
+        this.instructionIndex = -1;
     }
 
 
@@ -252,5 +252,13 @@ public class LivenessAnalysis {
 
     private void updateIndex(){
         this.instructionIndex = this.instructionIndex + 1;
+    }
+
+    public void printInstructionHash(){
+        System.out.println("\n=============Instruction state ==============");
+        for(int i = 0; i < instructionHashMap.size(); i++){
+            System.out.println(instructionHashMap.get(i));
+        }
+        System.out.println("\n");
     }
 }

@@ -86,6 +86,7 @@ public class Main {
 
             try{
                 livenessAnalysis.execute(root);
+                livenessAnalysis.printInstructionHash();
             }catch(Exception e){
                 e.getMessage();
             }
