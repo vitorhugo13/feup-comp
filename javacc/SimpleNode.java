@@ -35,6 +35,24 @@ class SimpleNode implements Node {
     this.parent = parent;
   }
 
+  // FIXME: this might be troublesome
+  public SimpleNode(SimpleNode other) {
+    this.id = other.id;
+    this.parent = null;
+    try {
+      if (other.value != null)
+        this.value = other.value;
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    if (other.jjtGetNumChildren() != 0) {
+      this.children = new Node[other.children.length];
+      for (int i = 0; i < other.children.length; i++)
+        this.children[i] = new SimpleNode((SimpleNode) other.children[i]);
+    }
+  }
+
   public void jjtOpen() {
   }
 

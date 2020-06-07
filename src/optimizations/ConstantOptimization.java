@@ -40,7 +40,7 @@ class ConstantOptimization {
         }
 
         // process Body
-        for (int i = 0; i < body.jjtGetNumChildren(); ) {
+        for (int i = 0; i < body.jjtGetNumChildren();) {
             SimpleNode child = (SimpleNode) body.jjtGetChild(i);
             String childName = child.jjtGetName();
 
@@ -56,10 +56,11 @@ class ConstantOptimization {
             else if (childName.equals("IfStatement")) {
                 i = handleIfStatement(child, i, body);
             }
+            else if (childName.equals("While"))
+                i = handleWhileLoop(child, i, body);
             else {
                 execute(child);
             }
-
             i++;
         }
 
@@ -72,9 +73,6 @@ class ConstantOptimization {
             processMethodInvocation(node);
         else if (nodeName.equals("NewIntArray"))
             executeChildren(node);
-        // TODO:
-        else if (nodeName.equals("While"))
-            return;
         else if (nodeName.equals("Return"))
             executeChildren(node);
             
@@ -138,21 +136,96 @@ class ConstantOptimization {
                 SimpleNode child = (SimpleNode) scope.jjtGetChild(i);
                 String childName = child.jjtGetName();
     
-                if (childName.equals("Assign")) {
+                if (childName.equals("Assign"))
                     i = handleAssignment(child, i, body);
-                }
-                else if (childName.equals("IfStatement")) {
+                else if (childName.equals("IfStatement"))
                     i = handleIfStatement(child, i, body);
-                }
-                else {
+                else if (childName.equals("While"))
+                    i = handleWhileLoop(child, i, body);
+                else
                     execute(child);
-                }
-    
+
                 i++;
             }
         }
 
         return null;
+    }
+
+    private int handleWhileLoop(SimpleNode node, int index, SimpleNode body) {
+        SimpleNode conditionCopy = new SimpleNode((SimpleNode) node.jjtGetChild(0));
+        executeChildren(conditionCopy);
+
+        // if the condition is false the loop code is removed
+        if (conditionCopy.jjtGetNumChildren() > 1) {
+            SimpleNode child = (SimpleNode) conditionCopy.jjtGetChild(0); 
+            if (child.jjtGetName().equals("Boolean")) {
+                if (!(Boolean) child.jjtGetValue()) {
+                    ((SimpleNode) node.jjtGetParent()).jjtRemoveChild(index);
+                    return index - 1;
+                }
+            }
+        }
+
+        SimpleNode scope = (SimpleNode) node.jjtGetChild(1);
+
+        scanAssignments(scope);
+
+        for (int i = 0; i < scope.jjtGetNumChildren();) {
+            SimpleNode child = (SimpleNode) scope.jjtGetChild(i);
+            String childName = child.jjtGetName();
+
+            if (childName.equals("Assign"))
+                i = handleAssignment(child, i, body);
+            else if (childName.equals("IfStatement"))
+                i = handleIfStatement(child, i, body);
+            else if (childName.equals("While"))
+                i = handleWhileLoop(child, i, body);
+            else
+                execute(child);
+
+            i++;
+        }
+        
+        SimpleNode condition = (SimpleNode) node.jjtGetChild(0);
+        execute((SimpleNode) condition.jjtGetChild(0));
+
+        // analyse the loop scope
+        // after the scope is analysed
+        // analyse the condition again
+        // if true then this is an infinite loop, since the condition is constant
+            // infinite loop
+        // if false then the loop only executes once
+
+        return index;
+    }
+
+    private void scanAssignments(SimpleNode node) {
+        for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+            SimpleNode child = (SimpleNode) node.jjtGetChild(i);
+            String childName = child.jjtGetName();
+
+            if (childName.equals("Assign")) {
+                SimpleNode identifier = (SimpleNode) child.jjtGetChild(0);
+                if (identifier.jjtGetName().equals("Identifier")) {
+                    String varName = (String) identifier.jjtGetValue();
+
+                    System.out.println("variable : " + varName);
+
+                    if (!vars.containsKey(varName))
+                        continue;
+                    
+                    vars.get(varName).setConstant(false);
+                }
+            }
+            else if (childName.equals("IfStatement")) {
+                scanAssignments((SimpleNode) child.jjtGetChild(1));
+                scanAssignments((SimpleNode) child.jjtGetChild(2));
+            }
+            else if (childName.equals("While")) {
+                scanAssignments((SimpleNode) child.jjtGetChild(1));
+            }
+        }
     }
 
     private int handleIfStatement(SimpleNode node, int index, SimpleNode body) {
@@ -231,7 +304,7 @@ class ConstantOptimization {
         }
 
         String identifier = (String) ((SimpleNode) node.jjtGetChild(0)).jjtGetValue();
-        
+
         for (int i = 1; i < node.jjtGetNumChildren(); i++){
             SimpleNode child = (SimpleNode) node.jjtGetChild(i);
             execute(child);
