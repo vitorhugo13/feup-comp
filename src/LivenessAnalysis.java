@@ -60,7 +60,6 @@ public class LivenessAnalysis {
         updateIndex();
         InstructionNode instructionNode = new InstructionNode();
         String varDefiniton = Utils.parseName(node.jjtGetChild(0).toString());
-
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(varDefiniton).get(0);
         instructionNode.setDef(varDescriptor);
 
@@ -75,21 +74,29 @@ public class LivenessAnalysis {
 
 
     private void processMethod(Node node) throws IOException{
+        symbolTable.enterScopeForAnalysis();
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             execute(node.jjtGetChild(i));
         }
+        symbolTable.exitScopeForAnalysis();
     }
 
     private void processMain(Node node) throws IOException{
+        symbolTable.enterScopeForAnalysis();
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             execute(node.jjtGetChild(i));
         }
+        symbolTable.exitScopeForAnalysis();
     }
 
     private void processClass(Node node) throws IOException{
+        symbolTable.enterScopeForAnalysis(); //Scope Imports does not matter for this analysis
+        symbolTable.exitScopeForAnalysis();
+        symbolTable.enterScopeForAnalysis();
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             execute(node.jjtGetChild(i));
         }
+        symbolTable.exitScopeForAnalysis();
     }
 
     public SymbolTable getSymbolTable() {

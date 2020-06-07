@@ -80,6 +80,8 @@ public class Main {
 
         
         if(optimizeRegister){
+            System.out.println("OPTIMIZE REGISTER ALLOCATION FOR N= " + registers);
+            symbolTable.reset();
             LivenessAnalysis livenessAnalysis = new LivenessAnalysis(symbolTable);
 
             try{
@@ -91,6 +93,8 @@ public class Main {
         }
 
         if (generateCode) {
+            symbolTable.reset();
+            //TODO: check if previous line makes sense
             Generator codeGenerator = new Generator(symbolTable);
             String filename = args[0].substring(args[0].lastIndexOf("/") + 1, args[0].lastIndexOf("."));
             codeGenerator.generate(root, filename);
