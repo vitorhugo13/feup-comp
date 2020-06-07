@@ -244,7 +244,6 @@ class ConstantOptimization {
                 SimpleNode expression = (SimpleNode) node.jjtGetChild((index + 1) % 2);
                 boolean value = (Boolean) ((SimpleNode) node.jjtGetChild(index)).jjtGetValue();
 
-
                 if (value) {
                     node.setId(expression.getId());
                     node.jjtSetValue(expression.jjtGetValue());
@@ -268,8 +267,17 @@ class ConstantOptimization {
             }
 
         }
-        else if (nodeName.equals("Not")) {
+        else if (nodeName.equals("Less")) {
+            if (count < 2)
+                return;
+            else if (count == 2) {
+                int value1 = (Integer) ((SimpleNode) node.jjtGetChild(0)).jjtGetValue();
+                int value2 = (Integer) ((SimpleNode) node.jjtGetChild(1)).jjtGetValue();
 
+                node.setId(ParserTreeConstants.JJTBOOLEAN);
+                node.jjtSetValue(value1 < value2);
+                node.jjtRemoveChildren();
+            }
         }
     }
 
