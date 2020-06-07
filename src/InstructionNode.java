@@ -5,20 +5,20 @@ import descriptors.*;
 
 public class InstructionNode {
 
-    protected ArrayList<VarDescriptor> liveIn;
-    protected ArrayList<VarDescriptor> liveOut;
+    protected HashSet<VarDescriptor> liveIn;
+    protected HashSet<VarDescriptor> liveOut;
     protected VarDescriptor def;
     protected HashSet<VarDescriptor> use;
     protected ArrayList<InstructionNode> successors;
 
     public InstructionNode(){
-        this.liveIn = new ArrayList<>();
-        this.liveOut = new ArrayList<>();
+        this.liveIn = new HashSet<>();
+        this.liveOut = new HashSet<>();
         this.use = new HashSet<>();
         this.successors = new ArrayList<>();
     }
 
-    public void setLiveIn(ArrayList<VarDescriptor> liveIn) {
+    public void setLiveIn(HashSet<VarDescriptor> liveIn) {
         this.liveIn = liveIn;
     }
 
@@ -30,11 +30,11 @@ public class InstructionNode {
         return def;
     }
 
-    public ArrayList<VarDescriptor> getLiveIn() {
+    public HashSet<VarDescriptor> getLiveIn() {
         return liveIn;
     }
 
-    public ArrayList<VarDescriptor> getLiveOut() {
+    public HashSet<VarDescriptor> getLiveOut() {
         return liveOut;
     }
 
@@ -46,7 +46,7 @@ public class InstructionNode {
         this.use = use;
     }
 
-    public void setLiveOut(ArrayList<VarDescriptor> liveOut) {
+    public void setLiveOut(HashSet<VarDescriptor> liveOut) {
         this.liveOut = liveOut;
     }
 

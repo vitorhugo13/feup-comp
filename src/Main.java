@@ -84,9 +84,11 @@ public class Main {
             symbolTable.reset();
             LivenessAnalysis livenessAnalysis = new LivenessAnalysis(symbolTable);
 
+
             try{
                 livenessAnalysis.execute(root);
                 livenessAnalysis.printInstructionHash();
+                livenessAnalysis.calculateLivenessAnalysis();
             }catch(Exception e){
                 e.getMessage();
             }
