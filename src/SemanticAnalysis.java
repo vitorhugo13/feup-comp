@@ -8,62 +8,93 @@ import descriptors.*;
 
 
 class SemanticAnalysis{
+
+    /**
+     * facilitates comparisons with ast
+     */
     static private String VOID = "void";
+
+    /**
+     * facilitates comparisons with ast
+     */
     static String INTEGER = "Integer";
+
+    /**
+     * maximum number of semantic errors until abort
+     */
     static private int MAX_EXCEPTIONS = 10;
+
+    /**
+     * symbol table to analyze the declaration / initialization of variables
+     */
     private SymbolTable symbolTable;
+
+    /**
+     * keeps count of exceptions
+     */
     private int exceptionCounter;
+
+    /**
+     * if method is static(true)
+     */
     private boolean isStatic;
 
 
-
+    /**
+     * @brief constructor of the class that sets the exception counter to 0 and isStatic to false
+     * @param symbolTable receives the symboltable already filled
+     */
     public SemanticAnalysis(SymbolTable symbolTable){
         this.symbolTable = symbolTable;
         this.exceptionCounter = 0;
         this.isStatic = false;
     }
 
+    /**
+     * 
+     * @brief main function of the class, which allows you to scroll through the tree and call the functions depending on the node where we are
+     * 
+     * @param node current node
+     * @throws IOException
+     */
     public void execute(Node node) throws IOException{
         
-       // try {
-            if (node.toString().equals("StaticImport") || node.toString().equals("NonStaticImport")) { 
-            } 
-            else if(node.toString().equals("Method[main]")){
-                this.isStatic = true;
-                processNewScope(node);
-                this.isStatic = false;
-
+        if (node.toString().equals("StaticImport") || node.toString().equals("NonStaticImport")) { 
+        } 
+        else if(node.toString().equals("Method[main]")){
+            this.isStatic = true;
+            processNewScope(node);
+            this.isStatic = false;
+        }
+        else if (Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])") || (!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])"))) {   
+            processNewScope(node);
+        }
+        else if(node.toString().equals("MethodInvocation")){
+            processInvocation(node);
+        }
+        else if (node.toString().equals("Program")) {
+            processProgram(node);
+        } 
+        else if (node.toString().equals("Assign")) {
+            processAssign(node);
+        }
+        else if(node.toString().equals("Length")){
+            processLength(node);
+        }
+        else if(node.toString().equals("IfStatement")){
+            HashSet<String> toInit = processIfStatement(node);
+            VarDescriptor varDescriptor;
+            for(String var:toInit){
+                varDescriptor = (VarDescriptor) symbolTable.lookup(var).get(0);
+                varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.TRUE);
             }
-            else if (Utils.analyzeRegex(node.toString(), "(Class\\[)(.)*(\\])") || (!node.toString().equals("MethodInvocation") && Utils.analyzeRegex(node.toString(), "(Method\\[)(.)*(\\])"))) {   
-                processNewScope(node);
-            }
-            else if(node.toString().equals("MethodInvocation")){
-                processInvocation(node);
-            }
-            else if (node.toString().equals("Program")) {
-                processProgram(node);
-            } 
-            else if (node.toString().equals("Assign")) {
-                processAssign(node);
-            }
-            else if(node.toString().equals("Length")){
-                processLength(node);
-            }
-            else if(node.toString().equals("IfStatement")){
-                HashSet<String> toInit = processIfStatement(node);
-            
-                VarDescriptor varDescriptor;
-                for(String var:toInit){
-                    varDescriptor = (VarDescriptor) symbolTable.lookup(var).get(0);
-                    varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.TRUE);
-                }
-            }
-            else if(node.toString().equals("While")){
-                processWhile(node);
-            }
-            else {
-                processChildren(node);
-            }
+        }
+        else if(node.toString().equals("While")){
+            processWhile(node);
+        }
+        else {
+            processChildren(node);
+        }
     }
 
     private void processLength(Node node) throws IOException{
@@ -75,6 +106,13 @@ class SemanticAnalysis{
             throw new IOException( "Line " + line + ": It is not possible to invoke length of a non array object.");
         }
     }
+
+    /**
+     * @brief function that compares the expected return type with the actual
+     * @param node current node
+     * @return true if the returned type is the same as expected from the function, false otherwise
+     * @throws IOException
+     */
     private Boolean processReturnType(Node node) throws IOException{
 
         String expected = Utils.parseName(node.jjtGetChild(0).toString());
@@ -104,6 +142,12 @@ class SemanticAnalysis{
         return false;
     }
 
+    /**
+     * 
+     * @param node current node
+     * @return variables that may have been initialized within the if
+     * @throws IOException
+     */
     private HashSet<String> processIfStatement(Node node)throws IOException{
 
         HashSet<String> initializedVarIf = new HashSet<>();
@@ -196,16 +240,27 @@ class SemanticAnalysis{
 
     }
 
+    /**
+     * 
+     * @param node current node
+     * @param changedToTrue variables and their current state (initialized or not, or maybe)
+     * @return variable identifier or empty string
+     * @throws IOException
+     */
     private String processStmtAssign(Node node, HashMap<String, VarDescriptor.INITIALIZATION_TYPE> changedToTrue) throws IOException{
+
         VarDescriptor varDescriptor;
+
         if(node.jjtGetChild(0).toString().equals("Array")){
             varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).jjtGetChild(0).toString())).get(0);
         }
         else{
             varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
         }
+
         VarDescriptor.INITIALIZATION_TYPE wasInitializedBefore = varDescriptor.getInitialized();
         processAssign(node);
+
         if(wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.FALSE) || wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
             changedToTrue.put(varDescriptor.getIdentifier(), wasInitializedBefore);
             return varDescriptor.getIdentifier();
@@ -214,6 +269,11 @@ class SemanticAnalysis{
         
     }
 
+    /**
+     * @brief processes the while cycle operations, their condition, and variables that may have been initialized only inside
+     * @param node current node
+     * @throws IOException
+     */
     private void processWhile(Node node)throws IOException{
 
         Node condition = node.jjtGetChild(0);
@@ -252,6 +312,12 @@ class SemanticAnalysis{
         }
     }
 
+    /**
+     * @brief function responsible for processing calls to other methods, and checks whether or not it is done correctly
+     * @param node current node
+     * @return tipo de retorno da função que estamos a chamar
+     * @throws IOException
+     */
     private String processInvocation(Node node) throws IOException{
         String id;
         ClassDescriptor classDescriptor;
@@ -420,6 +486,11 @@ class SemanticAnalysis{
 
     }
 
+    /**
+     * 
+     * @param classDescriptor current class descriptor
+     * @return signatures available within classDEscriptor
+     */
     private String getSignatures(ClassDescriptor classDescriptor){
         String signaturesSupported = "";
         int numberSupported = classDescriptor.getMethods().size();
@@ -450,6 +521,13 @@ class SemanticAnalysis{
         return signaturesSupported;
     }
 
+    /**
+     * 
+     * @param node current node
+     * @param classDescriptor current classDescriptor
+     * @return error if there are no corresponding methods, or the return of that method if exists
+     * @throws IOException
+     */
     private String compareArgsAndParams(Node node, ClassDescriptor classDescriptor) throws IOException {
         
         String methodName = Utils.parseName(node.jjtGetChild(1).toString());
@@ -481,6 +559,11 @@ class SemanticAnalysis{
     }
 
 
+    /**
+     * @brief main function of assignments. checks the type of assignment and delegates to subfunctions
+     * @param node current node
+     * @throws IOException
+     */
     private void processAssign(Node node) throws IOException{
 
         if(node.jjtGetChild(0).toString().equals("Array") && !Utils.analyzeRegex(node.jjtGetChild(1).toString(), "(Array\\[)(.)*(\\])")){ 
@@ -511,6 +594,11 @@ class SemanticAnalysis{
         }
     }
 
+    /**
+     * @brief processes the creation of new objects of the class
+     * @param node current node
+     * @throws IOException
+     */
     private void processObject(Node node) throws IOException {
 
         String obj = Utils.parseName(node.jjtGetChild(1).jjtGetChild(0).toString());
@@ -528,18 +616,18 @@ class SemanticAnalysis{
                 int line = ((SimpleNode) node).getCoords().getLine();
                 throw new IOException( "Line " + line + ": Variable " + id + " does not match " + varDescriptor.getDataType());
             }
-            // if(obj.equals(classDescriptor.getParentClass().getIdentifier())){ // Extends: child class is initialized with constructor from parent
-            //     varDescriptor.setDataType(classDescriptor.getParentClass().getIdentifier());
-            // }
-            // else{
-            //     throw new IOException("Variable " + id + " does not match " + varDescriptor.getDataType());
-            // }
         }
 
         varDescriptor.setInitialized(VarDescriptor.INITIALIZATION_TYPE.TRUE);
 
     }
 
+    /**
+     * @brief function that is called when invoking a method of an object of the class
+     * @param node current node
+     * @return class identifier
+     * @throws IOException
+     */
     private String processNewObjectMethodInvoke(Node node) throws IOException {
 
         String id = Utils.parseName(node.jjtGetChild(0).toString());
@@ -550,7 +638,11 @@ class SemanticAnalysis{
     }
 
 
-
+    /**
+     * @brief function that is responsible for processing the initialization of a new array
+     * @param node current node
+     * @throws IOException
+     */
     private void processInitializeArray(Node node) throws IOException{
         VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
         if(!varDescriptor.getDataType().equals("Array")){
@@ -566,6 +658,14 @@ class SemanticAnalysis{
 
     }
 
+    /**
+     * @brief one of the most important functions in semantic analysis, as it is a function that checks that the assignments are done correctly,
+     *  that is, when doing a = b + c * thid.add (e), 
+     * the function sees if the type of a is the same as the expression on the right
+     * @param node current node
+     * @return node return type
+     * @throws IOException
+     */
     private String getNodeDataType(Node node) throws IOException{ 
 
         if(Utils.analyzeRegex(node.toString(), "(Identifier\\[)(.)*(\\])")){ //IDENTIFIER[a]
@@ -647,6 +747,12 @@ class SemanticAnalysis{
        
     }
 
+    /**
+     * @brief used when on the right side of an assigment an array is used
+     * @param node current node
+     * @return the type of the array we are using
+     * @throws IOException
+     */
     private String processArrayRight(Node node) throws IOException{
 
         String id = Utils.parseName(node.jjtGetChild(0).toString());
@@ -688,6 +794,11 @@ class SemanticAnalysis{
 
     }
 
+    /**
+     * @brief used when on the left side of an assigment an array is used
+     * @param node current node
+     * @throws IOException
+     */
     private void processArrayLeft(Node node) throws IOException{
 
         String id = Utils.parseName(node.jjtGetChild(0).jjtGetChild(0).toString());
@@ -711,6 +822,12 @@ class SemanticAnalysis{
 
     }
 
+    /**
+     * @brief when we are working with assignments where arrays are used on both sides 
+     * this function is responsible for checking if the use of arrays is done in the correct way
+     * @param node current node
+     * @throws IOException
+     */
     private void processArrayBoth(Node node) throws IOException{
 
         String id = Utils.parseName(node.jjtGetChild(0).jjtGetChild(0).toString());
@@ -744,6 +861,11 @@ class SemanticAnalysis{
 
     }
 
+    /**
+     * @brief function called when the node name is "Program". This function allows you to continue the analysis for your children
+     * @param node current node
+     * @throws IOException
+     */
     private void processProgram(Node node) throws IOException{
         symbolTable.enterScopeForAnalysis(); // Enter Import Scope
         for (int i = 0; i < node.jjtGetNumChildren()-1; i++) { // Imports
@@ -755,6 +877,11 @@ class SemanticAnalysis{
     }
 
 
+    /**
+     * @brief enters a new scope of the symbol table, which lets you know which variables were initialized and declared in that scope
+     * @param node current node
+     * @throws IOException
+     */
     private void processNewScope(Node node) throws IOException{
         symbolTable.enterScopeForAnalysis();
         
@@ -768,13 +895,21 @@ class SemanticAnalysis{
         symbolTable.exitScopeForAnalysis();
     }
 
+    /**
+     * @brief calls the main function (execute) for all children of the Node ndoe
+     * @param node current node
+     * @throws IOException
+     */
     private void processChildren(Node node) throws IOException{
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             execute(node.jjtGetChild(i));
         }
     }
 
-
+    /**
+     * 
+     * @return program symbol table
+     */
     public SymbolTable getSymbolTable() {
         return this.symbolTable;
     }
