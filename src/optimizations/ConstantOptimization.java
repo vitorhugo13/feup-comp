@@ -51,44 +51,7 @@ class ConstantOptimization {
                 }
             }
             else if (childName.equals("Assign")) {
-                if (processAssignment(child)) {
-                    body.jjtRemoveChild(i);
-                    continue;
-                }
-                else {
-                    String nodeName = ((SimpleNode) child.jjtGetChild(0)).jjtGetName();
-                    if (!nodeName.equals("Identifier")) {
-                        i++;
-                        continue;
-                    }
-                    
-                    String varName = (String) ((SimpleNode) child.jjtGetChild(0)).jjtGetValue();
-                    if (!vars.containsKey(varName)) {
-                        i++;
-                        continue;
-                    }
-                    
-                    if (!vars.get(varName).getLocal()) {
-                        vars.get(varName).setLocal(false);
-                        i++;
-                        continue;
-                    }
-
-                    SimpleNode declaration = new SimpleNode(ParserTreeConstants.JJTVARDECLARATION, body);
-                    SimpleNode type = new SimpleNode(ParserTreeConstants.JJTTYPE, vars.get(varName).getType(), declaration);
-                    SimpleNode identifier = new SimpleNode(ParserTreeConstants.JJTIDENTIFIER, varName, declaration);
-                        
-                    declaration.jjtAppendChild(type);
-                    declaration.jjtAppendChild(identifier);
-                        
-                    body.jjtAddChildAt(declaration, 0);
-
-                    VarInfo info = vars.get(varName);
-                    info.setLocal(false);
-                    info.setConstant(false);
-
-                    i++;
-                }
+                i = handleAssignment(child, i, body);
             }
             else if (childName.equals("IfStatement")) {
                 SimpleNode scope = processIfStatement(child);
@@ -133,8 +96,6 @@ class ConstantOptimization {
             return;
         else if (nodeName.equals("Return"))
             executeChildren(node);
-        // else if (nodeName.equals("NewObject"))
-            // return;
             
         // OPERATORS
         else if (isArithmetic(node))    // +, -, * and /
@@ -143,18 +104,10 @@ class ConstantOptimization {
             processLogicalOperation(node);
 
         // TERMINALS
-        // else if (nodeName.equals("Integer"))
-        //     return;
-        // else if (nodeName.equals("Boolean"))
-        //     return;
         else if (nodeName.equals("Identifier"))
             processIdentifier(node);
-        // else if (nodeName.equals("This"))
-        //     return;
         else if (nodeName.equals("Array"))
             processArray(node);
-        // else if (nodeName.equals("Length"))
-        //     return;
     }
 
     private void executeChildren(SimpleNode node) {
@@ -202,6 +155,51 @@ class ConstantOptimization {
         // scope
 
         return null;
+    }
+
+    private int handleIfStatement(SimpleNode node, int index, SimpleNode body) {
+        
+        return index;
+    }
+
+    /**
+     * node -> the assignment node
+     * body -> the method body node
+     */
+    private int handleAssignment(SimpleNode node, int index, SimpleNode body) {
+        if (processAssignment(node)) {
+            ((SimpleNode) node.jjtGetParent()).jjtRemoveChild(index);
+            return index - 1;
+        }
+
+        String nodeName = ((SimpleNode) node.jjtGetChild(0)).jjtGetName();
+        if (!nodeName.equals("Identifier"))
+            return index;
+            
+        String varName = (String) ((SimpleNode) node.jjtGetChild(0)).jjtGetValue();
+        if (!vars.containsKey(varName))
+            return index;
+            
+        if (!vars.get(varName).getLocal()) {
+            vars.get(varName).setLocal(false);
+            return index;
+        }
+
+        // create a new VarDeclaration node and insert it in the method body
+        SimpleNode declaration = new SimpleNode(ParserTreeConstants.JJTVARDECLARATION, body);
+        SimpleNode type = new SimpleNode(ParserTreeConstants.JJTTYPE, vars.get(varName).getType(), declaration);
+        SimpleNode identifier = new SimpleNode(ParserTreeConstants.JJTIDENTIFIER, varName, declaration);
+                
+        declaration.jjtAppendChild(type);
+        declaration.jjtAppendChild(identifier);
+                
+        body.jjtAddChildAt(declaration, 0);
+
+        VarInfo info = vars.get(varName);
+        info.setLocal(false);
+        info.setConstant(false);
+
+        return index;
     }
 
     /**
