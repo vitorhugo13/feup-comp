@@ -120,12 +120,8 @@ class ConstantOptimization {
         // OPERATORS
         else if (isArithmetic(node))    // +, -, * and /
             processArithmeticOperation(node);
-        else if (nodeName.equals("And"))
-            return;
-        else if (nodeName.equals("Less"))
-            return;
-        else if (nodeName.equals("Not"))
-            return;
+        else if (isLogical(node))       // !, && and <
+            processLogicalOperation(node);
 
         // TERMINALS
         // else if (nodeName.equals("Integer"))
@@ -209,6 +205,44 @@ class ConstantOptimization {
     private boolean isArithmetic(SimpleNode node) {
         String nodeName = node.jjtGetName();
         return nodeName.equals("Add") || nodeName.equals("Sub") || nodeName.equals("Mul") || nodeName.equals("Div");
+    }
+
+    private boolean isLogical(SimpleNode node) {
+        String nodeName = node.jjtGetName();
+        return nodeName.equals("Not") || nodeName.equals("Less") || nodeName.equals("And");
+    }
+
+    private void processLogicalOperation(SimpleNode node) {
+        int count = 0;
+        int index = 0;
+
+        for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+            SimpleNode child = (SimpleNode) node.jjtGetChild(i);
+            execute(child);
+
+            String childName = child.jjtGetName();
+            if (childName.equals("Integer") || childName.equals("Boolean")) {
+                index = i;
+                count++;
+            }
+        }
+
+        String nodeName = node.jjtGetName();
+        if (nodeName.equals("Not")) {
+            if (count != 1)
+                return;
+            
+            Boolean value = (Boolean) ((SimpleNode) node.jjtGetChild(0)).jjtGetValue();
+            node.setId(ParserTreeConstants.JJTBOOLEAN);
+            node.jjtSetValue(!value);
+            node.jjtRemoveChildren();
+        }
+        else if (nodeName.equals("And")) {
+
+        }
+        else if (nodeName.equals("Not")) {
+
+        }
     }
 
     /**
