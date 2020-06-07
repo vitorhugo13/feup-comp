@@ -80,7 +80,7 @@ public class Main {
 
         
         if(optimizeRegister){
-            System.out.println("OPTIMIZE REGISTER ALLOCATION FOR N= " + registers);
+            System.out.println("OPTIMIZE REGISTER ALLOCATION FOR N = " + registers);
             symbolTable.reset();
             LivenessAnalysis livenessAnalysis = new LivenessAnalysis(symbolTable);
 

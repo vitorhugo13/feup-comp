@@ -33,6 +33,9 @@ public class LivenessAnalysis {
         else if(node.toString().equals("Assign")){
             processAssign(node);
         }
+        else if(node.toString().equals("IfStatement")){
+            processIfStmt(node);
+        }
         else if(node.toString().equals("Return")){
             processReturn(node);
         }
@@ -56,6 +59,31 @@ public class LivenessAnalysis {
 
     private void processProgram(Node node) throws IOException{
         execute(node.jjtGetChild(node.jjtGetNumChildren()-1)); 
+    }
+
+    private void processIfStmt(Node node) throws IOException{
+
+        //condition
+        updateIndex();
+
+        System.out.println("============================");
+        System.out.println("index: " + instructionIndex);
+        InstructionNode instructionCondition = new InstructionNode();
+
+        HashSet<VarDescriptor> usedVariables1 = getUsedVariables(node.jjtGetChild(0).jjtGetChild(0));
+
+        if(usedVariables1.size() > 0)
+            System.out.println("Used Variables");
+
+        for(VarDescriptor var : usedVariables1){
+            System.out.println("Var: " + var.getIdentifier());
+        }
+        instructionCondition.setUse(usedVariables1);
+        instructionHashMap.put(instructionIndex, instructionCondition);
+
+        for(int i = 1; i < node.jjtGetNumChildren();i++){
+            execute(node.jjtGetChild(i));
+        }
     }
 
     private void processReturn(Node node) throws IOException{
@@ -149,7 +177,7 @@ public class LivenessAnalysis {
                 VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.jjtGetChild(0).toString())).get(0);
                 usedVariables.add(varDescriptor);
             }catch(Exception e){
-                
+
             }
 
             for(int i = 0; i < node.jjtGetChild(2).jjtGetNumChildren(); i++){
@@ -182,6 +210,8 @@ public class LivenessAnalysis {
     private void processClass(Node node) throws IOException{
         symbolTable.enterScopeForAnalysis(); //Scope Imports does not matter for this analysis
         symbolTable.exitScopeForAnalysis();
+
+
         symbolTable.enterScopeForAnalysis();
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             execute(node.jjtGetChild(i));
