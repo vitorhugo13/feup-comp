@@ -1,0 +1,30 @@
+// shows constant folding (integers and booleans)
+
+class Folding {
+
+    public static void main(String[] args) {
+
+        int a;
+        int b;
+
+        boolean c;
+        boolean d;
+
+        Folding f;
+        f = new Folding();
+
+        a = 2;
+        b = a + f.itest();
+
+        c = true;
+        d = 1 < 2 && f.btest() && c;
+    }
+
+    public int itest() {
+        return 5 * (4 / 2) + 3 - (1 + 1);
+    }
+
+    public boolean btest() {
+        return true && false;
+    }
+}

@@ -370,7 +370,7 @@ class SemanticAnalysis{
                 }
                 else{
                     VarDescriptor.INITIALIZATION_TYPE wasInitializedBefore = ((VarDescriptor) descriptor).getInitialized();
-                    if(wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
+                    if(wasInitializedBefore.equals(VarDescriptor.INITIALIZATION_TYPE.FALSE) && !((VarDescriptor) descriptor).getScope().equals(Descriptor.Scope.GLOBAL)){
                         int line = ((SimpleNode) node).getCoords().getLine();
                         throw new IOException( "Line " + line + ": Variable " + ((VarDescriptor) descriptor).getIdentifier() + " was not initialized");
                     }
@@ -427,7 +427,7 @@ class SemanticAnalysis{
                         if(!Utils.getFirstPartOfName(node.jjtGetChild(2).jjtGetChild(i).toString()).equals("Integer") && !Utils.getFirstPartOfName(node.jjtGetChild(2).jjtGetChild(i).toString()).equals("Boolean")){
                             String variableID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString());
                             VarDescriptor vd = (VarDescriptor) symbolTable.lookup(variableID).get(0);
-                            if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
+                            if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE) && !vd.getScope().equals(Descriptor.Scope.GLOBAL)){
                                 throw new IOException("Line " + line + ": Variable " + variableID + " not initialized");
                             }
                             else if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
@@ -448,7 +448,7 @@ class SemanticAnalysis{
                     if(!Utils.getFirstPartOfName(node.jjtGetChild(2).jjtGetChild(i).toString()).equals("Integer") && !Utils.getFirstPartOfName(node.jjtGetChild(2).jjtGetChild(i).toString()).equals("Boolean")){
                         String variableID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString());
                         VarDescriptor vd = (VarDescriptor) symbolTable.lookup(variableID).get(0);
-                        if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
+                        if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE) && !vd.getScope().equals(Descriptor.Scope.GLOBAL)){
                             throw new IOException("Line " + line + ": Variable " + variableID + " not initialized");
                         }
                         else if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
@@ -470,7 +470,7 @@ class SemanticAnalysis{
                 if(!Utils.getFirstPartOfName(node.jjtGetChild(2).jjtGetChild(i).toString()).equals("Integer")&& !Utils.getFirstPartOfName(node.jjtGetChild(2).jjtGetChild(i).toString()).equals("Boolean")){
                     String variableID = Utils.parseName(node.jjtGetChild(2).jjtGetChild(i).toString());
                     VarDescriptor vd = (VarDescriptor) symbolTable.lookup(variableID).get(0);
-                    if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
+                    if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE) && !vd.getScope().equals(Descriptor.Scope.GLOBAL)){
                         throw new IOException("Line " + line + ": Variable " + variableID + " not initialized");
                     }
                     else if(vd.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.MAYBE)){
@@ -670,7 +670,7 @@ class SemanticAnalysis{
 
         if(Utils.analyzeRegex(node.toString(), "(Identifier\\[)(.)*(\\])")){ //IDENTIFIER[a]
             VarDescriptor varDescriptor = (VarDescriptor) symbolTable.lookup(Utils.parseName(node.toString())).get(0);
-            if(varDescriptor.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
+            if(varDescriptor.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE) && !varDescriptor.getScope().equals(Descriptor.Scope.GLOBAL)){
                 int line = ((SimpleNode) node).getCoords().getLine();
                 throw new IOException( "Line " + line + ": Variable " + varDescriptor.getIdentifier() + " was not initialized");
             }
@@ -776,7 +776,7 @@ class SemanticAnalysis{
             throw new IOException( "Line " + line + ": Index of array " + id + " is not Integer!");
         }
 
-        if(varDescriptor.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE)){
+        if(varDescriptor.getInitialized().equals(VarDescriptor.INITIALIZATION_TYPE.FALSE) && !varDescriptor.getScope().equals(Descriptor.Scope.GLOBAL)){
             int line = ((SimpleNode) node).getCoords().getLine();
             throw new IOException( "Line " + line + ": Array " + id + " is not initialized");
         }

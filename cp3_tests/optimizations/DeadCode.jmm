@@ -1,0 +1,27 @@
+// shows dead code elimination
+
+import static ioPlus.printResult(int) void;
+
+class DeadCode {
+
+    public static void main(String[] args) {
+
+        if (true) {
+            ioPlus.printResult(1);
+        }
+        else {
+            ioPlus.printResult(2);
+        }
+
+        if (false) {
+            ioPlus.printResult(3);
+        }
+        else {
+            ioPlus.printResult(4);
+        }
+
+        while (false) {
+            ioPlus.printResult(5);
+        }
+    }
+}

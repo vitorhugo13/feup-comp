@@ -168,7 +168,7 @@ class ConstantOptimization {
         executeChildren(conditionCopy);
 
         // if the condition is false the loop code is removed
-        if (conditionCopy.jjtGetNumChildren() > 1) {
+        if (conditionCopy.jjtGetNumChildren() == 1) {
             SimpleNode child = (SimpleNode) conditionCopy.jjtGetChild(0); 
             if (child.jjtGetName().equals("Boolean")) {
                 if (!(Boolean) child.jjtGetValue()) {
