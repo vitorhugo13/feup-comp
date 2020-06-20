@@ -105,7 +105,7 @@ public class Main {
         if (generateCode) {
             System.out.println("GENERATING CODE");
             Generator codeGenerator = new Generator(symbolTable);
-            String filename = args[0].substring(args[0].lastIndexOf("/") + 1, args[0].lastIndexOf("."));
+            String filename = args[0].substring(args[0].lastIndexOf(java.io.File.separator) + 1, args[0].lastIndexOf("."));
             codeGenerator.generate(root, filename);
             System.out.println("FINISHED GENERATING CODE\n");
         }
