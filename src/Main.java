@@ -8,7 +8,7 @@ public class Main {
     /**
      * if true we have to generate code
      */
-    private static boolean generateCode = false;
+    private static boolean generateCode = true;
 
     /**
      * if true symbol table state must be printed
