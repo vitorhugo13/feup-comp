@@ -6,7 +6,7 @@
 * [Bernardo Manuel Esteves dos Santos](https://github.com/bernas670), 201706534 
 * [Joana Catarina Teixeira Ferreira](https://github.com/joanaferreira0011), 201705722 
 * [João Nuno Carvalho de Matos](https://github.com/joaonmatos), 201705471
-* Vítor Hugo Leite Gonçalves, 201703917 
+* [Vítor Hugo Leite Gonçalves](https://github.com/vitorhugo13), 201703917 
 
 ## Project grade
 * **Global grade of the project:** 18.55 out of 20
