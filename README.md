@@ -3,13 +3,13 @@
 * **Group:** g3h
 
 ## Elements and their contribution
-* Bernardo Manuel Esteves dos Santos, 201706534 => **Grade:** 19 **Contribution** 35%
-* Joana Catarina Teixeira Ferreira, 201705722 => **Grade:** 17.5 **Contribution** 25%
-* João Nuno Carvalho de Matos, 201705471 => **Grade:** 16 **Contribution** 15%
-* Vítor Hugo Leite Gonçalves, 201703917 => **Grade:** 17.5 **Contribution** 25%
+* Bernardo Manuel Esteves dos Santos, 201706534 
+* Joana Catarina Teixeira Ferreira, 201705722 
+* João Nuno Carvalho de Matos, 201705471
+* Vítor Hugo Leite Gonçalves, 201703917 
 
 ## Project grade
-* **Global grade of the project:** 18 out of 20
+* **Global grade of the project:** 18.55 out of 20
 
 ## Project description
 
