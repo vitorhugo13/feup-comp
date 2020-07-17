@@ -5,7 +5,7 @@
 ## Elements
 * Bernardo Manuel Esteves dos Santos, 201706534 
 * Joana Catarina Teixeira Ferreira, 201705722 
-* (João Nuno Carvalho de Matos)[https://github.com/joaonmatos], 201705471
+* [João Nuno Carvalho de Matos](https://github.com/joaonmatos), 201705471
 * Vítor Hugo Leite Gonçalves, 201703917 
 
 ## Project grade
